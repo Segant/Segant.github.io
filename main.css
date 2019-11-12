@@ -321,7 +321,7 @@ body {
 
 .hero__inner {
     background: #4D69FF;
-    border-radius: 0px 0px 0px 24px;
+    border-radius: 0px 0px 25px 25px;
     padding-top: 38px;
     padding-left: 32px;
     height: 424px;
@@ -340,15 +340,26 @@ body {
     margin-bottom: 24px;
 }
 
+.hero__skills{
+    max-width: 320px;
+}
+
+.hero__left{
+    padding-right: 20px;
+}
+
 .hero__img {
-    width: 100%;
-    max-width: 550px;
-    background: #000;
-    position: absolute;
-    height: 100%;
-    right: 0;
-    top: 0;
-    bottom: 0;
+        width: 100%;
+        max-width: 450px;
+        background: #000;
+        position: absolute;
+        height: 70%;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        overflow: hidden;
+        border-radius: 25px 0 0 25px;
 
 
 }
@@ -382,6 +393,7 @@ body {
     color: #000;
     margin-right: 30px;
         margin-right: 44px;
+    margin-bottom: 30px;
 
 }
 
@@ -391,6 +403,10 @@ body {
 
 .portf__cards{
     display: flex;
+    flex-wrap: wrap;
+    max-width: 1162px;
+    margin: auto;
+    align-items: flex-start;
 }
 
 .card__img{
@@ -415,9 +431,45 @@ body {
     font-size: 25px;
     line-height: 32px;
     margin-bottom: 25px;
+    height: 64px;
 }
 
 .card__desc{
     font-size: 18px;
     line-height: 175%;
+}
+
+@media(max-width:1150px) {
+    .card {
+            height: 490px;
+            max-width: 312px;
+    }
+
+    .card__img{
+        height: 244px;
+    }
+}
+
+@media(max-width:1000px){
+    .hero__right{
+        display: none;
+    }
+
+    .hero{
+        background: #4D69FF;
+    }
+
+
+    .portf__cards{
+        flex-direction: column;
+    }
+    .card{
+        max-width: 310px;
+        margin-right: 0;
+    }
+
+
+    .card:nth-child(3n){
+        margin-right: 0px;
+    }
 }
