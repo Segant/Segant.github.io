@@ -123,7 +123,7 @@ a {
     cursor: pointer;
     background-color: transparent;
     text-decoration: none;
-    transition: all .3s;
+    /* transition: all .3s; */
     /* -webkit-transition: all .4s linear;
     transition: all .4s linear; */
 }
@@ -340,6 +340,10 @@ body {
     margin-bottom: 24px;
 }
 
+.underline{
+    text-decoration: underline;
+}
+
 .hero__skills{
     max-width: 320px;
 }
@@ -409,6 +413,8 @@ body {
     align-items: flex-start;
 }
 
+
+
 .card__img{
     /* background: url(Без названия.png),
     url(ZdbzVP71zR8.jpg); */
@@ -417,6 +423,16 @@ body {
     height: 286px;
     width: 100%;
         background: #4D69FF;
+        overflow: hidden;
+        position: relative;
+}
+
+.card__img img{
+    max-width: 150%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
 }
 
 .card__text{
