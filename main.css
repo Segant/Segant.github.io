@@ -392,12 +392,14 @@ body {
 .card{
     background: #fff;
     max-width: 368px;
+    width: 100%;
     height: 532px;
     border-radius: 25px;
     color: #000;
     margin-right: 30px;
         margin-right: 44px;
     margin-bottom: 30px;
+    position: relative;
 
 }
 
@@ -440,6 +442,8 @@ body {
     padding-top: 20px;
     padding-right: 32px;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .card__title{
@@ -453,6 +457,24 @@ body {
 .card__desc{
     font-size: 18px;
     line-height: 175%;
+}
+
+.card__btn{
+    /* color: #4D69FF; */
+    color: white;
+    text-align: right;
+    /* display: block; */
+    background-color: #4D69FF;
+    border-radius: 50px;
+    padding: 10px 15px;
+    align-self: flex-end;
+    position: absolute;
+    bottom: 20px;
+    right: 32px;
+}
+
+.card__btn:hover{
+    /* color: white; */
 }
 
 @media(max-width:1150px) {
