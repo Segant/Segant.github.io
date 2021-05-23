@@ -411,9 +411,9 @@ function collage(settings, callback) {
 			layer.draw();
 		}
 
-		if (settings.isMobile) {
-			transformer.visible(false);
-		}
+		// if (settings.isMobile) {
+		// 	transformer.visible(false);
+		// }
 	});
 
 
