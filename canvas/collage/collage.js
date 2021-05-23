@@ -195,6 +195,7 @@ function collage(settings, callback) {
 			});
 			content.add(canvasImg);
 			transformer.nodes([])
+			touchScale(canvasImg);
 			layer.batchDraw();
 		}
 
@@ -220,6 +221,7 @@ function collage(settings, callback) {
 		});
 
 		content.add(group);
+		// touchScale(item)
 
 		let borderBG;
 
