@@ -14,7 +14,6 @@
 	<div class="collage">
 		<div class="collage-hidden">
 			<img src="img/trash.svg" class="collage-hidden__trash">
-			<img src="img/6CbzmM-CLzU.jpg">
 		</div>
 		<div class="collage-inner">
 			<div class="collage__items"></div>
@@ -38,7 +37,7 @@
 	<button id="screenshot">screenshot canvas</button>
 	<button id='curtain'>show curtain</button>
 
-
+	<script src="lib/downscale.js"></script>
 	<script src="collage.js"></script>
 	<script>
 		const allImages = [
@@ -156,6 +155,11 @@
 				screenshot.addEventListener('click', function (e) {
 					collageDesktop.makeScreenshot();
 				})
+
+				
+				if(collageDesktop.layer.find('.photo').length > 0){
+					// photo exist on canvas
+				}
 			}
 
 
