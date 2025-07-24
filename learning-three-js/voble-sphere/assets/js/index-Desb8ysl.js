@@ -4039,9 +4039,7 @@ void main() {
 `:`#define IS_UNKNOWN;
 `;u.vertexShader=f+`#define IS_VERTEX
 `+u.vertexShader,u.fragmentShader=f+`#define IS_FRAGMENT
-`+u.fragmentShader;const h=y=>{for(const v in y){const T=v==="*"||a&&a.includes(v);if(v==="*"||o&&o.includes(v)||T){const I=Wf[v];if(I&&I!=="*"&&(Array.isArray(I)?!I.includes(S):I!==S)){console.error(`CustomShaderMaterial: ${v} is not available in ${S}. Shader cannot compile.`);return}const R=y[v];for(const A in R){const L=R[A];if(typeof L=="object"){const E=L.type,_=L.value;E==="fs"?u.fragmentShader=u.fragmentShader.replace(A,_):E==="vs"&&(u.vertexShader=u.vertexShader.replace(A,_))}else L&&(u.vertexShader=u.vertexShader.replace(A,L),u.fragmentShader=u.fragmentShader.replace(A,L))}}}};h(Xf),h(x),u.vertexShader=d(u.vertexShader,a,!1),u.fragmentShader=d(u.fragmentShader,o,!0),n&&(u.uniforms={...u.uniforms,...l.uniforms}),l.uniforms=u.uniforms};const p=l.customProgramCacheKey;l.customProgramCacheKey=()=>((r==null?void 0:r())||Yf((a||"")+(o||"")))+(p==null?void 0:p.call(l)),l.needsUpdate=!0}clone(){const e=this;return new e.constructor({baseMaterial:e.__csm.baseMaterial.clone(),vertexShader:e.__csm.vertexShader,fragmentShader:e.__csm.fragmentShader,uniforms:e.__csm.uniforms,patchMap:e.__csm.patchMap,cacheKey:e.__csm.cacheKey})}}var jf=`precision mediump float;
-
-varying float vPattern;
+`+u.fragmentShader;const h=y=>{for(const v in y){const T=v==="*"||a&&a.includes(v);if(v==="*"||o&&o.includes(v)||T){const I=Wf[v];if(I&&I!=="*"&&(Array.isArray(I)?!I.includes(S):I!==S)){console.error(`CustomShaderMaterial: ${v} is not available in ${S}. Shader cannot compile.`);return}const R=y[v];for(const A in R){const L=R[A];if(typeof L=="object"){const E=L.type,_=L.value;E==="fs"?u.fragmentShader=u.fragmentShader.replace(A,_):E==="vs"&&(u.vertexShader=u.vertexShader.replace(A,_))}else L&&(u.vertexShader=u.vertexShader.replace(A,L),u.fragmentShader=u.fragmentShader.replace(A,L))}}}};h(Xf),h(x),u.vertexShader=d(u.vertexShader,a,!1),u.fragmentShader=d(u.fragmentShader,o,!0),n&&(u.uniforms={...u.uniforms,...l.uniforms}),l.uniforms=u.uniforms};const p=l.customProgramCacheKey;l.customProgramCacheKey=()=>((r==null?void 0:r())||Yf((a||"")+(o||"")))+(p==null?void 0:p.call(l)),l.needsUpdate=!0}clone(){const e=this;return new e.constructor({baseMaterial:e.__csm.baseMaterial.clone(),vertexShader:e.__csm.vertexShader,fragmentShader:e.__csm.fragmentShader,uniforms:e.__csm.uniforms,patchMap:e.__csm.patchMap,cacheKey:e.__csm.cacheKey})}}var jf=`varying float vPattern;
 
 uniform vec3 uColor;
 
@@ -4049,9 +4047,7 @@ void main() {\r
     vec3 color = vPattern * uColor;
 
     csm_DiffuseColor = vec4(color, 1.);\r
-}`,Zf=`precision mediump float;
-
-attribute vec4 tangent;
+}`,Zf=`attribute vec4 tangent;
 
 varying float vPattern;
 
