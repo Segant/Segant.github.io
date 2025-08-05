@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="index.4a508c1d.css">
+	<title>Document</title>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="game-wrap">
+			<!-- <div class="game-wrap__error">Face too far from cam or not enough light</div> -->
+			<div class="game-wrap__error-gray">We identified you as a completely gray person.<br> Please select the shadow that fits you better!</div>
+		</div>
+		<section id="demos" class="invisible">
+			<div class="webcam">
+				<div class="buttons">
+					<button id="webcamButton" class="mdc-button mdc-button--raised">
+					<span class="mdc-button__label">ENABLE WEBCAM</span>
+					</button>
+					<button id="uploadLut">uploadLut</button>
+					<input type="file" id="uploadLutFile" accept="image/*">
+					<button id="deleteLut">deleteLut</button>
+				</div>
+				<div class="luma">
+					<span>luma: <span id="lumaVal">0</span></span> &nbsp;
+					<span>R: <span id="colorRangeR">1</span></span> &nbsp;
+					<span>G: <span id="colorRangeG">1</span></span> &nbsp;
+					<span>B: <span id="colorRangeB">1</span></span>
+				</div>
+				<div class="luts">
+					<img class="default" src="natural.c7d3fc5e.png" alt="lut">
+				</div>
+				<div class="range-input">
+					<span>Mask Opacity(r0):</span><input type="range" min="0" max="1000" step="1" value="0" id="range0">&nbsp;
+					<div id="range0Value">0</div>
+				</div>	
+				<div class="range-input">
+					<span>transition</span><input type="range" min="0" max="1000" step="1" value="1000" id="transitionTresholdRange">&nbsp;
+					<div id="transitionTresholdValue">_</div>
+				</div>			
+				<div class="range-input">
+					<span>R:</span><input type="range" min="0" max="1000" step="1" value="1000" id="rangeR">&nbsp;
+					<div id="range1Value">_</div>
+				</div>		
+				<div class="range-input">
+					<span>G:</span><input type="range" min="0" max="1000" step="1" value="1000" id="rangeG">&nbsp;
+					<div id="range1Value">_</div>
+				</div>		
+				<div class="range-input">
+					<span>B:</span><input type="range" min="0" max="1000" step="1" value="1000" id="rangeB">&nbsp;
+					<div id="range1Value">_</div>
+				</div>		
+				
+				<canvas id="canvas" width="512" height="512"></canvas>
+				<canvas id="canvas2" width="512" height="512"></canvas>
+				<video id="webcam" autoplay="" style="display: none"></video>
+			</div>
+		</section>
+	</div>
+
+	<script src="index.b71e74eb.js" defer=""></script>
+</body>
+</html>
