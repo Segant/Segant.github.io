@@ -891,7 +891,7 @@ class BeardColorMask {
             const vision = await (0, _tasksVision.FilesetResolver).forVisionTasks("https://mehaircolor.pro/tasks-vision");
             const imageSegmenterOptions = {
                 baseOptions: {
-                    modelAssetPath: "https://mehaircolor.pro/beard/model/unet_beard.tflite",
+                    modelAssetPath: "model_with_metadata100.tflite",
                     delegate: "GPU"
                 },
                 runningMode: "VIDEO",
@@ -1004,28 +1004,32 @@ class BeardColorMask {
         this.uniforms = filter.uniforms;
         this.setOpacity(0);
         const fps = 20;
+        const stretchMaskValue = (x)=>{
+            return x / 200 + 0.5;
+        };
         const callbackForVideo = (result)=>{
             const imageDataResult = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
             const imageDataMask = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
-            // console.log(result);
             const mask = result.confidenceMasks[0].getAsFloat32Array();
             textureMask.update();
             this.luma = 0;
             let totalMask = 0;
             for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
-                imageDataMask[j] = mask[i] * 255;
-                imageDataMask[j + 1] = mask[i + 1] * 255;
-                imageDataMask[j + 2] = mask[i + 2] * 255;
+                if (mask[i] >= this.transitionThreshold) mask[i] = stretchMaskValue(mask[i]);
+                imageDataMask[j] = mask[i] * 255 / 5;
+                imageDataMask[j + 1] = mask[i + 1] * 255 / 5;
+                imageDataMask[j + 2] = mask[i + 2] * 255 / 5;
                 let r = imageDataResult[j] / 255;
                 let g = imageDataResult[j + 1] / 255;
                 let b = imageDataResult[j + 2] / 255;
                 let brightness = (r + g + b) / 3;
-                if (mask[i] >= this.transitionThreshold) {
-                    imageDataMask[j] = mask[i] * 255 * (mask[i] * 255);
-                    imageDataMask[j + 1] = mask[i + 1] * 255 * (mask[i + 1] * 255);
-                    imageDataMask[j + 2] = mask[i + 2] * 255 * (mask[i + 1] * 255);
-                }
+                // if (mask[i] >= this.transitionThreshold) {
+                // 	imageDataMask[j] = (mask[i] * 255) * (mask[i] * 255);
+                // 	imageDataMask[j + 1] = (mask[i + 1] * 255) * (mask[i + 1] * 255);
+                // 	imageDataMask[j + 2] = (mask[i + 2] * 255) * (mask[i + 1] * 255);
+                // }
                 if (mask[i] >= 0.8) {
+                    console.log(mask[i]);
                     this.luma += brightness;
                     totalMask += 1;
                 }
