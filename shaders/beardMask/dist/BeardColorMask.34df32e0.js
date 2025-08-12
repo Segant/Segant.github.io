@@ -6,7 +6,16 @@
 // anything defined in a previous bundle is accessed via the
 // orig method which is the require for previous bundles
 
-(function (modules, entry, mainEntry, parcelRequireName, globalName) {
+(function (
+  modules,
+  entry,
+  mainEntry,
+  parcelRequireName,
+  externals,
+  distDir,
+  publicUrl,
+  devServer
+) {
   /* eslint-disable no-undef */
   var globalObject =
     typeof globalThis !== 'undefined'
@@ -25,6 +34,7 @@
     typeof globalObject[parcelRequireName] === 'function' &&
     globalObject[parcelRequireName];
 
+  var importMap = previousRequire.i || {};
   var cache = previousRequire.cache || {};
   // Do not use `require` to prevent Webpack from trying to bundle this call
   var nodeRequire =
@@ -35,6 +45,9 @@
   function newRequire(name, jumped) {
     if (!cache[name]) {
       if (!modules[name]) {
+        if (externals[name]) {
+          return externals[name];
+        }
         // if we cannot find the module within our internal map or
         // cache jump to the current global require ie. the last bundle
         // that was added to the page.
@@ -93,6 +106,7 @@
   function Module(moduleName) {
     this.id = moduleName;
     this.bundle = newRequire;
+    this.require = nodeRequire;
     this.exports = {};
   }
 
@@ -101,6 +115,10 @@
   newRequire.modules = modules;
   newRequire.cache = cache;
   newRequire.parent = previousRequire;
+  newRequire.distDir = distDir;
+  newRequire.publicUrl = publicUrl;
+  newRequire.devServer = devServer;
+  newRequire.i = importMap;
   newRequire.register = function (id, exports) {
     modules[id] = [
       function (require, module) {
@@ -109,6 +127,10 @@
       {},
     ];
   };
+
+  // Only insert newRequire.load when it is actually used.
+  // The code in this file is linted against ES5, so dynamic import is not allowed.
+  // INSERT_LOAD_HERE
 
   Object.defineProperty(newRequire, 'root', {
     get: function () {
@@ -136,22 +158,19 @@
       define(function () {
         return mainExports;
       });
-
-      // <script>
-    } else if (globalName) {
-      this[globalName] = mainExports;
     }
   }
-})({"bTHtU":[function(require,module,exports,__globalThis) {
+})({"3dtlh":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
+var HMR_SERVER_PORT = 1234;
 var HMR_SECURE = false;
-var HMR_ENV_HASH = "d6ea1d42532a7575";
+var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
-module.bundle.HMR_BUNDLE_ID = "5c1b77e3b71e74eb";
+module.bundle.HMR_BUNDLE_ID = "4b8ea06834df32e0";
 "use strict";
-/* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
+/* global HMR_HOST, HMR_PORT, HMR_SERVER_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
   HMRAsset,
   HMRMessage,
@@ -188,6 +207,7 @@ interface ExtensionContext {
 declare var module: {bundle: ParcelRequire, ...};
 declare var HMR_HOST: string;
 declare var HMR_PORT: string;
+declare var HMR_SERVER_PORT: string;
 declare var HMR_ENV_HASH: string;
 declare var HMR_SECURE: boolean;
 declare var HMR_USE_SSE: boolean;
@@ -216,31 +236,31 @@ function Module(moduleName) {
 }
 module.bundle.Module = Module;
 module.bundle.hotData = {};
-var checkedAssets /*: {|[string]: boolean|} */ , disposedAssets /*: {|[string]: boolean|} */ , assetsToDispose /*: Array<[ParcelRequire, string]> */ , assetsToAccept /*: Array<[ParcelRequire, string]> */ ;
+var checkedAssets /*: {|[string]: boolean|} */ , disposedAssets /*: {|[string]: boolean|} */ , assetsToDispose /*: Array<[ParcelRequire, string]> */ , assetsToAccept /*: Array<[ParcelRequire, string]> */ , bundleNotFound = false;
 function getHostname() {
-    return HMR_HOST || (location.protocol.indexOf('http') === 0 ? location.hostname : 'localhost');
+    return HMR_HOST || (typeof location !== 'undefined' && location.protocol.indexOf('http') === 0 ? location.hostname : 'localhost');
 }
 function getPort() {
-    return HMR_PORT || location.port;
+    return HMR_PORT || (typeof location !== 'undefined' ? location.port : HMR_SERVER_PORT);
 }
 // eslint-disable-next-line no-redeclare
+let WebSocket = globalThis.WebSocket;
+if (!WebSocket && typeof module.bundle.root === 'function') try {
+    // eslint-disable-next-line no-global-assign
+    WebSocket = module.bundle.root('ws');
+} catch  {
+// ignore.
+}
+var hostname = getHostname();
+var port = getPort();
+var protocol = HMR_SECURE || typeof location !== 'undefined' && location.protocol === 'https:' && ![
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+].includes(hostname) ? 'wss' : 'ws';
+// eslint-disable-next-line no-redeclare
 var parent = module.bundle.parent;
-if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
-    var hostname = getHostname();
-    var port = getPort();
-    var protocol = HMR_SECURE || location.protocol == 'https:' && ![
-        'localhost',
-        '127.0.0.1',
-        '0.0.0.0'
-    ].includes(hostname) ? 'wss' : 'ws';
-    var ws;
-    if (HMR_USE_SSE) ws = new EventSource('/__parcel_hmr');
-    else try {
-        ws = new WebSocket(protocol + '://' + hostname + (port ? ':' + port : '') + '/');
-    } catch (err) {
-        if (err.message) console.error(err.message);
-        ws = {};
-    }
+if (!parent || !parent.isParcelRequire) {
     // Web extension context
     var extCtx = typeof browser === 'undefined' ? typeof chrome === 'undefined' ? null : chrome : browser;
     // Safari doesn't support sourceURL in error stacks.
@@ -251,61 +271,100 @@ if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
     } catch (err) {
         supportsSourceURL = err.stack.includes('test.js');
     }
-    // $FlowFixMe
-    ws.onmessage = async function(event /*: {data: string, ...} */ ) {
-        checkedAssets = {} /*: {|[string]: boolean|} */ ;
-        disposedAssets = {} /*: {|[string]: boolean|} */ ;
-        assetsToAccept = [];
-        assetsToDispose = [];
-        var data /*: HMRMessage */  = JSON.parse(event.data);
-        if (data.type === 'reload') fullReload();
-        else if (data.type === 'update') {
-            // Remove error overlay if there is one
-            if (typeof document !== 'undefined') removeErrorOverlay();
-            let assets = data.assets.filter((asset)=>asset.envHash === HMR_ENV_HASH);
-            // Handle HMR Update
-            let handled = assets.every((asset)=>{
-                return asset.type === 'css' || asset.type === 'js' && hmrAcceptCheck(module.bundle.root, asset.id, asset.depsByBundle);
-            });
-            if (handled) {
-                console.clear();
-                // Dispatch custom event so other runtimes (e.g React Refresh) are aware.
-                if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') window.dispatchEvent(new CustomEvent('parcelhmraccept'));
-                await hmrApplyUpdates(assets);
-                hmrDisposeQueue();
-                // Run accept callbacks. This will also re-execute other disposed assets in topological order.
-                let processedAssets = {};
-                for(let i = 0; i < assetsToAccept.length; i++){
-                    let id = assetsToAccept[i][1];
-                    if (!processedAssets[id]) {
-                        hmrAccept(assetsToAccept[i][0], id);
-                        processedAssets[id] = true;
-                    }
+    var ws;
+    if (HMR_USE_SSE) ws = new EventSource('/__parcel_hmr');
+    else try {
+        // If we're running in the dev server's node runner, listen for messages on the parent port.
+        let { workerData, parentPort } = module.bundle.root('node:worker_threads') /*: any*/ ;
+        if (workerData !== null && workerData !== void 0 && workerData.__parcel) {
+            parentPort.on('message', async (message)=>{
+                try {
+                    await handleMessage(message);
+                    parentPort.postMessage('updated');
+                } catch  {
+                    parentPort.postMessage('restart');
                 }
-            } else fullReload();
+            });
+            // After the bundle has finished running, notify the dev server that the HMR update is complete.
+            queueMicrotask(()=>parentPort.postMessage('ready'));
         }
-        if (data.type === 'error') {
-            // Log parcel errors to console
-            for (let ansiDiagnostic of data.diagnostics.ansi){
-                let stack = ansiDiagnostic.codeframe ? ansiDiagnostic.codeframe : ansiDiagnostic.stack;
-                console.error("\uD83D\uDEA8 [parcel]: " + ansiDiagnostic.message + '\n' + stack + '\n\n' + ansiDiagnostic.hints.join('\n'));
-            }
-            if (typeof document !== 'undefined') {
-                // Render the fancy html overlay
-                removeErrorOverlay();
-                var overlay = createErrorOverlay(data.diagnostics.html);
-                // $FlowFixMe
-                document.body.appendChild(overlay);
-            }
+    } catch  {
+        if (typeof WebSocket !== 'undefined') try {
+            ws = new WebSocket(protocol + '://' + hostname + (port ? ':' + port : '') + '/');
+        } catch (err) {
+            // Ignore cloudflare workers error.
+            if (err.message && !err.message.includes('Disallowed operation called within global scope')) console.error(err.message);
         }
-    };
-    if (ws instanceof WebSocket) {
-        ws.onerror = function(e) {
-            if (e.message) console.error(e.message);
+    }
+    if (ws) {
+        // $FlowFixMe
+        ws.onmessage = async function(event /*: {data: string, ...} */ ) {
+            var data /*: HMRMessage */  = JSON.parse(event.data);
+            await handleMessage(data);
         };
-        ws.onclose = function() {
-            console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
-        };
+        if (ws instanceof WebSocket) {
+            ws.onerror = function(e) {
+                if (e.message) console.error(e.message);
+            };
+            ws.onclose = function() {
+                console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
+            };
+        }
+    }
+}
+async function handleMessage(data /*: HMRMessage */ ) {
+    checkedAssets = {} /*: {|[string]: boolean|} */ ;
+    disposedAssets = {} /*: {|[string]: boolean|} */ ;
+    assetsToAccept = [];
+    assetsToDispose = [];
+    bundleNotFound = false;
+    if (data.type === 'reload') fullReload();
+    else if (data.type === 'update') {
+        // Remove error overlay if there is one
+        if (typeof document !== 'undefined') removeErrorOverlay();
+        let assets = data.assets;
+        // Handle HMR Update
+        let handled = assets.every((asset)=>{
+            return asset.type === 'css' || asset.type === 'js' && hmrAcceptCheck(module.bundle.root, asset.id, asset.depsByBundle);
+        });
+        // Dispatch a custom event in case a bundle was not found. This might mean
+        // an asset on the server changed and we should reload the page. This event
+        // gives the client an opportunity to refresh without losing state
+        // (e.g. via React Server Components). If e.preventDefault() is not called,
+        // we will trigger a full page reload.
+        if (handled && bundleNotFound && assets.some((a)=>a.envHash !== HMR_ENV_HASH) && typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') handled = !window.dispatchEvent(new CustomEvent('parcelhmrreload', {
+            cancelable: true
+        }));
+        if (handled) {
+            console.clear();
+            // Dispatch custom event so other runtimes (e.g React Refresh) are aware.
+            if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') window.dispatchEvent(new CustomEvent('parcelhmraccept'));
+            await hmrApplyUpdates(assets);
+            hmrDisposeQueue();
+            // Run accept callbacks. This will also re-execute other disposed assets in topological order.
+            let processedAssets = {};
+            for(let i = 0; i < assetsToAccept.length; i++){
+                let id = assetsToAccept[i][1];
+                if (!processedAssets[id]) {
+                    hmrAccept(assetsToAccept[i][0], id);
+                    processedAssets[id] = true;
+                }
+            }
+        } else fullReload();
+    }
+    if (data.type === 'error') {
+        // Log parcel errors to console
+        for (let ansiDiagnostic of data.diagnostics.ansi){
+            let stack = ansiDiagnostic.codeframe ? ansiDiagnostic.codeframe : ansiDiagnostic.stack;
+            console.error("\uD83D\uDEA8 [parcel]: " + ansiDiagnostic.message + '\n' + stack + '\n\n' + ansiDiagnostic.hints.join('\n'));
+        }
+        if (typeof document !== 'undefined') {
+            // Render the fancy html overlay
+            removeErrorOverlay();
+            var overlay = createErrorOverlay(data.diagnostics.html);
+            // $FlowFixMe
+            document.body.appendChild(overlay);
+        }
     }
 }
 function removeErrorOverlay() {
@@ -322,7 +381,7 @@ function createErrorOverlay(diagnostics) {
     for (let diagnostic of diagnostics){
         let stack = diagnostic.frames.length ? diagnostic.frames.reduce((p, frame)=>{
             return `${p}
-<a href="/__parcel_launch_editor?file=${encodeURIComponent(frame.location)}" style="text-decoration: underline; color: #888" onclick="fetch(this.href); return false">${frame.location}</a>
+<a href="${protocol === 'wss' ? 'https' : 'http'}://${hostname}:${port}/__parcel_launch_editor?file=${encodeURIComponent(frame.location)}" style="text-decoration: underline; color: #888" onclick="fetch(this.href); return false">${frame.location}</a>
 ${frame.code}`;
         }, '') : diagnostic.stack;
         errorHTML += `
@@ -343,8 +402,14 @@ ${frame.code}`;
     return overlay;
 }
 function fullReload() {
-    if ('reload' in location) location.reload();
-    else if (extCtx && extCtx.runtime && extCtx.runtime.reload) extCtx.runtime.reload();
+    if (typeof location !== 'undefined' && 'reload' in location) location.reload();
+    else if (typeof extCtx !== 'undefined' && extCtx && extCtx.runtime && extCtx.runtime.reload) extCtx.runtime.reload();
+    else try {
+        let { workerData, parentPort } = module.bundle.root('node:worker_threads') /*: any*/ ;
+        if (workerData !== null && workerData !== void 0 && workerData.__parcel) parentPort.postMessage('restart');
+    } catch (err) {
+        console.error("[parcel] \u26A0\uFE0F An HMR update was not accepted. Please restart the process.");
+    }
 }
 function getParents(bundle, id) /*: Array<[ParcelRequire, string]> */ {
     var modules = bundle.modules;
@@ -376,7 +441,7 @@ function updateLink(link) {
 }
 var cssTimeout = null;
 function reloadCSS() {
-    if (cssTimeout) return;
+    if (cssTimeout || typeof document === 'undefined') return;
     cssTimeout = setTimeout(function() {
         var links = document.querySelectorAll('link[rel="stylesheet"]');
         for(var i = 0; i < links.length; i++){
@@ -506,6 +571,7 @@ function hmrDelete(bundle, id) {
     } else if (bundle.parent) hmrDelete(bundle.parent, id);
 }
 function hmrAcceptCheck(bundle /*: ParcelRequire */ , id /*: string */ , depsByBundle /*: ?{ [string]: { [string]: string } }*/ ) {
+    checkedAssets = {};
     if (hmrAcceptCheckOne(bundle, id, depsByBundle)) return true;
     // Traverse parents breadth first. All possible ancestries must accept the HMR update, or we'll reload.
     let parents = getParents(module.bundle.root, id);
@@ -515,7 +581,7 @@ function hmrAcceptCheck(bundle /*: ParcelRequire */ , id /*: string */ , depsByB
         let a = hmrAcceptCheckOne(v[0], v[1], null);
         if (a) // If this parent accepts, stop traversing upward, but still consider siblings.
         accepted = true;
-        else {
+        else if (a !== null) {
             // Otherwise, queue the parents in the next level upward.
             let p = getParents(module.bundle.root, v[1]);
             if (p.length === 0) {
@@ -534,23 +600,28 @@ function hmrAcceptCheckOne(bundle /*: ParcelRequire */ , id /*: string */ , deps
     if (depsByBundle && !depsByBundle[bundle.HMR_BUNDLE_ID]) {
         // If we reached the root bundle without finding where the asset should go,
         // there's nothing to do. Mark as "accepted" so we don't reload the page.
-        if (!bundle.parent) return true;
-        return hmrAcceptCheck(bundle.parent, id, depsByBundle);
+        if (!bundle.parent) {
+            bundleNotFound = true;
+            return true;
+        }
+        return hmrAcceptCheckOne(bundle.parent, id, depsByBundle);
     }
-    if (checkedAssets[id]) return true;
+    if (checkedAssets[id]) return null;
     checkedAssets[id] = true;
     var cached = bundle.cache[id];
+    if (!cached) return true;
     assetsToDispose.push([
         bundle,
         id
     ]);
-    if (!cached || cached.hot && cached.hot._acceptCallbacks.length) {
+    if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
         assetsToAccept.push([
             bundle,
             id
         ]);
         return true;
     }
+    return false;
 }
 function hmrDisposeQueue() {
     // Dispose all old assets.
@@ -595,7 +666,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
     }
 }
 
-},{}],"h7u1C":[function(require,module,exports,__globalThis) {
+},{}],"gH3Lb":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _beardColorMask = require("./core/beardColorMask");
 var _beardColorMaskDefault = parcelHelpers.interopDefault(_beardColorMask);
@@ -800,37 +871,7 @@ const makeLuts = async ()=>{
 };
 makeLuts();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./core/beardColorMask":"7g83j"}],"gkKU3":[function(require,module,exports,__globalThis) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, '__esModule', {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"7g83j":[function(require,module,exports,__globalThis) {
+},{"./core/beardColorMask":"fIs6F","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fIs6F":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _pixiJs = require("pixi.js");
@@ -891,7 +932,7 @@ class BeardColorMask {
             const vision = await (0, _tasksVision.FilesetResolver).forVisionTasks("https://mehaircolor.pro/tasks-vision");
             const imageSegmenterOptions = {
                 baseOptions: {
-                    modelAssetPath: "model_with_metadata100.tflite",
+                    modelAssetPath: "https://mehaircolor.pro/beard/model/unet_beard.tflite",
                     delegate: "GPU"
                 },
                 runningMode: "VIDEO",
@@ -1005,7 +1046,7 @@ class BeardColorMask {
         this.setOpacity(0);
         const fps = 20;
         const stretchMaskValue = (x)=>{
-            return x / 200 + 0.5;
+            return 1 - (x / 250 + 0.55);
         };
         const callbackForVideo = (result)=>{
             const imageDataResult = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
@@ -1015,25 +1056,45 @@ class BeardColorMask {
             this.luma = 0;
             let totalMask = 0;
             for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
-                if (mask[i] >= this.transitionThreshold) mask[i] = stretchMaskValue(mask[i]);
+                mask[i] = stretchMaskValue(mask[i]);
+                mask[i] = 1 - mask[i];
+                if (mask[i] < 0.5) mask[i] = 0;
+            }
+            for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
+                //mask[i] = stretchMaskValue(mask[i]);
+                //mask[i] = 1 - mask[i];
+                //console.log("Mask value:", mask[i]);
                 imageDataMask[j] = mask[i] * 255 / 5;
                 imageDataMask[j + 1] = mask[i + 1] * 255 / 5;
                 imageDataMask[j + 2] = mask[i + 2] * 255 / 5;
+                // if (mask[i] >= this.transitionThreshold) {
+                // }
                 let r = imageDataResult[j] / 255;
                 let g = imageDataResult[j + 1] / 255;
                 let b = imageDataResult[j + 2] / 255;
                 let brightness = (r + g + b) / 3;
-                // if (mask[i] >= this.transitionThreshold) {
-                // 	imageDataMask[j] = (mask[i] * 255) * (mask[i] * 255);
-                // 	imageDataMask[j + 1] = (mask[i + 1] * 255) * (mask[i + 1] * 255);
-                // 	imageDataMask[j + 2] = (mask[i + 2] * 255) * (mask[i + 1] * 255);
-                // }
+                if (mask[i] >= this.transitionThreshold) {
+                    imageDataMask[j] = mask[i] * 255 * (mask[i] * 1);
+                    imageDataMask[j + 1] = mask[i + 1] * 255 * (mask[i + 1] * 1);
+                    imageDataMask[j + 2] = mask[i + 2] * 255 * (mask[i + 2] * 1);
+                } else {
+                    imageDataMask[j] = mask[i] * 255 * (mask[i] * 1);
+                    imageDataMask[j + 1] = mask[i + 1] * 255 * (mask[i + 1] * 1);
+                    imageDataMask[j + 2] = mask[i + 2] * 255 * (mask[i + 2] * 1);
+                }
                 if (mask[i] >= 0.8) {
-                    console.log(mask[i]);
+                    //console.log(mask[i]);
                     this.luma += brightness;
                     totalMask += 1;
                 }
             }
+            let min = Infinity;
+            let max = -Infinity;
+            for(let i = 0; i < mask.length; i++){
+                if (mask[i] < min) min = mask[i];
+                if (mask[i] > max) max = mask[i];
+            }
+            console.log("Mask values min/max:", min, max);
             this.luma = this.luma / totalMask;
             const uint8ArrayResult = new Uint8ClampedArray(imageDataMask.buffer);
             const uint8ArrayMask = new Uint8ClampedArray(imageDataResult.buffer);
@@ -1116,7 +1177,7 @@ class BeardColorMask {
 }
 exports.default = BeardColorMask;
 
-},{"pixi.js":"1arn0","@mediapipe/tasks-vision":"e5Mjq","./api":"5JfgJ","./luts":"liagS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1arn0":[function(require,module,exports,__globalThis) {
+},{"pixi.js":"8JifE","@mediapipe/tasks-vision":"bu3NE","./api":"ckcWV","./luts":"cHYW7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8JifE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "filters", ()=>(0, _filtersMjs.filters));
@@ -1177,7 +1238,7 @@ parcelHelpers.exportAll(_textBitmap, exports);
 var _textHtml = require("@pixi/text-html");
 parcelHelpers.exportAll(_textHtml, exports);
 
-},{"@pixi/mixin-cache-as-bitmap":"iGEkd","@pixi/mixin-get-child-by-name":"cDDEq","@pixi/mixin-get-global-position":"ekcNy","./filters.mjs":"6a2eG","@pixi/accessibility":"i4MoV","@pixi/app":"eSe9M","@pixi/assets":"66RXo","@pixi/compressed-textures":"gxYo9","@pixi/core":"f1ycj","@pixi/display":"hCm6V","@pixi/events":"3Nw4W","@pixi/extract":"3B00v","@pixi/filter-alpha":"5iSuX","@pixi/filter-blur":"c67kF","@pixi/filter-color-matrix":"c7u9Y","@pixi/filter-displacement":"2bF3c","@pixi/filter-fxaa":"gi9qB","@pixi/filter-noise":"ejlRD","@pixi/graphics":"kSqI4","@pixi/mesh":"bm7IQ","@pixi/mesh-extras":"e7czw","@pixi/particle-container":"e0YGY","@pixi/prepare":"8BtAq","@pixi/sprite":"cDBeU","@pixi/sprite-animated":"lY2GG","@pixi/sprite-tiling":"3bolC","@pixi/spritesheet":"8GuQ7","@pixi/text":"kpCX2","@pixi/text-bitmap":"6pTsU","@pixi/text-html":"kP8We","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iGEkd":[function(require,module,exports,__globalThis) {
+},{"@pixi/mixin-cache-as-bitmap":"1RC0H","@pixi/mixin-get-child-by-name":"fE74d","@pixi/mixin-get-global-position":"6Uq1N","./filters.mjs":"c3nSd","@pixi/accessibility":"kFP6c","@pixi/app":"4A7DP","@pixi/assets":"chMVG","@pixi/compressed-textures":"3ICOF","@pixi/core":"jFyjp","@pixi/display":"gKqmo","@pixi/events":"b2Pe7","@pixi/extract":"kGzcU","@pixi/filter-alpha":"5zKnW","@pixi/filter-blur":"4fOno","@pixi/filter-color-matrix":"G2Ih4","@pixi/filter-displacement":"2BLju","@pixi/filter-fxaa":"bzVBX","@pixi/filter-noise":"6l8WU","@pixi/graphics":"iTGtL","@pixi/mesh":"1zimi","@pixi/mesh-extras":"jaxfj","@pixi/particle-container":"kjwt4","@pixi/prepare":"aY0RT","@pixi/sprite":"3ke5j","@pixi/sprite-animated":"dYJ6G","@pixi/sprite-tiling":"l5Sr6","@pixi/spritesheet":"5LSCZ","@pixi/text":"gsN2L","@pixi/text-bitmap":"gLS4H","@pixi/text-html":"h49RZ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1RC0H":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CacheData", ()=>CacheData);
@@ -1317,7 +1378,7 @@ Object.defineProperties((0, _display.DisplayObject).prototype, {
     this.cacheAsBitmap = !1, this.destroy(options);
 };
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@pixi/sprite":"cDBeU","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f1ycj":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@pixi/sprite":"3ke5j","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jFyjp":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AbstractMultiResource", ()=>(0, _abstractMultiResourceMjs.AbstractMultiResource));
@@ -1502,9 +1563,9 @@ var _imageBitmapResourceMjs = require("./textures/resources/ImageBitmapResource.
 var _imageResourceMjs = require("./textures/resources/ImageResource.mjs");
 var _svgresourceMjs = require("./textures/resources/SVGResource.mjs");
 var _videoResourceMjs = require("./textures/resources/VideoResource.mjs");
-const VERSION = "7.4.2";
+const VERSION = "7.4.3";
 
-},{"./settings.mjs":"8GvBx","@pixi/color":"4S9LD","@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@pixi/runner":"2XL0D","@pixi/settings":"9EoeN","@pixi/ticker":"6qUlj","@pixi/utils":"70nLd","./autoDetectRenderer.mjs":"25ZJb","./background/BackgroundSystem.mjs":"b7yyw","./batch/BatchDrawCall.mjs":"l6BbA","./batch/BatchGeometry.mjs":"aj9Jc","./batch/BatchRenderer.mjs":"aj8sY","./batch/BatchShaderGenerator.mjs":"bW6pM","./batch/BatchSystem.mjs":"lRo9G","./batch/BatchTextureArray.mjs":"fdiY8","./batch/ObjectRenderer.mjs":"2VJXf","./context/ContextSystem.mjs":"aQx1U","./filters/Filter.mjs":"8ZjGW","./filters/FilterState.mjs":"iFeXR","./filters/FilterSystem.mjs":"jH3p7","./filters/IFilterTarget.mjs":"37zik","./filters/spriteMask/SpriteMaskFilter.mjs":"2mFuH","./fragments/index.mjs":"f5iYX","./framebuffer/Framebuffer.mjs":"2tzoJ","./framebuffer/FramebufferSystem.mjs":"hmxlB","./framebuffer/GLFramebuffer.mjs":"3wrnL","./framebuffer/MultisampleSystem.mjs":"iB57l","./geometry/Attribute.mjs":"cN4vJ","./geometry/Buffer.mjs":"5E2K0","./geometry/BufferSystem.mjs":"egWpx","./geometry/Geometry.mjs":"iwnUt","./geometry/GeometrySystem.mjs":"8XE6b","./geometry/ViewableBuffer.mjs":"4DGMV","./IRenderer.mjs":"f8YSU","./mask/MaskData.mjs":"iojlO","./mask/MaskSystem.mjs":"8lF08","./mask/ScissorSystem.mjs":"6Xxrb","./mask/StencilSystem.mjs":"6fAbY","./plugin/PluginSystem.mjs":"dTrKP","./projection/ProjectionSystem.mjs":"4BQff","./render/ObjectRendererSystem.mjs":"3Cdbn","./Renderer.mjs":"5wZqz","./renderTexture/BaseRenderTexture.mjs":"iF0zm","./renderTexture/GenerateTextureSystem.mjs":"gcgQV","./renderTexture/RenderTexture.mjs":"3ZsJG","./renderTexture/RenderTexturePool.mjs":"19raN","./renderTexture/RenderTextureSystem.mjs":"fR7f6","./shader/GLProgram.mjs":"7Fu1I","./shader/Program.mjs":"c4TEr","./shader/Shader.mjs":"03Fjo","./shader/ShaderSystem.mjs":"jaFgU","./shader/UniformGroup.mjs":"aDDsj","./shader/utils/checkMaxIfStatementsInShader.mjs":"jHpMu","./shader/utils/generateProgram.mjs":"5k67m","./shader/utils/generateUniformBufferSync.mjs":"78ywK","./shader/utils/getTestContext.mjs":"hoCOH","./shader/utils/uniformParsers.mjs":"bNrR5","./shader/utils/unsafeEvalSupported.mjs":"BOI5M","./startup/StartupSystem.mjs":"8Bl31","./state/State.mjs":"bSj8s","./state/StateSystem.mjs":"5mh1F","./system/ISystem.mjs":"60P4q","./systems.mjs":"eXJLX","./textures/BaseTexture.mjs":"1z8cb","./textures/GLTexture.mjs":"ddmgr","./textures/resources/index.mjs":"a9mzI","./textures/Texture.mjs":"hOFPI","./textures/TextureGCSystem.mjs":"43OAw","./textures/TextureMatrix.mjs":"kFIVM","./textures/TextureSystem.mjs":"esP0U","./textures/TextureUvs.mjs":"jgk1X","./transformFeedback/TransformFeedback.mjs":"i90NO","./transformFeedback/TransformFeedbackSystem.mjs":"dLUtJ","./utils/Quad.mjs":"dG7kU","./utils/QuadUv.mjs":"eXKwL","./view/ViewSystem.mjs":"5ataW","./system/SystemManager.mjs":"lqrfn","./textures/resources/BaseImageResource.mjs":"lscQQ","./textures/resources/Resource.mjs":"hTgR6","./textures/resources/AbstractMultiResource.mjs":"jU0Bu","./textures/resources/ArrayResource.mjs":"7rQ0Q","./textures/resources/autoDetectResource.mjs":"gWU82","./textures/resources/BufferResource.mjs":"8E5MR","./textures/resources/CanvasResource.mjs":"2Gi3Y","./textures/resources/CubeResource.mjs":"5mzBN","./textures/resources/ImageBitmapResource.mjs":"6X2SR","./textures/resources/ImageResource.mjs":"7bpMN","./textures/resources/SVGResource.mjs":"i8iuM","./textures/resources/VideoResource.mjs":"glL6b","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8GvBx":[function(require,module,exports,__globalThis) {
+},{"./settings.mjs":"bSZHc","@pixi/color":"cHtpO","@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/math":"1bk72","@pixi/runner":"anFhS","@pixi/settings":"9Bd0L","@pixi/ticker":"jb4KO","@pixi/utils":"qKLFF","./autoDetectRenderer.mjs":"8BSps","./background/BackgroundSystem.mjs":"bakqH","./batch/BatchDrawCall.mjs":"cErcn","./batch/BatchGeometry.mjs":"cXYcc","./batch/BatchRenderer.mjs":"6hL0P","./batch/BatchShaderGenerator.mjs":"d7mS4","./batch/BatchSystem.mjs":"kQpBu","./batch/BatchTextureArray.mjs":"9aDBT","./batch/ObjectRenderer.mjs":"gIZUd","./context/ContextSystem.mjs":"2mWxQ","./filters/Filter.mjs":"e5zMq","./filters/FilterState.mjs":"4J9JJ","./filters/FilterSystem.mjs":"lKn9E","./filters/IFilterTarget.mjs":"dLL1d","./filters/spriteMask/SpriteMaskFilter.mjs":"cXIXA","./fragments/index.mjs":"2NPay","./framebuffer/Framebuffer.mjs":"lVFGA","./framebuffer/FramebufferSystem.mjs":"b7S1g","./framebuffer/GLFramebuffer.mjs":"dyKIK","./framebuffer/MultisampleSystem.mjs":"cvtQX","./geometry/Attribute.mjs":"6Jeh1","./geometry/Buffer.mjs":"44dLm","./geometry/BufferSystem.mjs":"2MIAi","./geometry/Geometry.mjs":"dnBmH","./geometry/GeometrySystem.mjs":"bWBae","./geometry/ViewableBuffer.mjs":"l0gIB","./IRenderer.mjs":"cL3r8","./mask/MaskData.mjs":"fmQwr","./mask/MaskSystem.mjs":"fXsAA","./mask/ScissorSystem.mjs":"fIMdr","./mask/StencilSystem.mjs":"fQ2hP","./plugin/PluginSystem.mjs":"bFPRq","./projection/ProjectionSystem.mjs":"h3clp","./render/ObjectRendererSystem.mjs":"aShk6","./Renderer.mjs":"8BySY","./renderTexture/BaseRenderTexture.mjs":"2KDZv","./renderTexture/GenerateTextureSystem.mjs":"5NO3x","./renderTexture/RenderTexture.mjs":"58MAH","./renderTexture/RenderTexturePool.mjs":"l2YRp","./renderTexture/RenderTextureSystem.mjs":"9XLPO","./shader/GLProgram.mjs":"bro7e","./shader/Program.mjs":"hhSGo","./shader/Shader.mjs":"dD3c3","./shader/ShaderSystem.mjs":"3p6Th","./shader/UniformGroup.mjs":"j2NFe","./shader/utils/checkMaxIfStatementsInShader.mjs":"7pFvN","./shader/utils/generateProgram.mjs":"fD1VM","./shader/utils/generateUniformBufferSync.mjs":"geXcl","./shader/utils/getTestContext.mjs":"74sJB","./shader/utils/uniformParsers.mjs":"9wxhh","./shader/utils/unsafeEvalSupported.mjs":"hYMQZ","./startup/StartupSystem.mjs":"iVAPu","./state/State.mjs":"5KjBt","./state/StateSystem.mjs":"48QKv","./system/ISystem.mjs":"l9ALT","./systems.mjs":"8jTrT","./textures/BaseTexture.mjs":"lm1IA","./textures/GLTexture.mjs":"4oUOC","./textures/resources/index.mjs":"lIx92","./textures/Texture.mjs":"408Pe","./textures/TextureGCSystem.mjs":"iOznv","./textures/TextureMatrix.mjs":"kt55z","./textures/TextureSystem.mjs":"3Vjjr","./textures/TextureUvs.mjs":"8DaUV","./transformFeedback/TransformFeedback.mjs":"3lnuZ","./transformFeedback/TransformFeedbackSystem.mjs":"fLAXB","./utils/Quad.mjs":"6S3S2","./utils/QuadUv.mjs":"gbUje","./view/ViewSystem.mjs":"1fRaX","./system/SystemManager.mjs":"256g0","./textures/resources/BaseImageResource.mjs":"KbakW","./textures/resources/Resource.mjs":"dnqd9","./textures/resources/AbstractMultiResource.mjs":"bl9sy","./textures/resources/ArrayResource.mjs":"jY3hH","./textures/resources/autoDetectResource.mjs":"h2612","./textures/resources/BufferResource.mjs":"4X9NQ","./textures/resources/CanvasResource.mjs":"i6ids","./textures/resources/CubeResource.mjs":"2kliP","./textures/resources/ImageBitmapResource.mjs":"92QvZ","./textures/resources/ImageResource.mjs":"8omzs","./textures/resources/SVGResource.mjs":"94ErK","./textures/resources/VideoResource.mjs":"7raVH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bSZHc":[function(require,module,exports,__globalThis) {
 var _constants = require("@pixi/constants");
 var _settings = require("@pixi/settings");
 var _utils = require("@pixi/utils");
@@ -1751,7 +1812,7 @@ Object.defineProperties((0, _settings.settings), {
     }
 });
 
-},{"@pixi/constants":"3IyrP","@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./batch/BatchRenderer.mjs":"aj8sY","./filters/Filter.mjs":"8ZjGW","./shader/Program.mjs":"c4TEr","./systems.mjs":"eXJLX","./textures/BaseTexture.mjs":"1z8cb","./context/ContextSystem.mjs":"aQx1U","./background/BackgroundSystem.mjs":"b7yyw","./view/ViewSystem.mjs":"5ataW","./startup/StartupSystem.mjs":"8Bl31","./textures/TextureGCSystem.mjs":"43OAw"}],"3IyrP":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./batch/BatchRenderer.mjs":"6hL0P","./filters/Filter.mjs":"e5zMq","./shader/Program.mjs":"hhSGo","./systems.mjs":"8jTrT","./textures/BaseTexture.mjs":"lm1IA","./context/ContextSystem.mjs":"2mWxQ","./background/BackgroundSystem.mjs":"bakqH","./view/ViewSystem.mjs":"1fRaX","./startup/StartupSystem.mjs":"iVAPu","./textures/TextureGCSystem.mjs":"iOznv"}],"6KFQA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ALPHA_MODES", ()=>ALPHA_MODES);
@@ -1776,7 +1837,37 @@ parcelHelpers.export(exports, "TYPES", ()=>TYPES);
 parcelHelpers.export(exports, "WRAP_MODES", ()=>WRAP_MODES);
 var ENV = /* @__PURE__ */ ((ENV2)=>(ENV2[ENV2.WEBGL_LEGACY = 0] = "WEBGL_LEGACY", ENV2[ENV2.WEBGL = 1] = "WEBGL", ENV2[ENV2.WEBGL2 = 2] = "WEBGL2", ENV2))(ENV || {}), RENDERER_TYPE = /* @__PURE__ */ ((RENDERER_TYPE2)=>(RENDERER_TYPE2[RENDERER_TYPE2.UNKNOWN = 0] = "UNKNOWN", RENDERER_TYPE2[RENDERER_TYPE2.WEBGL = 1] = "WEBGL", RENDERER_TYPE2[RENDERER_TYPE2.CANVAS = 2] = "CANVAS", RENDERER_TYPE2))(RENDERER_TYPE || {}), BUFFER_BITS = /* @__PURE__ */ ((BUFFER_BITS2)=>(BUFFER_BITS2[BUFFER_BITS2.COLOR = 16384] = "COLOR", BUFFER_BITS2[BUFFER_BITS2.DEPTH = 256] = "DEPTH", BUFFER_BITS2[BUFFER_BITS2.STENCIL = 1024] = "STENCIL", BUFFER_BITS2))(BUFFER_BITS || {}), BLEND_MODES = /* @__PURE__ */ ((BLEND_MODES2)=>(BLEND_MODES2[BLEND_MODES2.NORMAL = 0] = "NORMAL", BLEND_MODES2[BLEND_MODES2.ADD = 1] = "ADD", BLEND_MODES2[BLEND_MODES2.MULTIPLY = 2] = "MULTIPLY", BLEND_MODES2[BLEND_MODES2.SCREEN = 3] = "SCREEN", BLEND_MODES2[BLEND_MODES2.OVERLAY = 4] = "OVERLAY", BLEND_MODES2[BLEND_MODES2.DARKEN = 5] = "DARKEN", BLEND_MODES2[BLEND_MODES2.LIGHTEN = 6] = "LIGHTEN", BLEND_MODES2[BLEND_MODES2.COLOR_DODGE = 7] = "COLOR_DODGE", BLEND_MODES2[BLEND_MODES2.COLOR_BURN = 8] = "COLOR_BURN", BLEND_MODES2[BLEND_MODES2.HARD_LIGHT = 9] = "HARD_LIGHT", BLEND_MODES2[BLEND_MODES2.SOFT_LIGHT = 10] = "SOFT_LIGHT", BLEND_MODES2[BLEND_MODES2.DIFFERENCE = 11] = "DIFFERENCE", BLEND_MODES2[BLEND_MODES2.EXCLUSION = 12] = "EXCLUSION", BLEND_MODES2[BLEND_MODES2.HUE = 13] = "HUE", BLEND_MODES2[BLEND_MODES2.SATURATION = 14] = "SATURATION", BLEND_MODES2[BLEND_MODES2.COLOR = 15] = "COLOR", BLEND_MODES2[BLEND_MODES2.LUMINOSITY = 16] = "LUMINOSITY", BLEND_MODES2[BLEND_MODES2.NORMAL_NPM = 17] = "NORMAL_NPM", BLEND_MODES2[BLEND_MODES2.ADD_NPM = 18] = "ADD_NPM", BLEND_MODES2[BLEND_MODES2.SCREEN_NPM = 19] = "SCREEN_NPM", BLEND_MODES2[BLEND_MODES2.NONE = 20] = "NONE", BLEND_MODES2[BLEND_MODES2.SRC_OVER = 0] = "SRC_OVER", BLEND_MODES2[BLEND_MODES2.SRC_IN = 21] = "SRC_IN", BLEND_MODES2[BLEND_MODES2.SRC_OUT = 22] = "SRC_OUT", BLEND_MODES2[BLEND_MODES2.SRC_ATOP = 23] = "SRC_ATOP", BLEND_MODES2[BLEND_MODES2.DST_OVER = 24] = "DST_OVER", BLEND_MODES2[BLEND_MODES2.DST_IN = 25] = "DST_IN", BLEND_MODES2[BLEND_MODES2.DST_OUT = 26] = "DST_OUT", BLEND_MODES2[BLEND_MODES2.DST_ATOP = 27] = "DST_ATOP", BLEND_MODES2[BLEND_MODES2.ERASE = 26] = "ERASE", BLEND_MODES2[BLEND_MODES2.SUBTRACT = 28] = "SUBTRACT", BLEND_MODES2[BLEND_MODES2.XOR = 29] = "XOR", BLEND_MODES2))(BLEND_MODES || {}), DRAW_MODES = /* @__PURE__ */ ((DRAW_MODES2)=>(DRAW_MODES2[DRAW_MODES2.POINTS = 0] = "POINTS", DRAW_MODES2[DRAW_MODES2.LINES = 1] = "LINES", DRAW_MODES2[DRAW_MODES2.LINE_LOOP = 2] = "LINE_LOOP", DRAW_MODES2[DRAW_MODES2.LINE_STRIP = 3] = "LINE_STRIP", DRAW_MODES2[DRAW_MODES2.TRIANGLES = 4] = "TRIANGLES", DRAW_MODES2[DRAW_MODES2.TRIANGLE_STRIP = 5] = "TRIANGLE_STRIP", DRAW_MODES2[DRAW_MODES2.TRIANGLE_FAN = 6] = "TRIANGLE_FAN", DRAW_MODES2))(DRAW_MODES || {}), FORMATS = /* @__PURE__ */ ((FORMATS2)=>(FORMATS2[FORMATS2.RGBA = 6408] = "RGBA", FORMATS2[FORMATS2.RGB = 6407] = "RGB", FORMATS2[FORMATS2.RG = 33319] = "RG", FORMATS2[FORMATS2.RED = 6403] = "RED", FORMATS2[FORMATS2.RGBA_INTEGER = 36249] = "RGBA_INTEGER", FORMATS2[FORMATS2.RGB_INTEGER = 36248] = "RGB_INTEGER", FORMATS2[FORMATS2.RG_INTEGER = 33320] = "RG_INTEGER", FORMATS2[FORMATS2.RED_INTEGER = 36244] = "RED_INTEGER", FORMATS2[FORMATS2.ALPHA = 6406] = "ALPHA", FORMATS2[FORMATS2.LUMINANCE = 6409] = "LUMINANCE", FORMATS2[FORMATS2.LUMINANCE_ALPHA = 6410] = "LUMINANCE_ALPHA", FORMATS2[FORMATS2.DEPTH_COMPONENT = 6402] = "DEPTH_COMPONENT", FORMATS2[FORMATS2.DEPTH_STENCIL = 34041] = "DEPTH_STENCIL", FORMATS2))(FORMATS || {}), TARGETS = /* @__PURE__ */ ((TARGETS2)=>(TARGETS2[TARGETS2.TEXTURE_2D = 3553] = "TEXTURE_2D", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP = 34067] = "TEXTURE_CUBE_MAP", TARGETS2[TARGETS2.TEXTURE_2D_ARRAY = 35866] = "TEXTURE_2D_ARRAY", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_POSITIVE_X = 34069] = "TEXTURE_CUBE_MAP_POSITIVE_X", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_NEGATIVE_X = 34070] = "TEXTURE_CUBE_MAP_NEGATIVE_X", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_POSITIVE_Y = 34071] = "TEXTURE_CUBE_MAP_POSITIVE_Y", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_NEGATIVE_Y = 34072] = "TEXTURE_CUBE_MAP_NEGATIVE_Y", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_POSITIVE_Z = 34073] = "TEXTURE_CUBE_MAP_POSITIVE_Z", TARGETS2[TARGETS2.TEXTURE_CUBE_MAP_NEGATIVE_Z = 34074] = "TEXTURE_CUBE_MAP_NEGATIVE_Z", TARGETS2))(TARGETS || {}), TYPES = /* @__PURE__ */ ((TYPES2)=>(TYPES2[TYPES2.UNSIGNED_BYTE = 5121] = "UNSIGNED_BYTE", TYPES2[TYPES2.UNSIGNED_SHORT = 5123] = "UNSIGNED_SHORT", TYPES2[TYPES2.UNSIGNED_SHORT_5_6_5 = 33635] = "UNSIGNED_SHORT_5_6_5", TYPES2[TYPES2.UNSIGNED_SHORT_4_4_4_4 = 32819] = "UNSIGNED_SHORT_4_4_4_4", TYPES2[TYPES2.UNSIGNED_SHORT_5_5_5_1 = 32820] = "UNSIGNED_SHORT_5_5_5_1", TYPES2[TYPES2.UNSIGNED_INT = 5125] = "UNSIGNED_INT", TYPES2[TYPES2.UNSIGNED_INT_10F_11F_11F_REV = 35899] = "UNSIGNED_INT_10F_11F_11F_REV", TYPES2[TYPES2.UNSIGNED_INT_2_10_10_10_REV = 33640] = "UNSIGNED_INT_2_10_10_10_REV", TYPES2[TYPES2.UNSIGNED_INT_24_8 = 34042] = "UNSIGNED_INT_24_8", TYPES2[TYPES2.UNSIGNED_INT_5_9_9_9_REV = 35902] = "UNSIGNED_INT_5_9_9_9_REV", TYPES2[TYPES2.BYTE = 5120] = "BYTE", TYPES2[TYPES2.SHORT = 5122] = "SHORT", TYPES2[TYPES2.INT = 5124] = "INT", TYPES2[TYPES2.FLOAT = 5126] = "FLOAT", TYPES2[TYPES2.FLOAT_32_UNSIGNED_INT_24_8_REV = 36269] = "FLOAT_32_UNSIGNED_INT_24_8_REV", TYPES2[TYPES2.HALF_FLOAT = 36193] = "HALF_FLOAT", TYPES2))(TYPES || {}), SAMPLER_TYPES = /* @__PURE__ */ ((SAMPLER_TYPES2)=>(SAMPLER_TYPES2[SAMPLER_TYPES2.FLOAT = 0] = "FLOAT", SAMPLER_TYPES2[SAMPLER_TYPES2.INT = 1] = "INT", SAMPLER_TYPES2[SAMPLER_TYPES2.UINT = 2] = "UINT", SAMPLER_TYPES2))(SAMPLER_TYPES || {}), SCALE_MODES = /* @__PURE__ */ ((SCALE_MODES2)=>(SCALE_MODES2[SCALE_MODES2.NEAREST = 0] = "NEAREST", SCALE_MODES2[SCALE_MODES2.LINEAR = 1] = "LINEAR", SCALE_MODES2))(SCALE_MODES || {}), WRAP_MODES = /* @__PURE__ */ ((WRAP_MODES2)=>(WRAP_MODES2[WRAP_MODES2.CLAMP = 33071] = "CLAMP", WRAP_MODES2[WRAP_MODES2.REPEAT = 10497] = "REPEAT", WRAP_MODES2[WRAP_MODES2.MIRRORED_REPEAT = 33648] = "MIRRORED_REPEAT", WRAP_MODES2))(WRAP_MODES || {}), MIPMAP_MODES = /* @__PURE__ */ ((MIPMAP_MODES2)=>(MIPMAP_MODES2[MIPMAP_MODES2.OFF = 0] = "OFF", MIPMAP_MODES2[MIPMAP_MODES2.POW2 = 1] = "POW2", MIPMAP_MODES2[MIPMAP_MODES2.ON = 2] = "ON", MIPMAP_MODES2[MIPMAP_MODES2.ON_MANUAL = 3] = "ON_MANUAL", MIPMAP_MODES2))(MIPMAP_MODES || {}), ALPHA_MODES = /* @__PURE__ */ ((ALPHA_MODES2)=>(ALPHA_MODES2[ALPHA_MODES2.NPM = 0] = "NPM", ALPHA_MODES2[ALPHA_MODES2.UNPACK = 1] = "UNPACK", ALPHA_MODES2[ALPHA_MODES2.PMA = 2] = "PMA", ALPHA_MODES2[ALPHA_MODES2.NO_PREMULTIPLIED_ALPHA = 0] = "NO_PREMULTIPLIED_ALPHA", ALPHA_MODES2[ALPHA_MODES2.PREMULTIPLY_ON_UPLOAD = 1] = "PREMULTIPLY_ON_UPLOAD", ALPHA_MODES2[ALPHA_MODES2.PREMULTIPLIED_ALPHA = 2] = "PREMULTIPLIED_ALPHA", ALPHA_MODES2))(ALPHA_MODES || {}), CLEAR_MODES = /* @__PURE__ */ ((CLEAR_MODES2)=>(CLEAR_MODES2[CLEAR_MODES2.NO = 0] = "NO", CLEAR_MODES2[CLEAR_MODES2.YES = 1] = "YES", CLEAR_MODES2[CLEAR_MODES2.AUTO = 2] = "AUTO", CLEAR_MODES2[CLEAR_MODES2.BLEND = 0] = "BLEND", CLEAR_MODES2[CLEAR_MODES2.CLEAR = 1] = "CLEAR", CLEAR_MODES2[CLEAR_MODES2.BLIT = 2] = "BLIT", CLEAR_MODES2))(CLEAR_MODES || {}), GC_MODES = /* @__PURE__ */ ((GC_MODES2)=>(GC_MODES2[GC_MODES2.AUTO = 0] = "AUTO", GC_MODES2[GC_MODES2.MANUAL = 1] = "MANUAL", GC_MODES2))(GC_MODES || {}), PRECISION = /* @__PURE__ */ ((PRECISION2)=>(PRECISION2.LOW = "lowp", PRECISION2.MEDIUM = "mediump", PRECISION2.HIGH = "highp", PRECISION2))(PRECISION || {}), MASK_TYPES = /* @__PURE__ */ ((MASK_TYPES2)=>(MASK_TYPES2[MASK_TYPES2.NONE = 0] = "NONE", MASK_TYPES2[MASK_TYPES2.SCISSOR = 1] = "SCISSOR", MASK_TYPES2[MASK_TYPES2.STENCIL = 2] = "STENCIL", MASK_TYPES2[MASK_TYPES2.SPRITE = 3] = "SPRITE", MASK_TYPES2[MASK_TYPES2.COLOR = 4] = "COLOR", MASK_TYPES2))(MASK_TYPES || {}), COLOR_MASK_BITS = /* @__PURE__ */ ((COLOR_MASK_BITS2)=>(COLOR_MASK_BITS2[COLOR_MASK_BITS2.RED = 1] = "RED", COLOR_MASK_BITS2[COLOR_MASK_BITS2.GREEN = 2] = "GREEN", COLOR_MASK_BITS2[COLOR_MASK_BITS2.BLUE = 4] = "BLUE", COLOR_MASK_BITS2[COLOR_MASK_BITS2.ALPHA = 8] = "ALPHA", COLOR_MASK_BITS2))(COLOR_MASK_BITS || {}), MSAA_QUALITY = /* @__PURE__ */ ((MSAA_QUALITY2)=>(MSAA_QUALITY2[MSAA_QUALITY2.NONE = 0] = "NONE", MSAA_QUALITY2[MSAA_QUALITY2.LOW = 2] = "LOW", MSAA_QUALITY2[MSAA_QUALITY2.MEDIUM = 4] = "MEDIUM", MSAA_QUALITY2[MSAA_QUALITY2.HIGH = 8] = "HIGH", MSAA_QUALITY2))(MSAA_QUALITY || {}), BUFFER_TYPE = /* @__PURE__ */ ((BUFFER_TYPE2)=>(BUFFER_TYPE2[BUFFER_TYPE2.ELEMENT_ARRAY_BUFFER = 34963] = "ELEMENT_ARRAY_BUFFER", BUFFER_TYPE2[BUFFER_TYPE2.ARRAY_BUFFER = 34962] = "ARRAY_BUFFER", BUFFER_TYPE2[BUFFER_TYPE2.UNIFORM_BUFFER = 35345] = "UNIFORM_BUFFER", BUFFER_TYPE2))(BUFFER_TYPE || {});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9EoeN":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jnFvT":[function(require,module,exports,__globalThis) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, '__esModule', {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"9Bd0L":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BrowserAdapter", ()=>(0, _adapterMjs.BrowserAdapter));
@@ -1788,7 +1879,7 @@ var _icanvasRenderingContext2DMjs = require("./ICanvasRenderingContext2D.mjs");
 var _settingsMjs = require("./settings.mjs");
 var _isMobileMjs = require("./utils/isMobile.mjs");
 
-},{"./adapter.mjs":"lousi","./ICanvas.mjs":"lTfzg","./ICanvasRenderingContext2D.mjs":"eYrMA","./settings.mjs":"ulr0L","./utils/isMobile.mjs":"99cQY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lousi":[function(require,module,exports,__globalThis) {
+},{"./adapter.mjs":"bbHbJ","./ICanvas.mjs":"hw8sB","./ICanvasRenderingContext2D.mjs":"4GFir","./settings.mjs":"99PWl","./utils/isMobile.mjs":"cQcUZ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bbHbJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BrowserAdapter", ()=>BrowserAdapter);
@@ -1811,11 +1902,11 @@ const BrowserAdapter = {
     parseXML: (xml)=>new DOMParser().parseFromString(xml, "text/xml")
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lTfzg":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hw8sB":[function(require,module,exports,__globalThis) {
 
-},{}],"eYrMA":[function(require,module,exports,__globalThis) {
+},{}],"4GFir":[function(require,module,exports,__globalThis) {
 
-},{}],"ulr0L":[function(require,module,exports,__globalThis) {
+},{}],"99PWl":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "settings", ()=>settings);
@@ -1860,7 +1951,7 @@ const settings = {
    */ ROUND_PIXELS: !1
 };
 
-},{"./adapter.mjs":"lousi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"99cQY":[function(require,module,exports,__globalThis) {
+},{"./adapter.mjs":"bbHbJ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cQcUZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "isMobile", ()=>isMobile);
@@ -1868,7 +1959,7 @@ var _ismobilejs = require("ismobilejs");
 var _ismobilejsDefault = parcelHelpers.interopDefault(_ismobilejs);
 const isMobileCall = (0, _ismobilejsDefault.default).default ?? (0, _ismobilejsDefault.default), isMobile = isMobileCall(globalThis.navigator);
 
-},{"ismobilejs":"49iGQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"49iGQ":[function(require,module,exports,__globalThis) {
+},{"ismobilejs":"dtueL","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dtueL":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>(0, _isMobileDefault.default));
@@ -1876,7 +1967,7 @@ var _isMobile = require("./isMobile");
 parcelHelpers.exportAll(_isMobile, exports);
 var _isMobileDefault = parcelHelpers.interopDefault(_isMobile);
 
-},{"./isMobile":"2XhM7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2XhM7":[function(require,module,exports,__globalThis) {
+},{"./isMobile":"bF0Vh","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bF0Vh":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>isMobile);
@@ -1967,7 +2058,7 @@ function isMobile(param) {
     return result;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"70nLd":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"qKLFF":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BaseTextureCache", ()=>(0, _cachesMjs.BaseTextureCache));
@@ -2043,7 +2134,7 @@ var _determineCrossOriginMjs = require("./network/determineCrossOrigin.mjs");
 var _getResolutionOfUrlMjs = require("./network/getResolutionOfUrl.mjs");
 var _indexMjs = require("./types/index.mjs");
 
-},{"./settings.mjs":"hHS08","@pixi/settings":"9EoeN","eventemitter3":"3fnfh","earcut":"dBYod","./url.mjs":"e21Zq","./path.mjs":"5jn2x","./browser/detectVideoAlphaMode.mjs":"fgHDw","./browser/hello.mjs":"a75tG","./browser/isWebGLSupported.mjs":"6PK7h","./color/hex.mjs":"f6I9E","./color/premultiply.mjs":"5jEMB","./const.mjs":"8PoC5","./data/createIndicesForQuads.mjs":"erS8n","./data/getBufferType.mjs":"bKIvr","./data/interleaveTypedArrays.mjs":"bw7BX","./data/pow2.mjs":"76XG0","./data/removeItems.mjs":"kj3MD","./data/sign.mjs":"dWm2H","./data/uid.mjs":"gkiXA","./logging/deprecation.mjs":"dnMxg","./media/BoundingBox.mjs":"7aGv3","./media/caches.mjs":"bu951","./media/CanvasRenderTarget.mjs":"9MEr7","./media/getCanvasBoundingBox.mjs":"9GHfW","./media/trimCanvas.mjs":"8zake","./network/decomposeDataUri.mjs":"3zgSb","./network/determineCrossOrigin.mjs":"b4grA","./network/getResolutionOfUrl.mjs":"ezFi7","./types/index.mjs":"im5tR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hHS08":[function(require,module,exports,__globalThis) {
+},{"./settings.mjs":"eAFtm","@pixi/settings":"9Bd0L","eventemitter3":"8mZjp","earcut":"4F20W","./url.mjs":"9m1IR","./path.mjs":"iy7cu","./browser/detectVideoAlphaMode.mjs":"6vOPz","./browser/hello.mjs":"1eZj9","./browser/isWebGLSupported.mjs":"fCb6B","./color/hex.mjs":"k18Z4","./color/premultiply.mjs":"dPQWq","./const.mjs":"5gpML","./data/createIndicesForQuads.mjs":"dcbKJ","./data/getBufferType.mjs":"4huRB","./data/interleaveTypedArrays.mjs":"fGW7P","./data/pow2.mjs":"c0NwE","./data/removeItems.mjs":"475K1","./data/sign.mjs":"emTY6","./data/uid.mjs":"eNQNm","./logging/deprecation.mjs":"h48LV","./media/BoundingBox.mjs":"eQSDd","./media/caches.mjs":"jAmtX","./media/CanvasRenderTarget.mjs":"jkEIr","./media/getCanvasBoundingBox.mjs":"geenA","./media/trimCanvas.mjs":"e1Kn3","./network/decomposeDataUri.mjs":"1PkIg","./network/determineCrossOrigin.mjs":"8dAER","./network/getResolutionOfUrl.mjs":"4uRQG","./types/index.mjs":"5RVUa","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eAFtm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "settings", ()=>(0, _settings.settings));
@@ -2051,7 +2142,7 @@ var _settings = require("@pixi/settings");
 (0, _settings.settings).RETINA_PREFIX = /@([0-9\.]+)x/;
 (0, _settings.settings).FAIL_IF_MAJOR_PERFORMANCE_CAVEAT = !1;
 
-},{"@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3fnfh":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8mZjp":[function(require,module,exports,__globalThis) {
 'use strict';
 var has = Object.prototype.hasOwnProperty, prefix = '~';
 /**
@@ -2306,7 +2397,7 @@ EventEmitter.prefixed = prefix;
 EventEmitter.EventEmitter = EventEmitter;
 module.exports = EventEmitter;
 
-},{}],"dBYod":[function(require,module,exports,__globalThis) {
+},{}],"4F20W":[function(require,module,exports,__globalThis) {
 'use strict';
 module.exports = earcut;
 module.exports.default = earcut;
@@ -2781,7 +2872,7 @@ earcut.flatten = function(data) {
     return result;
 };
 
-},{}],"e21Zq":[function(require,module,exports,__globalThis) {
+},{}],"9m1IR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "url", ()=>url);
@@ -2805,7 +2896,7 @@ const url = {
     }
 };
 
-},{"url":"7qjc7","./logging/deprecation.mjs":"dnMxg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7qjc7":[function(require,module,exports,__globalThis) {
+},{"url":"giopg","./logging/deprecation.mjs":"h48LV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"giopg":[function(require,module,exports,__globalThis) {
 /*
  * Copyright Joyent, Inc. and other Node contributors.
  *
@@ -3407,8 +3498,8 @@ exports.resolveObject = urlResolveObject;
 exports.format = urlFormat;
 exports.Url = Url;
 
-},{"50de7006740ce793":"duSuz","6724c84b9b69726b":"kW4GH"}],"duSuz":[function(require,module,exports,__globalThis) {
-var global = arguments[3];
+},{"50de7006740ce793":"ivIvR","6724c84b9b69726b":"MPBMJ"}],"ivIvR":[function(require,module,exports,__globalThis) {
+/*! https://mths.be/punycode v1.4.1 by @mathias */ var global = arguments[3];
 (function(root) {
     /** Detect free variables */ var freeExports = exports && !exports.nodeType && exports;
     var freeModule = module && !module.nodeType && module;
@@ -3736,22 +3827,22 @@ var global = arguments[3];
     root.punycode = punycode;
 })(this);
 
-},{}],"kW4GH":[function(require,module,exports,__globalThis) {
+},{}],"MPBMJ":[function(require,module,exports,__globalThis) {
 'use strict';
-var stringify = require("a472ccaa2f2351e9");
-var parse = require("7ffa4249597bf32b");
-var formats = require("454df9476704f887");
+var stringify = require("c3568638dc1fef6f");
+var parse = require("9baafedc2c83a9bb");
+var formats = require("a1a544454aaf321f");
 module.exports = {
     formats: formats,
     parse: parse,
     stringify: stringify
 };
 
-},{"a472ccaa2f2351e9":"aJuQi","7ffa4249597bf32b":"fSZqi","454df9476704f887":"d7Ogf"}],"aJuQi":[function(require,module,exports,__globalThis) {
+},{"c3568638dc1fef6f":"1fogp","9baafedc2c83a9bb":"gsmYc","a1a544454aaf321f":"7kJV6"}],"1fogp":[function(require,module,exports,__globalThis) {
 'use strict';
-var getSideChannel = require("6246bbb805756d41");
-var utils = require("44263cc7b702ebf");
-var formats = require("929f8531a94a537c");
+var getSideChannel = require("e1040401e4595589");
+var utils = require("d8100ade97505fff");
+var formats = require("c8cdd2cc980dea62");
 var has = Object.prototype.hasOwnProperty;
 var arrayPrefixGenerators = {
     brackets: function brackets(prefix) {
@@ -3949,7 +4040,7 @@ module.exports = function(object, opts) {
     return joined.length > 0 ? prefix + joined : '';
 };
 
-},{"6246bbb805756d41":"1zs9d","44263cc7b702ebf":"chmkc","929f8531a94a537c":"d7Ogf"}],"1zs9d":[function(require,module,exports,__globalThis) {
+},{"e1040401e4595589":"eaiEg","d8100ade97505fff":"S8Q9P","c8cdd2cc980dea62":"7kJV6"}],"eaiEg":[function(require,module,exports,__globalThis) {
 'use strict';
 var $TypeError = require("1d3f7a3f029b095e");
 var inspect = require("9f4f5a92d8c6543");
@@ -3981,11 +4072,11 @@ var makeChannel = getSideChannelWeakMap || getSideChannelMap || getSideChannelLi
     return channel;
 };
 
-},{"1d3f7a3f029b095e":"6oWLR","9f4f5a92d8c6543":"kS3SE","5a169a7b609983a5":"1QabC","e26eec6007592cd":"fJI6C","a282926cb8532787":"nfsLc"}],"6oWLR":[function(require,module,exports,__globalThis) {
+},{"1d3f7a3f029b095e":"izd0l","9f4f5a92d8c6543":"aklQB","5a169a7b609983a5":"cg5uH","e26eec6007592cd":"3M1ai","a282926cb8532787":"cJseI"}],"izd0l":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./type')} */ module.exports = TypeError;
 
-},{}],"kS3SE":[function(require,module,exports,__globalThis) {
+},{}],"aklQB":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var hasMap = typeof Map === 'function' && Map.prototype;
 var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, 'size') : null;
@@ -4174,26 +4265,29 @@ function wrapQuotes(s, defaultStyle, opts) {
 function quote(s) {
     return $replace.call(String(s), /"/g, '&quot;');
 }
+function canTrustToString(obj) {
+    return !toStringTag || !(typeof obj === 'object' && (toStringTag in obj || typeof obj[toStringTag] !== 'undefined'));
+}
 function isArray(obj) {
-    return toStr(obj) === '[object Array]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object Array]' && canTrustToString(obj);
 }
 function isDate(obj) {
-    return toStr(obj) === '[object Date]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object Date]' && canTrustToString(obj);
 }
 function isRegExp(obj) {
-    return toStr(obj) === '[object RegExp]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object RegExp]' && canTrustToString(obj);
 }
 function isError(obj) {
-    return toStr(obj) === '[object Error]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object Error]' && canTrustToString(obj);
 }
 function isString(obj) {
-    return toStr(obj) === '[object String]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object String]' && canTrustToString(obj);
 }
 function isNumber(obj) {
-    return toStr(obj) === '[object Number]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object Number]' && canTrustToString(obj);
 }
 function isBoolean(obj) {
-    return toStr(obj) === '[object Boolean]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj));
+    return toStr(obj) === '[object Boolean]' && canTrustToString(obj);
 }
 // Symbol and BigInt do have Symbol.toStringTag by spec, so that can't be used to eliminate false positives
 function isSymbol(obj) {
@@ -4384,10 +4478,10 @@ function arrObjKeys(obj, inspect) {
     return xs;
 }
 
-},{"faefcb1694f2ad90":"jhUEF"}],"jhUEF":[function(require,module,exports,__globalThis) {
+},{"faefcb1694f2ad90":"eoH60"}],"eoH60":[function(require,module,exports,__globalThis) {
 "use strict";
 
-},{}],"1QabC":[function(require,module,exports,__globalThis) {
+},{}],"cg5uH":[function(require,module,exports,__globalThis) {
 'use strict';
 var inspect = require("c82a24db877dbdb5");
 var $TypeError = require("7492c0a54ac02a69");
@@ -4465,7 +4559,7 @@ var listDelete = function(objects, key) {
     return channel;
 };
 
-},{"c82a24db877dbdb5":"kS3SE","7492c0a54ac02a69":"6oWLR"}],"fJI6C":[function(require,module,exports,__globalThis) {
+},{"c82a24db877dbdb5":"aklQB","7492c0a54ac02a69":"izd0l"}],"3M1ai":[function(require,module,exports,__globalThis) {
 'use strict';
 var GetIntrinsic = require("a1eef823705394c3");
 var callBound = require("5e33adfb500d5ba2");
@@ -4508,7 +4602,7 @@ var $Map = GetIntrinsic('%Map%', true);
     return channel;
 };
 
-},{"a1eef823705394c3":"dZb05","5e33adfb500d5ba2":"lAcs1","2202d24f09ef0ac8":"kS3SE","2772cd2df080356f":"6oWLR"}],"dZb05":[function(require,module,exports,__globalThis) {
+},{"a1eef823705394c3":"dq2j0","5e33adfb500d5ba2":"bg5Sv","2202d24f09ef0ac8":"aklQB","2772cd2df080356f":"izd0l"}],"dq2j0":[function(require,module,exports,__globalThis) {
 'use strict';
 var undefined1;
 var $Object = require("2664640474097f21");
@@ -4524,6 +4618,8 @@ var floor = require("d01cf04757c5320b");
 var max = require("a2657a92cb7dae87");
 var min = require("6367c0241be1f01");
 var pow = require("9bee48b90a8c96d");
+var round = require("b5cc049891156ba3");
+var sign = require("8d956274d8c0407e");
 var $Function = Function;
 // eslint-disable-next-line consistent-return
 var getEvalledConstructor = function(expressionSyntax) {
@@ -4551,8 +4647,9 @@ var ThrowTypeError = $gOPD ? function() {
     }
 }() : throwTypeError;
 var hasSymbols = require("1f00f712d594ccf")();
-var getDunderProto = require("c7397f86a826071e");
-var getProto = typeof Reflect === 'function' && Reflect.getPrototypeOf || $Object.getPrototypeOf || getDunderProto;
+var getProto = require("89cf41d095fe5a0a");
+var $ObjectGPO = require("a5e781ace21741c8");
+var $ReflectGPO = require("db08b186beb7f382");
 var $apply = require("213af9137f841281");
 var $call = require("56d5af438508fcc0");
 var needsEval = {};
@@ -4582,6 +4679,7 @@ var INTRINSICS = {
     '%Error%': $Error,
     '%eval%': eval,
     '%EvalError%': $EvalError,
+    '%Float16Array%': typeof Float16Array === 'undefined' ? undefined : Float16Array,
     '%Float32Array%': typeof Float32Array === 'undefined' ? undefined : Float32Array,
     '%Float64Array%': typeof Float64Array === 'undefined' ? undefined : Float64Array,
     '%FinalizationRegistry%': typeof FinalizationRegistry === 'undefined' ? undefined : FinalizationRegistry,
@@ -4629,11 +4727,15 @@ var INTRINSICS = {
     '%Function.prototype.call%': $call,
     '%Function.prototype.apply%': $apply,
     '%Object.defineProperty%': $defineProperty,
+    '%Object.getPrototypeOf%': $ObjectGPO,
     '%Math.abs%': abs,
     '%Math.floor%': floor,
     '%Math.max%': max,
     '%Math.min%': min,
-    '%Math.pow%': pow
+    '%Math.pow%': pow,
+    '%Math.round%': round,
+    '%Math.sign%': sign,
+    '%Reflect.getPrototypeOf%': $ReflectGPO
 };
 if (getProto) try {
     null.error; // eslint-disable-line no-unused-expressions
@@ -4966,55 +5068,73 @@ module.exports = function GetIntrinsic(name, allowMissing) {
     return value;
 };
 
-},{"2664640474097f21":"TtYyW","ff34c740859aa28e":"eDsor","349515b7ea9b6cef":"hIiFU","9da01653b2dd9abf":"11MNe","68586abd6b0136da":"2YV8d","662263fdbc077fc8":"8jeeH","abdfc34e5f6bb86":"6oWLR","daca1f932429e03e":"a04Um","6a52a0c0ffccac74":"h0j9f","d01cf04757c5320b":"29Rdc","a2657a92cb7dae87":"9admQ","6367c0241be1f01":"fqFst","9bee48b90a8c96d":"4r2Wo","7f0abb73c570ef31":"eOTQB","3cbcb7341b0412ef":"5SmXK","1f00f712d594ccf":"3dK91","c7397f86a826071e":"3dID4","213af9137f841281":"7xbND","56d5af438508fcc0":"fvkNV","7c5e688e48cd07b0":"6J4ob","af36d49b4b8c6c7c":"9Wb6f"}],"TtYyW":[function(require,module,exports,__globalThis) {
+},{"2664640474097f21":"kIGCS","ff34c740859aa28e":"3yFkT","349515b7ea9b6cef":"j0agx","9da01653b2dd9abf":"16mIV","68586abd6b0136da":"gWp16","662263fdbc077fc8":"c6rW6","abdfc34e5f6bb86":"izd0l","daca1f932429e03e":"5ea2p","6a52a0c0ffccac74":"iGU7x","d01cf04757c5320b":"2UZdd","a2657a92cb7dae87":"awNT2","6367c0241be1f01":"futfa","9bee48b90a8c96d":"5PoPH","b5cc049891156ba3":"2Qg8z","8d956274d8c0407e":"aIf7v","7f0abb73c570ef31":"3RG4k","3cbcb7341b0412ef":"lLFQB","1f00f712d594ccf":"9Wdk5","89cf41d095fe5a0a":"j2rSW","a5e781ace21741c8":"kfqqq","db08b186beb7f382":"5EAiL","213af9137f841281":"6JWoY","56d5af438508fcc0":"6LNxJ","7c5e688e48cd07b0":"fptAP","af36d49b4b8c6c7c":"kzo7j"}],"kIGCS":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('.')} */ module.exports = Object;
 
-},{}],"eDsor":[function(require,module,exports,__globalThis) {
+},{}],"3yFkT":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('.')} */ module.exports = Error;
 
-},{}],"hIiFU":[function(require,module,exports,__globalThis) {
+},{}],"j0agx":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./eval')} */ module.exports = EvalError;
 
-},{}],"11MNe":[function(require,module,exports,__globalThis) {
+},{}],"16mIV":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./range')} */ module.exports = RangeError;
 
-},{}],"2YV8d":[function(require,module,exports,__globalThis) {
+},{}],"gWp16":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./ref')} */ module.exports = ReferenceError;
 
-},{}],"8jeeH":[function(require,module,exports,__globalThis) {
+},{}],"c6rW6":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./syntax')} */ module.exports = SyntaxError;
 
-},{}],"a04Um":[function(require,module,exports,__globalThis) {
+},{}],"5ea2p":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./uri')} */ module.exports = URIError;
 
-},{}],"h0j9f":[function(require,module,exports,__globalThis) {
+},{}],"iGU7x":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./abs')} */ module.exports = Math.abs;
 
-},{}],"29Rdc":[function(require,module,exports,__globalThis) {
+},{}],"2UZdd":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./floor')} */ module.exports = Math.floor;
 
-},{}],"9admQ":[function(require,module,exports,__globalThis) {
+},{}],"awNT2":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./max')} */ module.exports = Math.max;
 
-},{}],"fqFst":[function(require,module,exports,__globalThis) {
+},{}],"futfa":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./min')} */ module.exports = Math.min;
 
-},{}],"4r2Wo":[function(require,module,exports,__globalThis) {
+},{}],"5PoPH":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./pow')} */ module.exports = Math.pow;
 
-},{}],"eOTQB":[function(require,module,exports,__globalThis) {
+},{}],"2Qg8z":[function(require,module,exports,__globalThis) {
+'use strict';
+/** @type {import('./round')} */ module.exports = Math.round;
+
+},{}],"aIf7v":[function(require,module,exports,__globalThis) {
+'use strict';
+var $isNaN = require("d292273fa9eecbef");
+/** @type {import('./sign')} */ module.exports = function sign(number) {
+    if ($isNaN(number) || number === 0) return number;
+    return number < 0 ? -1 : 1;
+};
+
+},{"d292273fa9eecbef":"f4quv"}],"f4quv":[function(require,module,exports,__globalThis) {
+'use strict';
+/** @type {import('./isNaN')} */ module.exports = Number.isNaN || function isNaN(a) {
+    return a !== a;
+};
+
+},{}],"3RG4k":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('.')} */ var $gOPD = require("2065a078be813600");
 if ($gOPD) try {
@@ -5025,11 +5145,11 @@ if ($gOPD) try {
 }
 module.exports = $gOPD;
 
-},{"2065a078be813600":"hhhLk"}],"hhhLk":[function(require,module,exports,__globalThis) {
+},{"2065a078be813600":"gSPq2"}],"gSPq2":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./gOPD')} */ module.exports = Object.getOwnPropertyDescriptor;
 
-},{}],"5SmXK":[function(require,module,exports,__globalThis) {
+},{}],"lLFQB":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('.')} */ var $defineProperty = Object.defineProperty || false;
 if ($defineProperty) try {
@@ -5042,7 +5162,7 @@ if ($defineProperty) try {
 }
 module.exports = $defineProperty;
 
-},{}],"3dK91":[function(require,module,exports,__globalThis) {
+},{}],"9Wdk5":[function(require,module,exports,__globalThis) {
 'use strict';
 var origSymbol = typeof Symbol !== 'undefined' && Symbol;
 var hasSymbolSham = require("3fb25678c62d2fce");
@@ -5054,7 +5174,7 @@ var hasSymbolSham = require("3fb25678c62d2fce");
     return hasSymbolSham();
 };
 
-},{"3fb25678c62d2fce":"euYk7"}],"euYk7":[function(require,module,exports,__globalThis) {
+},{"3fb25678c62d2fce":"dtIdI"}],"dtIdI":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./shams')} */ /* eslint complexity: [2, 18], max-statements: [2, 33] */ module.exports = function hasSymbols() {
     if (typeof Symbol !== 'function' || typeof Object.getOwnPropertySymbols !== 'function') return false;
@@ -5088,7 +5208,33 @@ var hasSymbolSham = require("3fb25678c62d2fce");
     return true;
 };
 
-},{}],"3dID4":[function(require,module,exports,__globalThis) {
+},{}],"j2rSW":[function(require,module,exports,__globalThis) {
+'use strict';
+var reflectGetProto = require("ba0ea764912daf49");
+var originalGetProto = require("1bd809a13f9b0f46");
+var getDunderProto = require("fbec8086c64f7968");
+/** @type {import('.')} */ module.exports = reflectGetProto ? function getProto(O) {
+    // @ts-expect-error TS can't narrow inside a closure, for some reason
+    return reflectGetProto(O);
+} : originalGetProto ? function getProto(O) {
+    if (!O || typeof O !== 'object' && typeof O !== 'function') throw new TypeError('getProto: not an object');
+    // @ts-expect-error TS can't narrow inside a closure, for some reason
+    return originalGetProto(O);
+} : getDunderProto ? function getProto(O) {
+    // @ts-expect-error TS can't narrow inside a closure, for some reason
+    return getDunderProto(O);
+} : null;
+
+},{"ba0ea764912daf49":"5EAiL","1bd809a13f9b0f46":"kfqqq","fbec8086c64f7968":"5YxvX"}],"5EAiL":[function(require,module,exports,__globalThis) {
+'use strict';
+/** @type {import('./Reflect.getPrototypeOf')} */ module.exports = typeof Reflect !== 'undefined' && Reflect.getPrototypeOf || null;
+
+},{}],"kfqqq":[function(require,module,exports,__globalThis) {
+'use strict';
+var $Object = require("23f06d8f004a91fb");
+/** @type {import('./Object.getPrototypeOf')} */ module.exports = $Object.getPrototypeOf || null;
+
+},{"23f06d8f004a91fb":"kIGCS"}],"5YxvX":[function(require,module,exports,__globalThis) {
 'use strict';
 var callBind = require("20202e6273970ec3");
 var gOPD = require("6e9e415ed4ed192c");
@@ -5110,23 +5256,23 @@ var $getPrototypeOf = $Object.getPrototypeOf;
     return $getPrototypeOf(value == null ? value : $Object(value));
 } : false;
 
-},{"20202e6273970ec3":"eWvK7","6e9e415ed4ed192c":"eOTQB"}],"eWvK7":[function(require,module,exports,__globalThis) {
+},{"20202e6273970ec3":"lGIDP","6e9e415ed4ed192c":"3RG4k"}],"lGIDP":[function(require,module,exports,__globalThis) {
 'use strict';
 var bind = require("d6d8aee3c61fa381");
 var $TypeError = require("3ad70b4ee76fdc3");
 var $call = require("79792e7530a25b0e");
 var $actualApply = require("1883a23d55f655c3");
-/** @type {import('.')} */ module.exports = function callBindBasic(args) {
+/** @type {(args: [Function, thisArg?: unknown, ...args: unknown[]]) => Function} TODO FIXME, find a way to use import('.') */ module.exports = function callBindBasic(args) {
     if (args.length < 1 || typeof args[0] !== 'function') throw new $TypeError('a function is required');
     return $actualApply(bind, $call, args);
 };
 
-},{"d6d8aee3c61fa381":"6J4ob","3ad70b4ee76fdc3":"6oWLR","79792e7530a25b0e":"fvkNV","1883a23d55f655c3":"ki0KW"}],"6J4ob":[function(require,module,exports,__globalThis) {
+},{"d6d8aee3c61fa381":"fptAP","3ad70b4ee76fdc3":"izd0l","79792e7530a25b0e":"6LNxJ","1883a23d55f655c3":"boX6a"}],"fptAP":[function(require,module,exports,__globalThis) {
 'use strict';
 var implementation = require("12e173b4dbaee960");
 module.exports = Function.prototype.bind || implementation;
 
-},{"12e173b4dbaee960":"jwaxQ"}],"jwaxQ":[function(require,module,exports,__globalThis) {
+},{"12e173b4dbaee960":"ci6fN"}],"ci6fN":[function(require,module,exports,__globalThis) {
 'use strict';
 /* eslint no-invalid-this: 1 */ var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
 var toStr = Object.prototype.toString;
@@ -5177,11 +5323,11 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],"fvkNV":[function(require,module,exports,__globalThis) {
+},{}],"6LNxJ":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./functionCall')} */ module.exports = Function.prototype.call;
 
-},{}],"ki0KW":[function(require,module,exports,__globalThis) {
+},{}],"boX6a":[function(require,module,exports,__globalThis) {
 'use strict';
 var bind = require("ba0cb57b961776b");
 var $apply = require("8002d8d4a5e40cd8");
@@ -5189,22 +5335,22 @@ var $call = require("dd5326344bf1485c");
 var $reflectApply = require("ddbf3cfadf2f22c");
 /** @type {import('./actualApply')} */ module.exports = $reflectApply || bind.call($call, $apply);
 
-},{"ba0cb57b961776b":"6J4ob","8002d8d4a5e40cd8":"7xbND","dd5326344bf1485c":"fvkNV","ddbf3cfadf2f22c":"hEK1J"}],"7xbND":[function(require,module,exports,__globalThis) {
+},{"ba0cb57b961776b":"fptAP","8002d8d4a5e40cd8":"6JWoY","dd5326344bf1485c":"6LNxJ","ddbf3cfadf2f22c":"bqjcZ"}],"6JWoY":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./functionApply')} */ module.exports = Function.prototype.apply;
 
-},{}],"hEK1J":[function(require,module,exports,__globalThis) {
+},{}],"bqjcZ":[function(require,module,exports,__globalThis) {
 'use strict';
 /** @type {import('./reflectApply')} */ module.exports = typeof Reflect !== 'undefined' && Reflect && Reflect.apply;
 
-},{}],"9Wb6f":[function(require,module,exports,__globalThis) {
+},{}],"kzo7j":[function(require,module,exports,__globalThis) {
 'use strict';
 var call = Function.prototype.call;
 var $hasOwn = Object.prototype.hasOwnProperty;
 var bind = require("126cb75e62f8e17b");
 /** @type {import('.')} */ module.exports = bind.call(call, $hasOwn);
 
-},{"126cb75e62f8e17b":"6J4ob"}],"lAcs1":[function(require,module,exports,__globalThis) {
+},{"126cb75e62f8e17b":"fptAP"}],"bg5Sv":[function(require,module,exports,__globalThis) {
 'use strict';
 var GetIntrinsic = require("90205503fa989ea7");
 var callBindBasic = require("79b99f4b8fc521d");
@@ -5212,15 +5358,14 @@ var callBindBasic = require("79b99f4b8fc521d");
     GetIntrinsic('%String.prototype.indexOf%')
 ]);
 /** @type {import('.')} */ module.exports = function callBoundIntrinsic(name, allowMissing) {
-    // eslint-disable-next-line no-extra-parens
-    var intrinsic = /** @type {Parameters<typeof callBindBasic>[0][0]} */ GetIntrinsic(name, !!allowMissing);
-    if (typeof intrinsic === 'function' && $indexOf(name, '.prototype.') > -1) return callBindBasic([
+    /* eslint no-extra-parens: 0 */ var intrinsic = /** @type {(this: unknown, ...args: unknown[]) => unknown} */ GetIntrinsic(name, !!allowMissing);
+    if (typeof intrinsic === 'function' && $indexOf(name, '.prototype.') > -1) return callBindBasic(/** @type {const} */ [
         intrinsic
     ]);
     return intrinsic;
 };
 
-},{"90205503fa989ea7":"dZb05","79b99f4b8fc521d":"eWvK7"}],"nfsLc":[function(require,module,exports,__globalThis) {
+},{"90205503fa989ea7":"dq2j0","79b99f4b8fc521d":"lGIDP"}],"cJseI":[function(require,module,exports,__globalThis) {
 'use strict';
 var GetIntrinsic = require("13f8b3ed6c08f802");
 var callBound = require("fcc2ce3a04e4916a");
@@ -5274,9 +5419,9 @@ var $WeakMap = GetIntrinsic('%WeakMap%', true);
     return channel;
 } : getSideChannelMap;
 
-},{"13f8b3ed6c08f802":"dZb05","fcc2ce3a04e4916a":"lAcs1","92adfc822fa342a4":"kS3SE","1290b6babf3b47b6":"fJI6C","2293e69a0f659b70":"6oWLR"}],"chmkc":[function(require,module,exports,__globalThis) {
+},{"13f8b3ed6c08f802":"dq2j0","fcc2ce3a04e4916a":"bg5Sv","92adfc822fa342a4":"aklQB","1290b6babf3b47b6":"3M1ai","2293e69a0f659b70":"izd0l"}],"S8Q9P":[function(require,module,exports,__globalThis) {
 'use strict';
-var formats = require("7adf3674f81a2c87");
+var formats = require("767984a07c6a6b70");
 var has = Object.prototype.hasOwnProperty;
 var isArray = Array.isArray;
 var hexTable = function() {
@@ -5462,7 +5607,7 @@ module.exports = {
     merge: merge
 };
 
-},{"7adf3674f81a2c87":"d7Ogf"}],"d7Ogf":[function(require,module,exports,__globalThis) {
+},{"767984a07c6a6b70":"7kJV6"}],"7kJV6":[function(require,module,exports,__globalThis) {
 'use strict';
 var replace = String.prototype.replace;
 var percentTwenties = /%20/g;
@@ -5484,9 +5629,9 @@ module.exports = {
     RFC3986: Format.RFC3986
 };
 
-},{}],"fSZqi":[function(require,module,exports,__globalThis) {
+},{}],"gsmYc":[function(require,module,exports,__globalThis) {
 'use strict';
-var utils = require("e76649c95dd0e736");
+var utils = require("30341be5f5e7b9ef");
 var has = Object.prototype.hasOwnProperty;
 var isArray = Array.isArray;
 var defaults = {
@@ -5509,15 +5654,17 @@ var defaults = {
     parseArrays: true,
     plainObjects: false,
     strictDepth: false,
-    strictNullHandling: false
+    strictNullHandling: false,
+    throwOnLimitExceeded: false
 };
 var interpretNumericEntities = function(str) {
     return str.replace(/&#(\d+);/g, function($0, numberStr) {
         return String.fromCharCode(parseInt(numberStr, 10));
     });
 };
-var parseArrayValue = function(val, options) {
+var parseArrayValue = function(val, options, currentArrayLength) {
     if (val && typeof val === 'string' && options.comma && val.indexOf(',') > -1) return val.split(',');
+    if (options.throwOnLimitExceeded && currentArrayLength >= options.arrayLimit) throw new RangeError('Array limit exceeded. Only ' + options.arrayLimit + ' element' + (options.arrayLimit === 1 ? '' : 's') + ' allowed in an array.');
     return val;
 };
 // This is what browsers will submit when the ✓ character occurs in an
@@ -5535,7 +5682,8 @@ var parseValues = function parseQueryStringValues(str, options) {
     var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, '') : str;
     cleanStr = cleanStr.replace(/%5B/gi, '[').replace(/%5D/gi, ']');
     var limit = options.parameterLimit === Infinity ? undefined : options.parameterLimit;
-    var parts = cleanStr.split(options.delimiter, limit);
+    var parts = cleanStr.split(options.delimiter, options.throwOnLimitExceeded ? limit + 1 : limit);
+    if (options.throwOnLimitExceeded && parts.length > limit) throw new RangeError('Parameter limit exceeded. Only ' + limit + ' parameter' + (limit === 1 ? '' : 's') + ' allowed.');
     var skipIndex = -1; // Keep track of where the utf8 sentinel was found
     var i;
     var charset = options.charset;
@@ -5559,7 +5707,7 @@ var parseValues = function parseQueryStringValues(str, options) {
             val = options.strictNullHandling ? null : '';
         } else {
             key = options.decoder(part.slice(0, pos), defaults.decoder, charset, 'key');
-            val = utils.maybeMap(parseArrayValue(part.slice(pos + 1), options), function(encodedVal) {
+            val = utils.maybeMap(parseArrayValue(part.slice(pos + 1), options, isArray(obj[key]) ? obj[key].length : 0), function(encodedVal) {
                 return options.decoder(encodedVal, defaults.decoder, charset, 'value');
             });
         }
@@ -5574,11 +5722,16 @@ var parseValues = function parseQueryStringValues(str, options) {
     return obj;
 };
 var parseObject = function(chain, val, options, valuesParsed) {
-    var leaf = valuesParsed ? val : parseArrayValue(val, options);
+    var currentArrayLength = 0;
+    if (chain.length > 0 && chain[chain.length - 1] === '[]') {
+        var parentKey = chain.slice(0, -1).join('');
+        currentArrayLength = Array.isArray(val) && val[parentKey] ? val[parentKey].length : 0;
+    }
+    var leaf = valuesParsed ? val : parseArrayValue(val, options, currentArrayLength);
     for(var i = chain.length - 1; i >= 0; --i){
         var obj;
         var root = chain[i];
-        if (root === '[]' && options.parseArrays) obj = options.allowEmptyArrays && (leaf === '' || options.strictNullHandling && leaf === null) ? [] : [].concat(leaf);
+        if (root === '[]' && options.parseArrays) obj = options.allowEmptyArrays && (leaf === '' || options.strictNullHandling && leaf === null) ? [] : utils.combine([], leaf);
         else {
             obj = options.plainObjects ? {
                 __proto__: null
@@ -5639,6 +5792,7 @@ var normalizeParseOptions = function normalizeParseOptions(opts) {
     if (typeof opts.decodeDotInKeys !== 'undefined' && typeof opts.decodeDotInKeys !== 'boolean') throw new TypeError('`decodeDotInKeys` option can only be `true` or `false`, when provided');
     if (opts.decoder !== null && typeof opts.decoder !== 'undefined' && typeof opts.decoder !== 'function') throw new TypeError('Decoder has to be a function.');
     if (typeof opts.charset !== 'undefined' && opts.charset !== 'utf-8' && opts.charset !== 'iso-8859-1') throw new TypeError('The charset option must be either utf-8, iso-8859-1, or undefined');
+    if (typeof opts.throwOnLimitExceeded !== 'undefined' && typeof opts.throwOnLimitExceeded !== 'boolean') throw new TypeError('`throwOnLimitExceeded` option must be a boolean');
     var charset = typeof opts.charset === 'undefined' ? defaults.charset : opts.charset;
     var duplicates = typeof opts.duplicates === 'undefined' ? defaults.duplicates : opts.duplicates;
     if (duplicates !== 'combine' && duplicates !== 'first' && duplicates !== 'last') throw new TypeError('The duplicates option must be either combine, first, or last');
@@ -5664,7 +5818,8 @@ var normalizeParseOptions = function normalizeParseOptions(opts) {
         parseArrays: opts.parseArrays !== false,
         plainObjects: typeof opts.plainObjects === 'boolean' ? opts.plainObjects : defaults.plainObjects,
         strictDepth: typeof opts.strictDepth === 'boolean' ? !!opts.strictDepth : defaults.strictDepth,
-        strictNullHandling: typeof opts.strictNullHandling === 'boolean' ? opts.strictNullHandling : defaults.strictNullHandling
+        strictNullHandling: typeof opts.strictNullHandling === 'boolean' ? opts.strictNullHandling : defaults.strictNullHandling,
+        throwOnLimitExceeded: typeof opts.throwOnLimitExceeded === 'boolean' ? opts.throwOnLimitExceeded : false
     };
 };
 module.exports = function(str, opts) {
@@ -5687,7 +5842,7 @@ module.exports = function(str, opts) {
     return utils.compact(obj);
 };
 
-},{"e76649c95dd0e736":"chmkc"}],"dnMxg":[function(require,module,exports,__globalThis) {
+},{"30341be5f5e7b9ef":"S8Q9P"}],"h48LV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "deprecation", ()=>deprecation);
@@ -5703,7 +5858,7 @@ Deprecated since v${version}`), console.warn(stack), console.groupEnd()) : (cons
 Deprecated since v${version}`), console.warn(stack))), warnings[message] = !0;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5jn2x":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iy7cu":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "path", ()=>path);
@@ -5965,7 +6120,7 @@ const path = {
     ]
 };
 
-},{"@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fgHDw":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6vOPz":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectVideoAlphaMode", ()=>detectVideoAlphaMode);
@@ -5989,7 +6144,7 @@ async function detectVideoAlphaMode() {
     })()), promise;
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a75tG":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1eZj9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "sayHello", ()=>sayHello);
@@ -6002,7 +6157,7 @@ function sayHello() {
     (0, _deprecationMjs.deprecation)("7.0.0", `sayHello is deprecated, please use Renderer's "hello" option`);
 }
 
-},{"../logging/deprecation.mjs":"dnMxg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6PK7h":[function(require,module,exports,__globalThis) {
+},{"../logging/deprecation.mjs":"h48LV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fCb6B":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "isWebGLSupported", ()=>isWebGLSupported);
@@ -6031,7 +6186,7 @@ function isWebGLSupported() {
     }()), supported;
 }
 
-},{"../settings.mjs":"hHS08","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f6I9E":[function(require,module,exports,__globalThis) {
+},{"../settings.mjs":"eAFtm","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"k18Z4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "hex2rgb", ()=>hex2rgb);
@@ -6053,13 +6208,13 @@ function rgb2hex(rgb) {
     return (0, _deprecationMjs.deprecation)("7.2.0", "utils.rgb2hex is deprecated, use Color#toNumber instead"), (0, _color.Color).shared.setValue(rgb).toNumber();
 }
 
-},{"@pixi/color":"4S9LD","../logging/deprecation.mjs":"dnMxg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4S9LD":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","../logging/deprecation.mjs":"h48LV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cHtpO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Color", ()=>(0, _colorMjs.Color));
 var _colorMjs = require("./Color.mjs");
 
-},{"./Color.mjs":"amgsS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"amgsS":[function(require,module,exports,__globalThis) {
+},{"./Color.mjs":"f6k8h","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"f6k8h":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Color", ()=>Color);
@@ -6312,7 +6467,7 @@ _Color.shared = new _Color(), /**
 */ _Color.temp = new _Color(), /** Pattern for hex strings */ _Color.HEX_PATTERN = /^(#|0x)?(([a-f0-9]{3}){1,2}([a-f0-9]{2})?)$/i;
 let Color = _Color;
 
-},{"@pixi/colord":"8NR6y","@pixi/colord/plugins/names":"ebA20","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8NR6y":[function(require,module,exports,__globalThis) {
+},{"@pixi/colord":"74Fwm","@pixi/colord/plugins/names":"gumN3","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"74Fwm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Colord", ()=>j);
@@ -6641,7 +6796,7 @@ var r = {
     });
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ebA20":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gumN3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>function(e, f) {
@@ -6820,7 +6975,7 @@ parcelHelpers.export(exports, "default", ()=>function(e, f) {
         ]);
     });
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5jEMB":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dPQWq":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "correctBlendMode", ()=>correctBlendMode);
@@ -6852,13 +7007,13 @@ function premultiplyTintToRgba(tint, alpha, out, premultiply = !0) {
     return (0, _deprecationMjs.deprecation)("7.2.0", "utils.premultiplyTintToRgba has moved to Color.premultiply"), (0, _color.Color).shared.setValue(tint).premultiply(alpha, premultiply).toArray(out ?? new Float32Array(4));
 }
 
-},{"@pixi/color":"4S9LD","@pixi/constants":"3IyrP","../logging/deprecation.mjs":"dnMxg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8PoC5":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","@pixi/constants":"6KFQA","../logging/deprecation.mjs":"h48LV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5gpML":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "DATA_URI", ()=>DATA_URI);
 const DATA_URI = /^\s*data:(?:([\w-]+)\/([\w+.-]+))?(?:;charset=([\w-]+))?(?:;(base64))?,(.*)/i;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"erS8n":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dcbKJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createIndicesForQuads", ()=>createIndicesForQuads);
@@ -6869,7 +7024,7 @@ function createIndicesForQuads(size, outBuffer = null) {
     return outBuffer;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bKIvr":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4huRB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getBufferType", ()=>getBufferType);
@@ -6881,7 +7036,7 @@ function getBufferType(array) {
     return null;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bw7BX":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fGW7P":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "interleaveTypedArrays", ()=>interleaveTypedArrays);
@@ -6910,7 +7065,7 @@ function interleaveTypedArrays(arrays, sizes) {
     return new Float32Array(buffer);
 }
 
-},{"./getBufferType.mjs":"bKIvr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"76XG0":[function(require,module,exports,__globalThis) {
+},{"./getBufferType.mjs":"4huRB","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"c0NwE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "isPow2", ()=>isPow2);
@@ -6929,7 +7084,7 @@ function log2(v) {
     return v >>>= shift, r |= shift, shift = (v > 15 ? 1 : 0) << 2, v >>>= shift, r |= shift, shift = (v > 3 ? 1 : 0) << 1, v >>>= shift, r |= shift, r | v >> 1;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kj3MD":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"475K1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "removeItems", ()=>removeItems);
@@ -6943,7 +7098,7 @@ function removeItems(arr, startIdx, removeCount) {
     arr.length = len;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dWm2H":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"emTY6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "sign", ()=>sign);
@@ -6951,7 +7106,7 @@ function sign(n) {
     return n === 0 ? 0 : n < 0 ? -1 : 1;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkiXA":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eNQNm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "uid", ()=>uid);
@@ -6960,7 +7115,7 @@ function uid() {
     return ++nextUid;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7aGv3":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eQSDd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BoundingBox", ()=>BoundingBox);
@@ -6986,7 +7141,7 @@ const _BoundingBox = class {
 _BoundingBox.EMPTY = new _BoundingBox(0, 0, 0, 0);
 let BoundingBox = _BoundingBox;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bu951":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jAmtX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BaseTextureCache", ()=>BaseTextureCache);
@@ -7006,7 +7161,7 @@ function clearTextureCache() {
     for(key in BaseTextureCache)delete BaseTextureCache[key];
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9MEr7":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jkEIr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CanvasRenderTarget", ()=>CanvasRenderTarget);
@@ -7064,7 +7219,7 @@ class CanvasRenderTarget {
     }
 }
 
-},{"@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9GHfW":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"geenA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getCanvasBoundingBox", ()=>getCanvasBoundingBox);
@@ -7093,7 +7248,7 @@ function getCanvasBoundingBox(canvas) {
     return ++right, ++bottom, new (0, _boundingBoxMjs.BoundingBox)(left, top, right, bottom);
 }
 
-},{"./BoundingBox.mjs":"7aGv3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8zake":[function(require,module,exports,__globalThis) {
+},{"./BoundingBox.mjs":"eQSDd","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"e1Kn3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "trimCanvas", ()=>trimCanvas);
@@ -7113,7 +7268,7 @@ function trimCanvas(canvas) {
     };
 }
 
-},{"./getCanvasBoundingBox.mjs":"9GHfW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3zgSb":[function(require,module,exports,__globalThis) {
+},{"./getCanvasBoundingBox.mjs":"geenA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1PkIg":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "decomposeDataUri", ()=>decomposeDataUri);
@@ -7129,7 +7284,7 @@ function decomposeDataUri(dataUri) {
     };
 }
 
-},{"../const.mjs":"8PoC5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"b4grA":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"5gpML","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8dAER":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "determineCrossOrigin", ()=>determineCrossOrigin);
@@ -7140,7 +7295,7 @@ function determineCrossOrigin(url, loc = globalThis.location) {
     return parsedUrl.hostname !== loc.hostname || parsedUrl.port !== loc.port || parsedUrl.protocol !== loc.protocol ? "anonymous" : "";
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ezFi7":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4uRQG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getResolutionOfUrl", ()=>getResolutionOfUrl);
@@ -7151,9 +7306,9 @@ function getResolutionOfUrl(url, defaultValue = 1) {
     return resolution ? parseFloat(resolution[1]) : defaultValue;
 }
 
-},{"../settings.mjs":"hHS08","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"im5tR":[function(require,module,exports,__globalThis) {
+},{"../settings.mjs":"eAFtm","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5RVUa":[function(require,module,exports,__globalThis) {
 
-},{}],"aj8sY":[function(require,module,exports,__globalThis) {
+},{}],"6hL0P":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchRenderer", ()=>BatchRenderer);
@@ -7377,7 +7532,7 @@ _BatchRenderer.defaultBatchSize = 4096, /** @ignore */ _BatchRenderer.extension 
 let BatchRenderer = _BatchRenderer;
 (0, _extensions.extensions).add(BatchRenderer);
 
-},{"@pixi/color":"4S9LD","@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/settings":"9EoeN","@pixi/utils":"70nLd","../geometry/ViewableBuffer.mjs":"4DGMV","../shader/utils/checkMaxIfStatementsInShader.mjs":"jHpMu","../state/State.mjs":"bSj8s","../textures/BaseTexture.mjs":"1z8cb","./BatchDrawCall.mjs":"l6BbA","./BatchGeometry.mjs":"aj9Jc","./BatchShaderGenerator.mjs":"bW6pM","./BatchTextureArray.mjs":"fdiY8","./canUploadSameBuffer.mjs":"f5Z32","./maxRecommendedTextures.mjs":"2Xw8d","./ObjectRenderer.mjs":"2VJXf","./texture.frag.mjs":"6bpUi","./texture.vert.mjs":"fKeaX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hxIPp":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","../geometry/ViewableBuffer.mjs":"l0gIB","../shader/utils/checkMaxIfStatementsInShader.mjs":"7pFvN","../state/State.mjs":"5KjBt","../textures/BaseTexture.mjs":"lm1IA","./BatchDrawCall.mjs":"cErcn","./BatchGeometry.mjs":"cXYcc","./BatchShaderGenerator.mjs":"d7mS4","./BatchTextureArray.mjs":"9aDBT","./canUploadSameBuffer.mjs":"ikhsC","./maxRecommendedTextures.mjs":"iN2Y7","./ObjectRenderer.mjs":"gIZUd","./texture.frag.mjs":"kypx7","./texture.vert.mjs":"hNKXV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"otd2c":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ExtensionType", ()=>ExtensionType);
@@ -7466,7 +7621,7 @@ const normalizeExtension = (ext)=>{
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4DGMV":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l0gIB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ViewableBuffer", ()=>ViewableBuffer);
@@ -7518,7 +7673,7 @@ class ViewableBuffer {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jHpMu":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7pFvN":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "checkMaxIfStatementsInShader", ()=>checkMaxIfStatementsInShader);
@@ -7548,7 +7703,7 @@ function checkMaxIfStatementsInShader(maxIfs, gl) {
     return maxIfs;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bSj8s":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5KjBt":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "State", ()=>State);
@@ -7640,7 +7795,7 @@ State.prototype.toString = function() {
     return `[@pixi/core:State blendMode=${this.blendMode} clockwiseFrontFace=${this.clockwiseFrontFace} culling=${this.culling} depthMask=${this.depthMask} polygonOffset=${this.polygonOffset}]`;
 };
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1z8cb":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lm1IA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BaseTexture", ()=>BaseTexture);
@@ -7917,7 +8072,7 @@ _BaseTexture.defaultOptions = {
 }, /** Global number of the texture batch, used by multi-texture renderers. */ _BaseTexture._globalBatch = 0;
 let BaseTexture = _BaseTexture;
 
-},{"@pixi/constants":"3IyrP","@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./resources/autoDetectResource.mjs":"gWU82","./resources/BufferResource.mjs":"8E5MR","./resources/Resource.mjs":"hTgR6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gWU82":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./resources/autoDetectResource.mjs":"h2612","./resources/BufferResource.mjs":"4X9NQ","./resources/Resource.mjs":"dnqd9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h2612":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "INSTALLED", ()=>INSTALLED);
@@ -7937,7 +8092,7 @@ function autoDetectResource(source, options) {
     throw new Error("Unrecognized source type to auto-detect Resource");
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8E5MR":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4X9NQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BufferResource", ()=>BufferResource);
@@ -7979,7 +8134,7 @@ class BufferResource extends (0, _resourceMjs.Resource) {
     }
 }
 
-},{"@pixi/constants":"3IyrP","./Resource.mjs":"hTgR6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hTgR6":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","./Resource.mjs":"dnqd9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dnqd9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Resource", ()=>Resource);
@@ -8065,13 +8220,13 @@ class Resource {
     }
 }
 
-},{"@pixi/runner":"2XL0D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2XL0D":[function(require,module,exports,__globalThis) {
+},{"@pixi/runner":"anFhS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"anFhS":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Runner", ()=>(0, _runnerMjs.Runner));
 var _runnerMjs = require("./Runner.mjs");
 
-},{"./Runner.mjs":"5f8xr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5f8xr":[function(require,module,exports,__globalThis) {
+},{"./Runner.mjs":"ifwit","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ifwit":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Runner", ()=>Runner);
@@ -8165,7 +8320,7 @@ Object.defineProperties(Runner.prototype, {
     }
 });
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l6BbA":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cErcn":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchDrawCall", ()=>BatchDrawCall);
@@ -8176,7 +8331,7 @@ class BatchDrawCall {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aj9Jc":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cXYcc":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchGeometry", ()=>BatchGeometry);
@@ -8192,7 +8347,7 @@ class BatchGeometry extends (0, _geometryMjs.Geometry) {
     }
 }
 
-},{"@pixi/constants":"3IyrP","../geometry/Buffer.mjs":"5E2K0","../geometry/Geometry.mjs":"iwnUt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5E2K0":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","../geometry/Buffer.mjs":"44dLm","../geometry/Geometry.mjs":"dnBmH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"44dLm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Buffer", ()=>Buffer);
@@ -8242,7 +8397,7 @@ class Buffer {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/runner":"2XL0D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iwnUt":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/runner":"anFhS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dnBmH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Geometry", ()=>Geometry);
@@ -8406,7 +8561,7 @@ class Geometry {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/runner":"2XL0D","@pixi/utils":"70nLd","./Attribute.mjs":"cN4vJ","./Buffer.mjs":"5E2K0","./utils/interleaveTypedArrays.mjs":"19oE6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cN4vJ":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/runner":"anFhS","@pixi/utils":"qKLFF","./Attribute.mjs":"6Jeh1","./Buffer.mjs":"44dLm","./utils/interleaveTypedArrays.mjs":"ezNCw","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6Jeh1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Attribute", ()=>Attribute);
@@ -8440,7 +8595,7 @@ class Attribute {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"19oE6":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ezNCw":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "interleaveTypedArrays", ()=>interleaveTypedArrays);
@@ -8469,7 +8624,7 @@ function interleaveTypedArrays(arrays, sizes) {
     return new Float32Array(buffer);
 }
 
-},{"@pixi/utils":"70nLd","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bW6pM":[function(require,module,exports,__globalThis) {
+},{"@pixi/utils":"qKLFF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d7mS4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchShaderGenerator", ()=>BatchShaderGenerator);
@@ -8523,7 +8678,7 @@ else `), i < maxTextures - 1 && (src += `if(vTextureId < ${i}.5)`), src += `
     }
 }
 
-},{"@pixi/math":"jGogD","../shader/Program.mjs":"c4TEr","../shader/Shader.mjs":"03Fjo","../shader/UniformGroup.mjs":"aDDsj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jGogD":[function(require,module,exports,__globalThis) {
+},{"@pixi/math":"1bk72","../shader/Program.mjs":"hhSGo","../shader/Shader.mjs":"dD3c3","../shader/UniformGroup.mjs":"j2NFe","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1bk72":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Circle", ()=>(0, _circleMjs.Circle));
@@ -8554,7 +8709,7 @@ var _pointMjs = require("./Point.mjs");
 var _transformMjs = require("./Transform.mjs");
 var _constMjs = require("./const.mjs");
 
-},{"./shapes/Circle.mjs":"bZE7M","./shapes/Ellipse.mjs":"fETN4","./shapes/Polygon.mjs":"18135","./shapes/Rectangle.mjs":"b1KjL","./shapes/RoundedRectangle.mjs":"fDLTA","./groupD8.mjs":"5VvIl","./IPoint.mjs":"ca6R6","./IPointData.mjs":"et068","./Matrix.mjs":"i2htg","./ObservablePoint.mjs":"6N84t","./Point.mjs":"1Tdm8","./Transform.mjs":"3sg0z","./const.mjs":"3LiaV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bZE7M":[function(require,module,exports,__globalThis) {
+},{"./shapes/Circle.mjs":"21M5U","./shapes/Ellipse.mjs":"6Ylqm","./shapes/Polygon.mjs":"iBsa8","./shapes/Rectangle.mjs":"2jjW9","./shapes/RoundedRectangle.mjs":"f4x01","./groupD8.mjs":"cOQwY","./IPoint.mjs":"b53x0","./IPointData.mjs":"7Im7o","./Matrix.mjs":"khpEv","./ObservablePoint.mjs":"3b8GV","./Point.mjs":"fevXS","./Transform.mjs":"jv1tX","./const.mjs":"cpUAi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"21M5U":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Circle", ()=>Circle);
@@ -8596,7 +8751,7 @@ Circle.prototype.toString = function() {
     return `[@pixi/math:Circle x=${this.x} y=${this.y} radius=${this.radius}]`;
 };
 
-},{"../const.mjs":"3LiaV","./Rectangle.mjs":"b1KjL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3LiaV":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"cpUAi","./Rectangle.mjs":"2jjW9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cpUAi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "DEG_TO_RAD", ()=>DEG_TO_RAD);
@@ -8606,7 +8761,7 @@ parcelHelpers.export(exports, "SHAPES", ()=>SHAPES);
 const PI_2 = Math.PI * 2, RAD_TO_DEG = 180 / Math.PI, DEG_TO_RAD = Math.PI / 180;
 var SHAPES = /* @__PURE__ */ ((SHAPES2)=>(SHAPES2[SHAPES2.POLY = 0] = "POLY", SHAPES2[SHAPES2.RECT = 1] = "RECT", SHAPES2[SHAPES2.CIRC = 2] = "CIRC", SHAPES2[SHAPES2.ELIP = 3] = "ELIP", SHAPES2[SHAPES2.RREC = 4] = "RREC", SHAPES2))(SHAPES || {});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"b1KjL":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2jjW9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Rectangle", ()=>Rectangle);
@@ -8735,7 +8890,7 @@ Rectangle.prototype.toString = function() {
     return `[@pixi/math:Rectangle x=${this.x} y=${this.y} width=${this.width} height=${this.height}]`;
 };
 
-},{"../const.mjs":"3LiaV","../Point.mjs":"1Tdm8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1Tdm8":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"cpUAi","../Point.mjs":"fevXS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fevXS":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Point", ()=>Point);
@@ -8788,7 +8943,7 @@ Point.prototype.toString = function() {
     return `[@pixi/math:Point x=${this.x} y=${this.y}]`;
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fETN4":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6Ylqm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Ellipse", ()=>Ellipse);
@@ -8830,7 +8985,7 @@ Ellipse.prototype.toString = function() {
     return `[@pixi/math:Ellipse x=${this.x} y=${this.y} width=${this.width} height=${this.height}]`;
 };
 
-},{"../const.mjs":"3LiaV","./Rectangle.mjs":"b1KjL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"18135":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"cpUAi","./Rectangle.mjs":"2jjW9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iBsa8":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Polygon", ()=>Polygon);
@@ -8877,7 +9032,7 @@ Polygon.prototype.toString = function() {
     return `[@pixi/math:PolygoncloseStroke=${this.closeStroke}points=${this.points.reduce((pointsDesc, currentPoint)=>`${pointsDesc}, ${currentPoint}`, "")}]`;
 };
 
-},{"../const.mjs":"3LiaV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fDLTA":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"cpUAi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"f4x01":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "RoundedRectangle", ()=>RoundedRectangle);
@@ -8919,7 +9074,7 @@ RoundedRectangle.prototype.toString = function() {
     return `[@pixi/math:RoundedRectangle x=${this.x} y=${this.y}width=${this.width} height=${this.height} radius=${this.radius}]`;
 };
 
-},{"../const.mjs":"3LiaV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5VvIl":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"cpUAi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cOQwY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "groupD8", ()=>groupD8);
@@ -9164,7 +9319,7 @@ const groupD8 = {
     }
 };
 
-},{"./Matrix.mjs":"i2htg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i2htg":[function(require,module,exports,__globalThis) {
+},{"./Matrix.mjs":"khpEv","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"khpEv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Matrix", ()=>Matrix);
@@ -9356,11 +9511,11 @@ Matrix.prototype.toString = function() {
     return `[@pixi/math:Matrix a=${this.a} b=${this.b} c=${this.c} d=${this.d} tx=${this.tx} ty=${this.ty}]`;
 };
 
-},{"./const.mjs":"3LiaV","./Point.mjs":"1Tdm8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ca6R6":[function(require,module,exports,__globalThis) {
+},{"./const.mjs":"cpUAi","./Point.mjs":"fevXS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"b53x0":[function(require,module,exports,__globalThis) {
 
-},{}],"et068":[function(require,module,exports,__globalThis) {
+},{}],"7Im7o":[function(require,module,exports,__globalThis) {
 
-},{}],"6N84t":[function(require,module,exports,__globalThis) {
+},{}],"3b8GV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ObservablePoint", ()=>ObservablePoint);
@@ -9432,7 +9587,7 @@ ObservablePoint.prototype.toString = function() {
     return `[@pixi/math:ObservablePoint x=${this.x} y=${this.y} scope=${this.scope}]`;
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3sg0z":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jv1tX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Transform", ()=>Transform);
@@ -9481,7 +9636,7 @@ Transform.prototype.toString = function() {
     return `[@pixi/math:Transform position=(${this.position.x}, ${this.position.y}) rotation=${this.rotation} scale=(${this.scale.x}, ${this.scale.y}) skew=(${this.skew.x}, ${this.skew.y}) ]`;
 };
 
-},{"./Matrix.mjs":"i2htg","./ObservablePoint.mjs":"6N84t","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c4TEr":[function(require,module,exports,__globalThis) {
+},{"./Matrix.mjs":"khpEv","./ObservablePoint.mjs":"3b8GV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hhSGo":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Program", ()=>Program);
@@ -9541,7 +9696,7 @@ _Program.defaultVertexPrecision = (0, _constants.PRECISION).HIGH, /**
 */ _Program.defaultFragmentPrecision = (0, _utils.isMobile).apple.device ? (0, _constants.PRECISION).HIGH : (0, _constants.PRECISION).MEDIUM;
 let Program = _Program;
 
-},{"@pixi/constants":"3IyrP","@pixi/utils":"70nLd","./defaultProgram.frag.mjs":"iXzp1","./defaultProgram.vert.mjs":"jnmVZ","./utils/index.mjs":"icZLc","./utils/setPrecision.mjs":"fmIFc","./utils/getMaxFragmentPrecision.mjs":"cQdIR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iXzp1":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/utils":"qKLFF","./defaultProgram.frag.mjs":"g8Phl","./defaultProgram.vert.mjs":"3cNR1","./utils/index.mjs":"4OaGe","./utils/setPrecision.mjs":"aENlf","./utils/getMaxFragmentPrecision.mjs":"l0mPe","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"g8Phl":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultFragment);
@@ -9553,7 +9708,7 @@ void main(void){
    gl_FragColor *= texture2D(uSampler, vTextureCoord);
 }`;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jnmVZ":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3cNR1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultVertex);
@@ -9570,7 +9725,7 @@ void main(void){
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"icZLc":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4OaGe":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "checkMaxIfStatementsInShader", ()=>(0, _checkMaxIfStatementsInShaderMjs.checkMaxIfStatementsInShader));
@@ -9598,7 +9753,7 @@ var _setPrecisionMjs = require("./setPrecision.mjs");
 var _uniformParsersMjs = require("./uniformParsers.mjs");
 var _unsafeEvalSupportedMjs = require("./unsafeEvalSupported.mjs");
 
-},{"./checkMaxIfStatementsInShader.mjs":"jHpMu","./compileShader.mjs":"lVc0j","./defaultValue.mjs":"liRRV","./generateUniformsSync.mjs":"6EwVX","./getMaxFragmentPrecision.mjs":"cQdIR","./getTestContext.mjs":"hoCOH","./logProgramError.mjs":"bBulS","./mapSize.mjs":"5uYxX","./mapType.mjs":"5WtLf","./setPrecision.mjs":"fmIFc","./uniformParsers.mjs":"bNrR5","./unsafeEvalSupported.mjs":"BOI5M","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVc0j":[function(require,module,exports,__globalThis) {
+},{"./checkMaxIfStatementsInShader.mjs":"7pFvN","./compileShader.mjs":"fkF6I","./defaultValue.mjs":"5Iv3V","./generateUniformsSync.mjs":"h6sl1","./getMaxFragmentPrecision.mjs":"l0mPe","./getTestContext.mjs":"74sJB","./logProgramError.mjs":"gve8a","./mapSize.mjs":"fYB1w","./mapType.mjs":"85NQK","./setPrecision.mjs":"aENlf","./uniformParsers.mjs":"9wxhh","./unsafeEvalSupported.mjs":"hYMQZ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fkF6I":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "compileShader", ()=>compileShader);
@@ -9607,7 +9762,7 @@ function compileShader(gl, type, src) {
     return gl.shaderSource(shader, src), gl.compileShader(shader), shader;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"liRRV":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5Iv3V":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "defaultValue", ()=>defaultValue);
@@ -9693,7 +9848,7 @@ function defaultValue(type, size) {
     return null;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6EwVX":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h6sl1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "generateUniformsSync", ()=>generateUniformsSync);
@@ -9920,7 +10075,7 @@ function generateUniformsSync(group, uniformData) {
 `));
 }
 
-},{"./uniformParsers.mjs":"bNrR5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bNrR5":[function(require,module,exports,__globalThis) {
+},{"./uniformParsers.mjs":"9wxhh","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9wxhh":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "uniformParsers", ()=>uniformParsers);
@@ -10099,7 +10254,7 @@ const uniformParsers = [
     }
 ];
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cQdIR":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l0mPe":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getMaxFragmentPrecision", ()=>getMaxFragmentPrecision);
@@ -10118,7 +10273,7 @@ function getMaxFragmentPrecision() {
     return maxFragmentPrecision;
 }
 
-},{"@pixi/constants":"3IyrP","./getTestContext.mjs":"hoCOH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hoCOH":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","./getTestContext.mjs":"74sJB","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"74sJB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getTestContext", ()=>getTestContext);
@@ -10135,7 +10290,7 @@ function getTestContext() {
     return context;
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bBulS":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gve8a":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "logProgramError", ()=>logProgramError);
@@ -10156,7 +10311,7 @@ function logProgramError(gl, program, vertexShader, fragmentShader) {
     gl.getProgramParameter(program, gl.LINK_STATUS) || (gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS) || logPrettyShaderError(gl, vertexShader), gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS) || logPrettyShaderError(gl, fragmentShader), console.error("PixiJS Error: Could not initialize shader."), gl.getProgramInfoLog(program) !== "" && console.warn("PixiJS Warning: gl.getProgramInfoLog()", gl.getProgramInfoLog(program)));
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5uYxX":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fYB1w":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "mapSize", ()=>mapSize);
@@ -10186,7 +10341,7 @@ function mapSize(type) {
     return GLSL_TO_SIZE[type];
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5WtLf":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"85NQK":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "mapType", ()=>mapType);
@@ -10233,7 +10388,7 @@ function mapType(gl, type) {
     return GL_TABLE[type];
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fmIFc":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aENlf":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "setPrecision", ()=>setPrecision);
@@ -10247,7 +10402,7 @@ ${src}`;
     return src;
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"BOI5M":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hYMQZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "unsafeEvalSupported", ()=>unsafeEvalSupported);
@@ -10264,7 +10419,7 @@ function unsafeEvalSupported() {
     return unsafeEval;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"03Fjo":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dD3c3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Shader", ()=>Shader);
@@ -10308,7 +10463,7 @@ class Shader {
     }
 }
 
-},{"@pixi/runner":"2XL0D","./Program.mjs":"c4TEr","./UniformGroup.mjs":"aDDsj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aDDsj":[function(require,module,exports,__globalThis) {
+},{"@pixi/runner":"anFhS","./Program.mjs":"hhSGo","./UniformGroup.mjs":"j2NFe","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"j2NFe":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "UniformGroup", ()=>UniformGroup);
@@ -10342,7 +10497,7 @@ class UniformGroup {
     }
 }
 
-},{"@pixi/constants":"3IyrP","../geometry/Buffer.mjs":"5E2K0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fdiY8":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","../geometry/Buffer.mjs":"44dLm","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9aDBT":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchTextureArray", ()=>BatchTextureArray);
@@ -10356,7 +10511,7 @@ class BatchTextureArray {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f5Z32":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ikhsC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "canUploadSameBuffer", ()=>canUploadSameBuffer);
@@ -10365,7 +10520,7 @@ function canUploadSameBuffer() {
     return !(0, _settings.isMobile).apple.device;
 }
 
-},{"@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2Xw8d":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iN2Y7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "maxRecommendedTextures", ()=>maxRecommendedTextures);
@@ -10386,7 +10541,7 @@ function maxRecommendedTextures(max) {
     return allowMax ? max : 4;
 }
 
-},{"@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2VJXf":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gIZUd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ObjectRenderer", ()=>ObjectRenderer);
@@ -10416,7 +10571,7 @@ class ObjectRenderer {
    */ render(_object) {}
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6bpUi":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kypx7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultFragment);
@@ -10432,7 +10587,7 @@ void main(void){
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fKeaX":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hNKXV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultVertex);
@@ -10459,7 +10614,7 @@ void main(void){
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8ZjGW":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"e5zMq":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Filter", ()=>Filter);
@@ -10533,7 +10688,7 @@ _Filter.defaultResolution = 1, /**
 */ _Filter.defaultMultisample = (0, _constants.MSAA_QUALITY).NONE;
 let Filter = _Filter;
 
-},{"@pixi/constants":"3IyrP","../shader/Program.mjs":"c4TEr","../shader/Shader.mjs":"03Fjo","../state/State.mjs":"bSj8s","./defaultFilter.frag.mjs":"cgSpX","./defaultFilter.vert.mjs":"5sCB9","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cgSpX":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","../shader/Program.mjs":"hhSGo","../shader/Shader.mjs":"dD3c3","../state/State.mjs":"5KjBt","./defaultFilter.frag.mjs":"l9qIE","./defaultFilter.vert.mjs":"gxqBQ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l9qIE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultFragment);
@@ -10546,7 +10701,7 @@ void main(void){
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5sCB9":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gxqBQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>defaultVertex);
@@ -10578,7 +10733,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eXJLX":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8jTrT":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BackgroundSystem", ()=>(0, _backgroundSystemMjs.BackgroundSystem));
@@ -10624,7 +10779,7 @@ var _textureSystemMjs = require("./textures/TextureSystem.mjs");
 var _transformFeedbackSystemMjs = require("./transformFeedback/TransformFeedbackSystem.mjs");
 var _viewSystemMjs = require("./view/ViewSystem.mjs");
 
-},{"./background/BackgroundSystem.mjs":"b7yyw","./batch/BatchSystem.mjs":"lRo9G","./context/ContextSystem.mjs":"aQx1U","./filters/FilterSystem.mjs":"jH3p7","./framebuffer/FramebufferSystem.mjs":"hmxlB","./geometry/GeometrySystem.mjs":"8XE6b","./mask/MaskSystem.mjs":"8lF08","./mask/ScissorSystem.mjs":"6Xxrb","./mask/StencilSystem.mjs":"6fAbY","./plugin/PluginSystem.mjs":"dTrKP","./projection/ProjectionSystem.mjs":"4BQff","./renderTexture/GenerateTextureSystem.mjs":"gcgQV","./renderTexture/RenderTextureSystem.mjs":"fR7f6","./shader/ShaderSystem.mjs":"jaFgU","./startup/StartupSystem.mjs":"8Bl31","./state/StateSystem.mjs":"5mh1F","./system/SystemManager.mjs":"lqrfn","./textures/TextureGCSystem.mjs":"43OAw","./textures/TextureSystem.mjs":"esP0U","./transformFeedback/TransformFeedbackSystem.mjs":"dLUtJ","./view/ViewSystem.mjs":"5ataW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"b7yyw":[function(require,module,exports,__globalThis) {
+},{"./background/BackgroundSystem.mjs":"bakqH","./batch/BatchSystem.mjs":"kQpBu","./context/ContextSystem.mjs":"2mWxQ","./filters/FilterSystem.mjs":"lKn9E","./framebuffer/FramebufferSystem.mjs":"b7S1g","./geometry/GeometrySystem.mjs":"bWBae","./mask/MaskSystem.mjs":"fXsAA","./mask/ScissorSystem.mjs":"fIMdr","./mask/StencilSystem.mjs":"fQ2hP","./plugin/PluginSystem.mjs":"bFPRq","./projection/ProjectionSystem.mjs":"h3clp","./renderTexture/GenerateTextureSystem.mjs":"5NO3x","./renderTexture/RenderTextureSystem.mjs":"9XLPO","./shader/ShaderSystem.mjs":"3p6Th","./startup/StartupSystem.mjs":"iVAPu","./state/StateSystem.mjs":"48QKv","./system/SystemManager.mjs":"256g0","./textures/TextureGCSystem.mjs":"iOznv","./textures/TextureSystem.mjs":"3Vjjr","./transformFeedback/TransformFeedbackSystem.mjs":"fLAXB","./view/ViewSystem.mjs":"1fRaX","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bakqH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BackgroundSystem", ()=>BackgroundSystem);
@@ -10690,7 +10845,7 @@ BackgroundSystem.defaultOptions = {
 };
 (0, _extensions.extensions).add(BackgroundSystem);
 
-},{"@pixi/color":"4S9LD","@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lRo9G":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kQpBu":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchSystem", ()=>BatchSystem);
@@ -10766,7 +10921,7 @@ BatchSystem.extension = {
 };
 (0, _extensions.extensions).add(BatchSystem);
 
-},{"@pixi/extensions":"hxIPp","./ObjectRenderer.mjs":"2VJXf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aQx1U":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","./ObjectRenderer.mjs":"gIZUd","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2mWxQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ContextSystem", ()=>ContextSystem);
@@ -10927,7 +11082,7 @@ ContextSystem.defaultOptions = {
 };
 (0, _extensions.extensions).add(ContextSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jH3p7":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lKn9E":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FilterSystem", ()=>FilterSystem);
@@ -11115,7 +11270,7 @@ FilterSystem.extension = {
 };
 (0, _extensions.extensions).add(FilterSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/math":"jGogD","../renderTexture/RenderTexturePool.mjs":"19raN","../shader/UniformGroup.mjs":"aDDsj","../utils/Quad.mjs":"dG7kU","../utils/QuadUv.mjs":"eXKwL","./FilterState.mjs":"iFeXR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"19raN":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/math":"1bk72","../renderTexture/RenderTexturePool.mjs":"l2YRp","../shader/UniformGroup.mjs":"j2NFe","../utils/Quad.mjs":"6S3S2","../utils/QuadUv.mjs":"gbUje","./FilterState.mjs":"4J9JJ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l2YRp":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "RenderTexturePool", ()=>RenderTexturePool);
@@ -11213,7 +11368,7 @@ class RenderTexturePool {
 }
 RenderTexturePool.SCREEN_KEY = -1;
 
-},{"@pixi/constants":"3IyrP","@pixi/utils":"70nLd","./BaseRenderTexture.mjs":"iF0zm","./RenderTexture.mjs":"3ZsJG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iF0zm":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/utils":"qKLFF","./BaseRenderTexture.mjs":"2KDZv","./RenderTexture.mjs":"58MAH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2KDZv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BaseRenderTexture", ()=>BaseRenderTexture);
@@ -11292,7 +11447,7 @@ class BaseRenderTexture extends (0, _baseTextureMjs.BaseTexture) {
     }
 }
 
-},{"@pixi/color":"4S9LD","@pixi/constants":"3IyrP","../framebuffer/Framebuffer.mjs":"2tzoJ","../textures/BaseTexture.mjs":"1z8cb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2tzoJ":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","@pixi/constants":"6KFQA","../framebuffer/Framebuffer.mjs":"lVFGA","../textures/BaseTexture.mjs":"lm1IA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lVFGA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Framebuffer", ()=>Framebuffer);
@@ -11372,7 +11527,7 @@ class Framebuffer {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/runner":"2XL0D","../textures/BaseTexture.mjs":"1z8cb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ZsJG":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/runner":"anFhS","../textures/BaseTexture.mjs":"lm1IA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"58MAH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "RenderTexture", ()=>RenderTexture);
@@ -11432,7 +11587,7 @@ class RenderTexture extends (0, _textureMjs.Texture) {
     }
 }
 
-},{"../textures/Texture.mjs":"hOFPI","./BaseRenderTexture.mjs":"iF0zm","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hOFPI":[function(require,module,exports,__globalThis) {
+},{"../textures/Texture.mjs":"408Pe","./BaseRenderTexture.mjs":"2KDZv","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"408Pe":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Texture", ()=>Texture);
@@ -11669,7 +11824,7 @@ class Texture extends (0, _utils.EventEmitter) {
     }
 }
 
-},{"@pixi/math":"jGogD","@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./BaseTexture.mjs":"1z8cb","./resources/ImageResource.mjs":"7bpMN","./TextureUvs.mjs":"jgk1X","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7bpMN":[function(require,module,exports,__globalThis) {
+},{"@pixi/math":"1bk72","@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./BaseTexture.mjs":"lm1IA","./resources/ImageResource.mjs":"8omzs","./TextureUvs.mjs":"8DaUV","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8omzs":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ImageResource", ()=>ImageResource);
@@ -11757,7 +11912,7 @@ class ImageResource extends (0, _baseImageResourceMjs.BaseImageResource) {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/settings":"9EoeN","./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lscQQ":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/settings":"9Bd0L","./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"KbakW":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BaseImageResource", ()=>BaseImageResource);
@@ -11806,7 +11961,7 @@ class BaseImageResource extends (0, _resourceMjs.Resource) {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/utils":"70nLd","./Resource.mjs":"hTgR6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jgk1X":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/utils":"qKLFF","./Resource.mjs":"dnqd9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8DaUV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextureUvs", ()=>TextureUvs);
@@ -11834,7 +11989,7 @@ TextureUvs.prototype.toString = function() {
     return `[@pixi/core:TextureUvs x0=${this.x0} y0=${this.y0} x1=${this.x1} y1=${this.y1} x2=${this.x2} y2=${this.y2} x3=${this.x3} y3=${this.y3}]`;
 };
 
-},{"@pixi/math":"jGogD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dG7kU":[function(require,module,exports,__globalThis) {
+},{"@pixi/math":"1bk72","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6S3S2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Quad", ()=>Quad);
@@ -11859,7 +12014,7 @@ class Quad extends (0, _geometryMjs.Geometry) {
     }
 }
 
-},{"../geometry/Geometry.mjs":"iwnUt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eXKwL":[function(require,module,exports,__globalThis) {
+},{"../geometry/Geometry.mjs":"dnBmH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gbUje":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "QuadUv", ()=>QuadUv);
@@ -11911,7 +12066,7 @@ class QuadUv extends (0, _geometryMjs.Geometry) {
     }
 }
 
-},{"../geometry/Buffer.mjs":"5E2K0","../geometry/Geometry.mjs":"iwnUt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iFeXR":[function(require,module,exports,__globalThis) {
+},{"../geometry/Buffer.mjs":"44dLm","../geometry/Geometry.mjs":"dnBmH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4J9JJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FilterState", ()=>FilterState);
@@ -11926,7 +12081,7 @@ class FilterState {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/math":"jGogD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hmxlB":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/math":"1bk72","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"b7S1g":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FramebufferSystem", ()=>FramebufferSystem);
@@ -12159,7 +12314,7 @@ FramebufferSystem.extension = {
 };
 (0, _extensions.extensions).add(FramebufferSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@pixi/settings":"9EoeN","./Framebuffer.mjs":"2tzoJ","./GLFramebuffer.mjs":"3wrnL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3wrnL":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/math":"1bk72","@pixi/settings":"9Bd0L","./Framebuffer.mjs":"lVFGA","./GLFramebuffer.mjs":"dyKIK","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dyKIK":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GLFramebuffer", ()=>GLFramebuffer);
@@ -12170,7 +12325,7 @@ class GLFramebuffer {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8XE6b":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bWBae":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GeometrySystem", ()=>GeometrySystem);
@@ -12348,7 +12503,7 @@ GeometrySystem.extension = {
 };
 (0, _extensions.extensions).add(GeometrySystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8lF08":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fXsAA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MaskSystem", ()=>MaskSystem);
@@ -12478,7 +12633,7 @@ MaskSystem.extension = {
 };
 (0, _extensions.extensions).add(MaskSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","../filters/spriteMask/SpriteMaskFilter.mjs":"2mFuH","./MaskData.mjs":"iojlO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2mFuH":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","../filters/spriteMask/SpriteMaskFilter.mjs":"cXIXA","./MaskData.mjs":"fmQwr","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cXIXA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SpriteMaskFilter", ()=>SpriteMaskFilter);
@@ -12515,7 +12670,7 @@ class SpriteMaskFilter extends (0, _filterMjs.Filter) {
     }
 }
 
-},{"@pixi/math":"jGogD","../../textures/TextureMatrix.mjs":"kFIVM","../Filter.mjs":"8ZjGW","./spriteMaskFilter.frag.mjs":"7pSBo","./spriteMaskFilter.vert.mjs":"dQwl2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kFIVM":[function(require,module,exports,__globalThis) {
+},{"@pixi/math":"1bk72","../../textures/TextureMatrix.mjs":"kt55z","../Filter.mjs":"e5zMq","./spriteMaskFilter.frag.mjs":"echGV","./spriteMaskFilter.vert.mjs":"lIMiy","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kt55z":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextureMatrix", ()=>TextureMatrix);
@@ -12565,7 +12720,7 @@ class TextureMatrix {
     }
 }
 
-},{"@pixi/math":"jGogD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7pSBo":[function(require,module,exports,__globalThis) {
+},{"@pixi/math":"1bk72","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"echGV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -12596,7 +12751,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dQwl2":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lIMiy":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>vertex);
@@ -12618,7 +12773,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iojlO":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fmQwr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MaskData", ()=>MaskData);
@@ -12654,7 +12809,7 @@ class MaskData {
     }
 }
 
-},{"@pixi/constants":"3IyrP","../filters/Filter.mjs":"8ZjGW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6Xxrb":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","../filters/Filter.mjs":"e5zMq","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fIMdr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ScissorSystem", ()=>ScissorSystem);
@@ -12735,7 +12890,7 @@ _ScissorSystem.extension = {
 let ScissorSystem = _ScissorSystem;
 (0, _extensions.extensions).add(ScissorSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@pixi/settings":"9EoeN","./AbstractMaskSystem.mjs":"4cmC0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4cmC0":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/math":"1bk72","@pixi/settings":"9Bd0L","./AbstractMaskSystem.mjs":"15p0C","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"15p0C":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AbstractMaskSystem", ()=>AbstractMaskSystem);
@@ -12766,7 +12921,7 @@ class AbstractMaskSystem {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6fAbY":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fQ2hP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "StencilSystem", ()=>StencilSystem);
@@ -12817,7 +12972,7 @@ StencilSystem.extension = {
 };
 (0, _extensions.extensions).add(StencilSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/settings":"9EoeN","./AbstractMaskSystem.mjs":"4cmC0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dTrKP":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/settings":"9Bd0L","./AbstractMaskSystem.mjs":"15p0C","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bFPRq":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PluginSystem", ()=>PluginSystem);
@@ -12866,7 +13021,7 @@ PluginSystem.extension = {
 };
 (0, _extensions.extensions).add(PluginSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/utils":"70nLd","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4BQff":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/utils":"qKLFF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h3clp":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ProjectionSystem", ()=>ProjectionSystem);
@@ -12922,7 +13077,7 @@ ProjectionSystem.extension = {
 };
 (0, _extensions.extensions).add(ProjectionSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gcgQV":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/math":"1bk72","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5NO3x":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GenerateTextureSystem", ()=>GenerateTextureSystem);
@@ -12968,7 +13123,7 @@ GenerateTextureSystem.extension = {
 };
 (0, _extensions.extensions).add(GenerateTextureSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/math":"jGogD","./RenderTexture.mjs":"3ZsJG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fR7f6":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/math":"1bk72","./RenderTexture.mjs":"58MAH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9XLPO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "RenderTextureSystem", ()=>RenderTextureSystem);
@@ -13030,7 +13185,7 @@ RenderTextureSystem.extension = {
 };
 (0, _extensions.extensions).add(RenderTextureSystem);
 
-},{"@pixi/color":"4S9LD","@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jaFgU":[function(require,module,exports,__globalThis) {
+},{"@pixi/color":"cHtpO","@pixi/extensions":"otd2c","@pixi/math":"1bk72","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3p6Th":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ShaderSystem", ()=>ShaderSystem);
@@ -13179,7 +13334,7 @@ ShaderSystem.extension = {
 };
 (0, _extensions.extensions).add(ShaderSystem);
 
-},{"@pixi/extensions":"hxIPp","./utils/index.mjs":"icZLc","./utils/generateProgram.mjs":"5k67m","./utils/generateUniformBufferSync.mjs":"78ywK","./utils/unsafeEvalSupported.mjs":"BOI5M","./utils/generateUniformsSync.mjs":"6EwVX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5k67m":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","./utils/index.mjs":"4OaGe","./utils/generateProgram.mjs":"fD1VM","./utils/generateUniformBufferSync.mjs":"geXcl","./utils/unsafeEvalSupported.mjs":"hYMQZ","./utils/generateUniformsSync.mjs":"h6sl1","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fD1VM":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "generateProgram", ()=>generateProgram);
@@ -13211,7 +13366,7 @@ function generateProgram(gl, program) {
     return new (0, _glprogramMjs.GLProgram)(webGLProgram, uniformData);
 }
 
-},{"../GLProgram.mjs":"7Fu1I","./compileShader.mjs":"lVc0j","./defaultValue.mjs":"liRRV","./getAttributeData.mjs":"f09W9","./getUniformData.mjs":"20N5W","./logProgramError.mjs":"bBulS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Fu1I":[function(require,module,exports,__globalThis) {
+},{"../GLProgram.mjs":"bro7e","./compileShader.mjs":"fkF6I","./defaultValue.mjs":"5Iv3V","./getAttributeData.mjs":"kjOoW","./getUniformData.mjs":"h4uJr","./logProgramError.mjs":"gve8a","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bro7e":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GLProgram", ()=>GLProgram);
@@ -13231,7 +13386,7 @@ class GLProgram {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f09W9":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kjOoW":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getAttributeData", ()=>getAttributeData);
@@ -13253,7 +13408,7 @@ function getAttributeData(program, gl) {
     return attributes;
 }
 
-},{"./mapSize.mjs":"5uYxX","./mapType.mjs":"5WtLf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"20N5W":[function(require,module,exports,__globalThis) {
+},{"./mapSize.mjs":"fYB1w","./mapType.mjs":"85NQK","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h4uJr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getUniformData", ()=>getUniformData);
@@ -13275,7 +13430,7 @@ function getUniformData(program, gl) {
     return uniforms;
 }
 
-},{"./defaultValue.mjs":"liRRV","./mapType.mjs":"5WtLf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"78ywK":[function(require,module,exports,__globalThis) {
+},{"./defaultValue.mjs":"5Iv3V","./mapType.mjs":"85NQK","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"geXcl":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createUBOElements", ()=>createUBOElements);
@@ -13447,7 +13602,7 @@ function generateUniformBufferSync(group, uniformData) {
     };
 }
 
-},{"./index.mjs":"icZLc","./uniformParsers.mjs":"bNrR5","./mapSize.mjs":"5uYxX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8Bl31":[function(require,module,exports,__globalThis) {
+},{"./index.mjs":"4OaGe","./uniformParsers.mjs":"9wxhh","./mapSize.mjs":"fYB1w","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iVAPu":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "StartupSystem", ()=>StartupSystem);
@@ -13461,7 +13616,7 @@ class StartupSystem {
    * @param options - the config for the renderer and all its systems
    */ run(options) {
         const { renderer } = this;
-        renderer.runners.init.emit(renderer.options), options.hello && console.log(`PixiJS 7.4.2 - ${renderer.rendererLogId} - https://pixijs.com`), renderer.resize(renderer.screen.width, renderer.screen.height);
+        renderer.runners.init.emit(renderer.options), options.hello && console.log(`PixiJS 7.4.3 - ${renderer.rendererLogId} - https://pixijs.com`), renderer.resize(renderer.screen.width, renderer.screen.height);
     }
     destroy() {}
 }
@@ -13480,7 +13635,7 @@ StartupSystem.defaultOptions = {
 };
 (0, _extensions.extensions).add(StartupSystem);
 
-},{"@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5mh1F":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"48QKv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "StateSystem", ()=>StateSystem);
@@ -13610,7 +13765,7 @@ _StateSystem.extension = {
 let StateSystem = _StateSystem;
 (0, _extensions.extensions).add(StateSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","./State.mjs":"bSj8s","./utils/mapWebGLBlendModesToPixi.mjs":"iexl0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iexl0":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","./State.mjs":"5KjBt","./utils/mapWebGLBlendModesToPixi.mjs":"ebtuR","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ebtuR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "mapWebGLBlendModesToPixi", ()=>mapWebGLBlendModesToPixi);
@@ -13723,7 +13878,7 @@ function mapWebGLBlendModesToPixi(gl, array = []) {
     ], array;
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lqrfn":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"256g0":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SystemManager", ()=>SystemManager);
@@ -13798,7 +13953,7 @@ class SystemManager extends (0, _utils.EventEmitter) {
     }
 }
 
-},{"@pixi/runner":"2XL0D","@pixi/utils":"70nLd","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"43OAw":[function(require,module,exports,__globalThis) {
+},{"@pixi/runner":"anFhS","@pixi/utils":"qKLFF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iOznv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextureGCSystem", ()=>TextureGCSystem);
@@ -13859,7 +14014,7 @@ _TextureGCSystem.defaultMode = (0, _constants.GC_MODES).AUTO, /**
 let TextureGCSystem = _TextureGCSystem;
 (0, _extensions.extensions).add(TextureGCSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"esP0U":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3Vjjr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextureSystem", ()=>TextureSystem);
@@ -14002,7 +14157,7 @@ TextureSystem.extension = {
 };
 (0, _extensions.extensions).add(TextureSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/utils":"70nLd","./BaseTexture.mjs":"1z8cb","./GLTexture.mjs":"ddmgr","./utils/mapInternalFormatToSamplerType.mjs":"88ycM","./utils/mapTypeAndFormatToInternalFormat.mjs":"cQ0W6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ddmgr":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/utils":"qKLFF","./BaseTexture.mjs":"lm1IA","./GLTexture.mjs":"4oUOC","./utils/mapInternalFormatToSamplerType.mjs":"ekGwG","./utils/mapTypeAndFormatToInternalFormat.mjs":"axymP","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4oUOC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GLTexture", ()=>GLTexture);
@@ -14013,7 +14168,7 @@ class GLTexture {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"88ycM":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ekGwG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "mapInternalFormatToSamplerType", ()=>mapInternalFormatToSamplerType);
@@ -14091,7 +14246,7 @@ function mapInternalFormatToSamplerType(gl) {
     }, table;
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cQ0W6":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"axymP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "mapTypeAndFormatToInternalFormat", ()=>mapTypeAndFormatToInternalFormat);
@@ -14206,7 +14361,7 @@ function mapTypeAndFormatToInternalFormat(gl) {
     }, table;
 }
 
-},{"@pixi/constants":"3IyrP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dLUtJ":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fLAXB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TransformFeedbackSystem", ()=>TransformFeedbackSystem);
@@ -14282,7 +14437,7 @@ TransformFeedbackSystem.extension = {
 };
 (0, _extensions.extensions).add(TransformFeedbackSystem);
 
-},{"@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5ataW":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1fRaX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ViewSystem", ()=>ViewSystem);
@@ -14346,7 +14501,7 @@ ViewSystem.defaultOptions = {
 };
 (0, _extensions.extensions).add(ViewSystem);
 
-},{"@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@pixi/settings":"9EoeN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6qUlj":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@pixi/math":"1bk72","@pixi/settings":"9Bd0L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jb4KO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Ticker", ()=>(0, _tickerMjs.Ticker));
@@ -14357,7 +14512,7 @@ var _constMjs = require("./const.mjs");
 var _tickerMjs = require("./Ticker.mjs");
 var _tickerPluginMjs = require("./TickerPlugin.mjs");
 
-},{"./settings.mjs":"5kXLx","./const.mjs":"jcHaa","./Ticker.mjs":"e5b2j","./TickerPlugin.mjs":"exhY3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5kXLx":[function(require,module,exports,__globalThis) {
+},{"./settings.mjs":"1vM8V","./const.mjs":"ktX1Q","./Ticker.mjs":"6ms6u","./TickerPlugin.mjs":"5ujPt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1vM8V":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "settings", ()=>(0, _settings.settings));
@@ -14383,7 +14538,7 @@ Object.defineProperties((0, _settings.settings), {
     }
 });
 
-},{"@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./Ticker.mjs":"e5b2j","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e5b2j":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./Ticker.mjs":"6ms6u","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6ms6u":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Ticker", ()=>Ticker);
@@ -14636,13 +14791,13 @@ const _Ticker = class _Ticker2 {
 _Ticker.targetFPMS = 0.06;
 let Ticker = _Ticker;
 
-},{"./const.mjs":"jcHaa","./TickerListener.mjs":"1ugmR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jcHaa":[function(require,module,exports,__globalThis) {
+},{"./const.mjs":"ktX1Q","./TickerListener.mjs":"1tFJP","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ktX1Q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "UPDATE_PRIORITY", ()=>UPDATE_PRIORITY);
 var UPDATE_PRIORITY = /* @__PURE__ */ ((UPDATE_PRIORITY2)=>(UPDATE_PRIORITY2[UPDATE_PRIORITY2.INTERACTION = 50] = "INTERACTION", UPDATE_PRIORITY2[UPDATE_PRIORITY2.HIGH = 25] = "HIGH", UPDATE_PRIORITY2[UPDATE_PRIORITY2.NORMAL = 0] = "NORMAL", UPDATE_PRIORITY2[UPDATE_PRIORITY2.LOW = -25] = "LOW", UPDATE_PRIORITY2[UPDATE_PRIORITY2.UTILITY = -50] = "UTILITY", UPDATE_PRIORITY2))(UPDATE_PRIORITY || {});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ugmR":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1tFJP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TickerListener", ()=>TickerListener);
@@ -14696,7 +14851,7 @@ class TickerListener {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"exhY3":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5ujPt":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TickerPlugin", ()=>TickerPlugin);
@@ -14740,7 +14895,7 @@ class TickerPlugin {
 TickerPlugin.extension = (0, _extensions.ExtensionType).Application;
 (0, _extensions.extensions).add(TickerPlugin);
 
-},{"@pixi/extensions":"hxIPp","./const.mjs":"jcHaa","./Ticker.mjs":"e5b2j","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"25ZJb":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","./const.mjs":"ktX1Q","./Ticker.mjs":"6ms6u","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8BSps":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "autoDetectRenderer", ()=>autoDetectRenderer);
@@ -14752,9 +14907,9 @@ function autoDetectRenderer(options) {
     throw new Error("Unable to auto-detect a suitable renderer.");
 }
 
-},{"@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"37zik":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dLL1d":[function(require,module,exports,__globalThis) {
 
-},{}],"f5iYX":[function(require,module,exports,__globalThis) {
+},{}],"2NPay":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "defaultFilterVertex", ()=>defaultFilterVertex);
@@ -14765,7 +14920,7 @@ var _defaultFilterVertMjs = require("./defaultFilter.vert.mjs");
 var _defaultFilterVertMjsDefault = parcelHelpers.interopDefault(_defaultFilterVertMjs);
 const defaultVertex = (0, _defaultVertMjsDefault.default), defaultFilterVertex = (0, _defaultFilterVertMjsDefault.default);
 
-},{"./default.vert.mjs":"drcgy","./defaultFilter.vert.mjs":"6P4Ak","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"drcgy":[function(require,module,exports,__globalThis) {
+},{"./default.vert.mjs":"9fCJC","./defaultFilter.vert.mjs":"ijgll","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9fCJC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>$defaultVertex);
@@ -14782,7 +14937,7 @@ void main(void)
     vTextureCoord = aTextureCoord;
 }`;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6P4Ak":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ijgll":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>$defaultFilterVertex);
@@ -14814,7 +14969,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iB57l":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cvtQX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MultisampleSystem", ()=>MultisampleSystem);
@@ -14843,7 +14998,7 @@ MultisampleSystem.extension = {
 };
 (0, _extensions.extensions).add(MultisampleSystem);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"egWpx":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2MIAi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BufferSystem", ()=>BufferSystem);
@@ -14944,7 +15099,7 @@ BufferSystem.extension = {
 };
 (0, _extensions.extensions).add(BufferSystem);
 
-},{"@pixi/extensions":"hxIPp","./GLBuffer.mjs":"6Lxea","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6Lxea":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","./GLBuffer.mjs":"kWCX3","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kWCX3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GLBuffer", ()=>GLBuffer);
@@ -14954,9 +15109,9 @@ class GLBuffer {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f8YSU":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cL3r8":[function(require,module,exports,__globalThis) {
 
-},{}],"3Cdbn":[function(require,module,exports,__globalThis) {
+},{}],"aShk6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ObjectRendererSystem", ()=>ObjectRendererSystem);
@@ -14991,7 +15146,7 @@ ObjectRendererSystem.extension = {
 };
 (0, _extensions.extensions).add(ObjectRendererSystem);
 
-},{"@pixi/extensions":"hxIPp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5wZqz":[function(require,module,exports,__globalThis) {
+},{"@pixi/extensions":"otd2c","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8BySY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Renderer", ()=>Renderer);
@@ -15224,9 +15379,9 @@ let Renderer = _Renderer;
 (0, _extensions.extensions).handleByMap((0, _extensions.ExtensionType).RendererSystem, Renderer.__systems);
 (0, _extensions.extensions).add(Renderer);
 
-},{"@pixi/constants":"3IyrP","@pixi/extensions":"hxIPp","@pixi/math":"jGogD","@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./shader/UniformGroup.mjs":"aDDsj","./system/SystemManager.mjs":"lqrfn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"60P4q":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/extensions":"otd2c","@pixi/math":"1bk72","@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./shader/UniformGroup.mjs":"j2NFe","./system/SystemManager.mjs":"256g0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l9ALT":[function(require,module,exports,__globalThis) {
 
-},{}],"a9mzI":[function(require,module,exports,__globalThis) {
+},{}],"lIx92":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AbstractMultiResource", ()=>(0, _abstractMultiResourceMjs.AbstractMultiResource));
@@ -15257,7 +15412,7 @@ var _resourceMjs = require("./Resource.mjs");
 var _abstractMultiResourceMjs = require("./AbstractMultiResource.mjs");
 (0, _autoDetectResourceMjs.INSTALLED).push((0, _imageBitmapResourceMjs.ImageBitmapResource), (0, _imageResourceMjs.ImageResource), (0, _canvasResourceMjs.CanvasResource), (0, _videoResourceMjs.VideoResource), (0, _videoFrameResourceMjs.VideoFrameResource), (0, _svgresourceMjs.SVGResource), (0, _bufferResourceMjs.BufferResource), (0, _cubeResourceMjs.CubeResource), (0, _arrayResourceMjs.ArrayResource));
 
-},{"./ArrayResource.mjs":"7rQ0Q","./autoDetectResource.mjs":"gWU82","./BufferResource.mjs":"8E5MR","./CanvasResource.mjs":"2Gi3Y","./CubeResource.mjs":"5mzBN","./ImageBitmapResource.mjs":"6X2SR","./ImageResource.mjs":"7bpMN","./SVGResource.mjs":"i8iuM","./VideoFrameResource.mjs":"es1ZN","./VideoResource.mjs":"glL6b","./BaseImageResource.mjs":"lscQQ","./Resource.mjs":"hTgR6","./AbstractMultiResource.mjs":"jU0Bu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7rQ0Q":[function(require,module,exports,__globalThis) {
+},{"./ArrayResource.mjs":"jY3hH","./autoDetectResource.mjs":"h2612","./BufferResource.mjs":"4X9NQ","./CanvasResource.mjs":"i6ids","./CubeResource.mjs":"2kliP","./ImageBitmapResource.mjs":"92QvZ","./ImageResource.mjs":"8omzs","./SVGResource.mjs":"94ErK","./VideoFrameResource.mjs":"dNZZn","./VideoResource.mjs":"7raVH","./BaseImageResource.mjs":"KbakW","./Resource.mjs":"dnqd9","./AbstractMultiResource.mjs":"bl9sy","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jY3hH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ArrayResource", ()=>ArrayResource);
@@ -15315,7 +15470,7 @@ class ArrayResource extends (0, _abstractMultiResourceMjs.AbstractMultiResource)
     }
 }
 
-},{"@pixi/constants":"3IyrP","./AbstractMultiResource.mjs":"jU0Bu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jU0Bu":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","./AbstractMultiResource.mjs":"bl9sy","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bl9sy":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AbstractMultiResource", ()=>AbstractMultiResource);
@@ -15386,7 +15541,7 @@ class AbstractMultiResource extends (0, _resourceMjs.Resource) {
     }
 }
 
-},{"../BaseTexture.mjs":"1z8cb","./autoDetectResource.mjs":"gWU82","./Resource.mjs":"hTgR6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2Gi3Y":[function(require,module,exports,__globalThis) {
+},{"../BaseTexture.mjs":"lm1IA","./autoDetectResource.mjs":"h2612","./Resource.mjs":"dnqd9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"i6ids":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CanvasResource", ()=>CanvasResource);
@@ -15408,7 +15563,7 @@ class CanvasResource extends (0, _baseImageResourceMjs.BaseImageResource) {
     }
 }
 
-},{"./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5mzBN":[function(require,module,exports,__globalThis) {
+},{"./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2kliP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CubeResource", ()=>CubeResource);
@@ -15473,7 +15628,7 @@ const _CubeResource = class _CubeResource2 extends (0, _abstractMultiResourceMjs
 _CubeResource.SIDES = 6;
 let CubeResource = _CubeResource;
 
-},{"@pixi/constants":"3IyrP","./AbstractMultiResource.mjs":"jU0Bu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6X2SR":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","./AbstractMultiResource.mjs":"bl9sy","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"92QvZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ImageBitmapResource", ()=>ImageBitmapResource);
@@ -15544,7 +15699,7 @@ class ImageBitmapResource extends (0, _baseImageResourceMjs.BaseImageResource) {
     }
 }
 
-},{"@pixi/constants":"3IyrP","@pixi/settings":"9EoeN","./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i8iuM":[function(require,module,exports,__globalThis) {
+},{"@pixi/constants":"6KFQA","@pixi/settings":"9Bd0L","./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"94ErK":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SVGResource", ()=>SVGResource);
@@ -15614,7 +15769,7 @@ _SVGResource.SVG_XML = /^(<\?xml[^?]+\?>)?\s*(<!--[^(-->)]*-->)?\s*\<svg/m, /**
 */ _SVGResource.SVG_SIZE = /<svg[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*>/i;
 let SVGResource = _SVGResource;
 
-},{"@pixi/settings":"9EoeN","@pixi/utils":"70nLd","./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"es1ZN":[function(require,module,exports,__globalThis) {
+},{"@pixi/settings":"9Bd0L","@pixi/utils":"qKLFF","./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dNZZn":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "VideoFrameResource", ()=>VideoFrameResource);
@@ -15635,7 +15790,7 @@ class VideoFrameResource extends (0, _baseImageResourceMjs.BaseImageResource) {
     }
 }
 
-},{"./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"glL6b":[function(require,module,exports,__globalThis) {
+},{"./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7raVH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "VideoResource", ()=>VideoResource);
@@ -15787,7 +15942,7 @@ _VideoResource.TYPES = [
 };
 let VideoResource = _VideoResource;
 
-},{"@pixi/ticker":"6qUlj","./BaseImageResource.mjs":"lscQQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i90NO":[function(require,module,exports,__globalThis) {
+},{"@pixi/ticker":"jb4KO","./BaseImageResource.mjs":"KbakW","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3lnuZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TransformFeedback", ()=>TransformFeedback);
@@ -15808,7 +15963,7 @@ class TransformFeedback {
     }
 }
 
-},{"@pixi/runner":"2XL0D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCm6V":[function(require,module,exports,__globalThis) {
+},{"@pixi/runner":"anFhS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gKqmo":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Bounds", ()=>(0, _boundsMjs.Bounds));
@@ -15820,7 +15975,7 @@ var _boundsMjs = require("./Bounds.mjs");
 var _containerMjs = require("./Container.mjs");
 var _displayObjectMjs = require("./DisplayObject.mjs");
 
-},{"./settings.mjs":"hdI7L","./Bounds.mjs":"1Q0gY","./Container.mjs":"6gIff","./DisplayObject.mjs":"i46Pr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hdI7L":[function(require,module,exports,__globalThis) {
+},{"./settings.mjs":"cwO6S","./Bounds.mjs":"jwkKG","./Container.mjs":"kuecf","./DisplayObject.mjs":"9MlPi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cwO6S":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "settings", ()=>(0, _core.settings));
@@ -15845,7 +16000,7 @@ Object.defineProperties((0, _core.settings), {
     }
 });
 
-},{"@pixi/core":"f1ycj","./Container.mjs":"6gIff","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6gIff":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./Container.mjs":"kuecf","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kuecf":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Container", ()=>Container);
@@ -16121,7 +16276,7 @@ _Container.defaultSortableChildren = !1;
 let Container = _Container;
 Container.prototype.containerUpdateTransform = Container.prototype.updateTransform;
 
-},{"@pixi/core":"f1ycj","./DisplayObject.mjs":"i46Pr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i46Pr":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./DisplayObject.mjs":"9MlPi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9MlPi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "DisplayObject", ()=>DisplayObject);
@@ -16452,7 +16607,7 @@ class TemporaryDisplayObject extends DisplayObject {
 }
 DisplayObject.prototype.displayObjectUpdateTransform = DisplayObject.prototype.updateTransform;
 
-},{"@pixi/core":"f1ycj","./Bounds.mjs":"1Q0gY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1Q0gY":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./Bounds.mjs":"jwkKG","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jwkKG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Bounds", ()=>Bounds);
@@ -16617,13 +16772,13 @@ class Bounds {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cDBeU":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3ke5j":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Sprite", ()=>(0, _spriteMjs.Sprite));
 var _spriteMjs = require("./Sprite.mjs");
 
-},{"./Sprite.mjs":"hLDXG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hLDXG":[function(require,module,exports,__globalThis) {
+},{"./Sprite.mjs":"3V18q","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3V18q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Sprite", ()=>Sprite);
@@ -16802,7 +16957,7 @@ class Sprite extends (0, _display.Container) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cDDEq":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fE74d":[function(require,module,exports,__globalThis) {
 var _display = require("@pixi/display");
 (0, _display.DisplayObject).prototype.name = null;
 (0, _display.Container).prototype.getChildByName = function(name, deep) {
@@ -16816,14 +16971,14 @@ var _display = require("@pixi/display");
     return null;
 };
 
-},{"@pixi/display":"hCm6V"}],"ekcNy":[function(require,module,exports,__globalThis) {
+},{"@pixi/display":"gKqmo"}],"6Uq1N":[function(require,module,exports,__globalThis) {
 var _core = require("@pixi/core");
 var _display = require("@pixi/display");
 (0, _display.DisplayObject).prototype.getGlobalPosition = function(point = new (0, _core.Point)(), skipUpdate = !1) {
     return this.parent ? this.parent.toGlobal(this.position, point, skipUpdate) : (point.x = this.position.x, point.y = this.position.y), point;
 };
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V"}],"6a2eG":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo"}],"c3nSd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "filters", ()=>filters);
@@ -16886,13 +17041,13 @@ Object.entries(filters).forEach(([key, FilterClass])=>{
     });
 });
 
-},{"@pixi/core":"f1ycj","@pixi/filter-alpha":"5iSuX","@pixi/filter-blur":"c67kF","@pixi/filter-color-matrix":"c7u9Y","@pixi/filter-displacement":"2bF3c","@pixi/filter-fxaa":"gi9qB","@pixi/filter-noise":"ejlRD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5iSuX":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/filter-alpha":"5zKnW","@pixi/filter-blur":"4fOno","@pixi/filter-color-matrix":"G2Ih4","@pixi/filter-displacement":"2BLju","@pixi/filter-fxaa":"bzVBX","@pixi/filter-noise":"6l8WU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5zKnW":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AlphaFilter", ()=>(0, _alphaFilterMjs.AlphaFilter));
 var _alphaFilterMjs = require("./AlphaFilter.mjs");
 
-},{"./AlphaFilter.mjs":"jo7tI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jo7tI":[function(require,module,exports,__globalThis) {
+},{"./AlphaFilter.mjs":"lw96g","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lw96g":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AlphaFilter", ()=>AlphaFilter);
@@ -16918,7 +17073,7 @@ class AlphaFilter extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./alpha.frag.mjs":"kbNyR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kbNyR":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./alpha.frag.mjs":"kiErG","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kiErG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -16933,7 +17088,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c67kF":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4fOno":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlurFilter", ()=>(0, _blurFilterMjs.BlurFilter));
@@ -16941,7 +17096,7 @@ parcelHelpers.export(exports, "BlurFilterPass", ()=>(0, _blurFilterPassMjs.BlurF
 var _blurFilterMjs = require("./BlurFilter.mjs");
 var _blurFilterPassMjs = require("./BlurFilterPass.mjs");
 
-},{"./BlurFilter.mjs":"8Vz23","./BlurFilterPass.mjs":"fg11l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8Vz23":[function(require,module,exports,__globalThis) {
+},{"./BlurFilter.mjs":"9MVqO","./BlurFilterPass.mjs":"kkW31","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9MVqO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlurFilter", ()=>BlurFilter);
@@ -17028,7 +17183,7 @@ class BlurFilter extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./BlurFilterPass.mjs":"fg11l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fg11l":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./BlurFilterPass.mjs":"kkW31","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kkW31":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlurFilterPass", ()=>BlurFilterPass);
@@ -17089,7 +17244,7 @@ class BlurFilterPass extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./generateBlurFragSource.mjs":"1TGDX","./generateBlurVertSource.mjs":"xGdAo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1TGDX":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./generateBlurFragSource.mjs":"jrwKr","./generateBlurVertSource.mjs":"dcTkP","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jrwKr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "generateBlurFragSource", ()=>generateBlurFragSource);
@@ -17162,7 +17317,7 @@ function generateBlurFragSource(kernelSize) {
     return fragSource = fragSource.replace("%blur%", blurLoop), fragSource = fragSource.replace("%size%", kernelSize.toString()), fragSource;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"xGdAo":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dcTkP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "generateBlurVertSource", ()=>generateBlurVertSource);
@@ -17209,13 +17364,13 @@ function generateBlurVertSource(kernelSize, x) {
     return vertSource = vertSource.replace("%blur%", blurLoop), vertSource = vertSource.replace("%size%", kernelSize.toString()), vertSource;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c7u9Y":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"G2Ih4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ColorMatrixFilter", ()=>(0, _colorMatrixFilterMjs.ColorMatrixFilter));
 var _colorMatrixFilterMjs = require("./ColorMatrixFilter.mjs");
 
-},{"./ColorMatrixFilter.mjs":"jIQbt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jIQbt":[function(require,module,exports,__globalThis) {
+},{"./ColorMatrixFilter.mjs":"ivmy2","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ivmy2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ColorMatrixFilter", ()=>ColorMatrixFilter);
@@ -17911,7 +18066,7 @@ class ColorMatrixFilter extends (0, _core.Filter) {
 }
 ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 
-},{"@pixi/core":"f1ycj","./colorMatrix.frag.mjs":"3EBf2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3EBf2":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./colorMatrix.frag.mjs":"fdtNY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fdtNY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -17969,13 +18124,13 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2bF3c":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2BLju":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "DisplacementFilter", ()=>(0, _displacementFilterMjs.DisplacementFilter));
 var _displacementFilterMjs = require("./DisplacementFilter.mjs");
 
-},{"./DisplacementFilter.mjs":"8JXqO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8JXqO":[function(require,module,exports,__globalThis) {
+},{"./DisplacementFilter.mjs":"cvaJT","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cvaJT":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "DisplacementFilter", ()=>DisplacementFilter);
@@ -18024,7 +18179,7 @@ class DisplacementFilter extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./displacement.frag.mjs":"9mo3d","./displacement.vert.mjs":"6s7Wz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9mo3d":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./displacement.frag.mjs":"73uzo","./displacement.vert.mjs":"g5MLU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"73uzo":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -18050,7 +18205,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6s7Wz":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"g5MLU":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>vertex);
@@ -18085,13 +18240,13 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gi9qB":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bzVBX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FXAAFilter", ()=>(0, _fxaafilterMjs.FXAAFilter));
 var _fxaafilterMjs = require("./FXAAFilter.mjs");
 
-},{"./FXAAFilter.mjs":"55pFC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"55pFC":[function(require,module,exports,__globalThis) {
+},{"./FXAAFilter.mjs":"j0noY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"j0noY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FXAAFilter", ()=>FXAAFilter);
@@ -18106,7 +18261,7 @@ class FXAAFilter extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./fxaa.frag.mjs":"8qykK","./fxaa.vert.mjs":"fK4nL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8qykK":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./fxaa.frag.mjs":"hxqmk","./fxaa.vert.mjs":"duo8Z","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hxqmk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -18233,7 +18388,7 @@ void main() {
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fK4nL":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"duo8Z":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>vertex);
@@ -18281,13 +18436,13 @@ void main(void) {
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ejlRD":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6l8WU":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "NoiseFilter", ()=>(0, _noiseFilterMjs.NoiseFilter));
 var _noiseFilterMjs = require("./NoiseFilter.mjs");
 
-},{"./NoiseFilter.mjs":"8Qg4v","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8Qg4v":[function(require,module,exports,__globalThis) {
+},{"./NoiseFilter.mjs":"eobi9","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eobi9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "NoiseFilter", ()=>NoiseFilter);
@@ -18321,7 +18476,7 @@ class NoiseFilter extends (0, _core.Filter) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./noise.frag.mjs":"598om","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"598om":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./noise.frag.mjs":"73L77","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"73L77":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -18361,7 +18516,7 @@ void main()
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i4MoV":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kFP6c":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AccessibilityManager", ()=>(0, _accessibilityManagerMjs.AccessibilityManager));
@@ -18369,7 +18524,7 @@ parcelHelpers.export(exports, "accessibleTarget", ()=>(0, _accessibleTargetMjs.a
 var _accessibilityManagerMjs = require("./AccessibilityManager.mjs");
 var _accessibleTargetMjs = require("./accessibleTarget.mjs");
 
-},{"./AccessibilityManager.mjs":"bsW6n","./accessibleTarget.mjs":"gpi9F","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bsW6n":[function(require,module,exports,__globalThis) {
+},{"./AccessibilityManager.mjs":"bCUIv","./accessibleTarget.mjs":"hha3V","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bCUIv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AccessibilityManager", ()=>AccessibilityManager);
@@ -18553,7 +18708,7 @@ AccessibilityManager.extension = {
 };
 (0, _core.extensions).add(AccessibilityManager);
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@pixi/events":"3Nw4W","./accessibleTarget.mjs":"gpi9F","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3Nw4W":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@pixi/events":"b2Pe7","./accessibleTarget.mjs":"hha3V","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"b2Pe7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventBoundary", ()=>(0, _eventBoundaryMjs.EventBoundary));
@@ -18572,7 +18727,7 @@ var _federatedMouseEventMjs = require("./FederatedMouseEvent.mjs");
 var _federatedPointerEventMjs = require("./FederatedPointerEvent.mjs");
 var _federatedWheelEventMjs = require("./FederatedWheelEvent.mjs");
 
-},{"./EventBoundary.mjs":"3KLGo","./EventSystem.mjs":"3x6qu","./FederatedEvent.mjs":"3u5m3","./FederatedEventMap.mjs":"cXq3P","./FederatedEventTarget.mjs":"6ZAvq","./FederatedMouseEvent.mjs":"2EPTI","./FederatedPointerEvent.mjs":"fgPWX","./FederatedWheelEvent.mjs":"gcO70","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3KLGo":[function(require,module,exports,__globalThis) {
+},{"./EventBoundary.mjs":"3DrCq","./EventSystem.mjs":"jBtuB","./FederatedEvent.mjs":"4Nx4W","./FederatedEventMap.mjs":"8eWto","./FederatedEventTarget.mjs":"jPrXZ","./FederatedMouseEvent.mjs":"lWxrk","./FederatedPointerEvent.mjs":"eK3TC","./FederatedWheelEvent.mjs":"1kJMS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3DrCq":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventBoundary", ()=>EventBoundary);
@@ -19113,7 +19268,7 @@ class EventBoundary {
     }
 }
 
-},{"@pixi/core":"f1ycj","./EventTicker.mjs":"9eiAh","./FederatedMouseEvent.mjs":"2EPTI","./FederatedPointerEvent.mjs":"fgPWX","./FederatedWheelEvent.mjs":"gcO70","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9eiAh":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./EventTicker.mjs":"5266I","./FederatedMouseEvent.mjs":"lWxrk","./FederatedPointerEvent.mjs":"eK3TC","./FederatedWheelEvent.mjs":"1kJMS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5266I":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventsTicker", ()=>EventsTicker);
@@ -19167,7 +19322,7 @@ class EventsTickerClass {
 }
 const EventsTicker = new EventsTickerClass();
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2EPTI":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lWxrk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FederatedMouseEvent", ()=>FederatedMouseEvent);
@@ -19268,7 +19423,7 @@ class FederatedMouseEvent extends (0, _federatedEventMjs.FederatedEvent) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./FederatedEvent.mjs":"3u5m3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3u5m3":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./FederatedEvent.mjs":"4Nx4W","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4Nx4W":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FederatedEvent", ()=>FederatedEvent);
@@ -19339,7 +19494,7 @@ class FederatedEvent {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fgPWX":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eK3TC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FederatedPointerEvent", ()=>FederatedPointerEvent);
@@ -19360,7 +19515,7 @@ class FederatedPointerEvent extends (0, _federatedMouseEventMjs.FederatedMouseEv
     }
 }
 
-},{"./FederatedMouseEvent.mjs":"2EPTI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gcO70":[function(require,module,exports,__globalThis) {
+},{"./FederatedMouseEvent.mjs":"lWxrk","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1kJMS":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FederatedWheelEvent", ()=>FederatedWheelEvent);
@@ -19372,7 +19527,7 @@ class FederatedWheelEvent extends (0, _federatedMouseEventMjs.FederatedMouseEven
 }
 FederatedWheelEvent.DOM_DELTA_PIXEL = 0, /** Units specified in lines. */ FederatedWheelEvent.DOM_DELTA_LINE = 1, /** Units specified in pages. */ FederatedWheelEvent.DOM_DELTA_PAGE = 2;
 
-},{"./FederatedMouseEvent.mjs":"2EPTI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3x6qu":[function(require,module,exports,__globalThis) {
+},{"./FederatedMouseEvent.mjs":"lWxrk","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jBtuB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventSystem", ()=>EventSystem);
@@ -19621,9 +19776,9 @@ _EventSystem.extension = {
 let EventSystem = _EventSystem;
 (0, _core.extensions).add(EventSystem);
 
-},{"@pixi/core":"f1ycj","./EventBoundary.mjs":"3KLGo","./EventTicker.mjs":"9eiAh","./FederatedPointerEvent.mjs":"fgPWX","./FederatedWheelEvent.mjs":"gcO70","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cXq3P":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./EventBoundary.mjs":"3DrCq","./EventTicker.mjs":"5266I","./FederatedPointerEvent.mjs":"eK3TC","./FederatedWheelEvent.mjs":"1kJMS","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8eWto":[function(require,module,exports,__globalThis) {
 
-},{}],"6ZAvq":[function(require,module,exports,__globalThis) {
+},{}],"jPrXZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FederatedDisplayObject", ()=>FederatedDisplayObject);
@@ -20088,7 +20243,7 @@ const FederatedDisplayObject = {
 };
 (0, _display.DisplayObject).mixin(FederatedDisplayObject);
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","./EventSystem.mjs":"3x6qu","./FederatedEvent.mjs":"3u5m3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gpi9F":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","./EventSystem.mjs":"jBtuB","./FederatedEvent.mjs":"4Nx4W","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hha3V":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "accessibleTarget", ()=>accessibleTarget);
@@ -20150,7 +20305,7 @@ const accessibleTarget = {
     renderId: -1
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eSe9M":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4A7DP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Application", ()=>(0, _applicationMjs.Application));
@@ -20158,7 +20313,7 @@ parcelHelpers.export(exports, "ResizePlugin", ()=>(0, _resizePluginMjs.ResizePlu
 var _applicationMjs = require("./Application.mjs");
 var _resizePluginMjs = require("./ResizePlugin.mjs");
 
-},{"./Application.mjs":"lhpM1","./ResizePlugin.mjs":"a6Yv9","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lhpM1":[function(require,module,exports,__globalThis) {
+},{"./Application.mjs":"1mM7Z","./ResizePlugin.mjs":"4mnvY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1mM7Z":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Application", ()=>Application);
@@ -20213,7 +20368,7 @@ _Application._plugins = [];
 let Application = _Application;
 (0, _core.extensions).handleByList((0, _core.ExtensionType).Application, Application._plugins);
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a6Yv9":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4mnvY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ResizePlugin", ()=>ResizePlugin);
@@ -20265,7 +20420,7 @@ class ResizePlugin {
 ResizePlugin.extension = (0, _core.ExtensionType).Application;
 (0, _core.extensions).add(ResizePlugin);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"66RXo":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"chMVG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Assets", ()=>(0, _assetsMjs.Assets));
@@ -20327,7 +20482,7 @@ var _copySearchParamsMjs = require("./utils/copySearchParams.mjs");
 var _createStringVariationsMjs = require("./utils/createStringVariations.mjs");
 var _isSingleItemMjs = require("./utils/isSingleItem.mjs");
 
-},{"./AssetExtension.mjs":"kR32Q","./Assets.mjs":"lbRmU","./cache/index.mjs":"4xmUX","./detections/index.mjs":"gsCsa","./loader/index.mjs":"k250j","./resolver/index.mjs":"caUHj","./types.mjs":"lwwFP","./utils/index.mjs":"7CLjd","./cache/Cache.mjs":"bExk0","./cache/parsers/cacheTextureArray.mjs":"kuSVM","./detections/parsers/detectAvif.mjs":"3X8k7","./detections/parsers/detectWebp.mjs":"lqPRv","./detections/parsers/detectDefaults.mjs":"NJl5c","./detections/parsers/detectWebm.mjs":"279io","./detections/parsers/detectMp4.mjs":"aQB6z","./detections/parsers/detectOgv.mjs":"8afYP","./loader/parsers/LoaderParser.mjs":"5Wvb3","./loader/parsers/loadJson.mjs":"fkV7n","./loader/parsers/loadTxt.mjs":"3l4iZ","./loader/parsers/loadWebFont.mjs":"azstY","./loader/parsers/textures/loadSVG.mjs":"f36ZD","./loader/parsers/textures/loadTextures.mjs":"jqA0E","./loader/parsers/textures/loadVideo.mjs":"jDMLH","./loader/parsers/textures/utils/createTexture.mjs":"dulrJ","./resolver/parsers/resolveTextureUrl.mjs":"jAc7j","./utils/checkDataUrl.mjs":"jcPHF","./utils/checkExtension.mjs":"4ddoC","./utils/convertToList.mjs":"2CZ2T","./utils/copySearchParams.mjs":"115Ky","./utils/createStringVariations.mjs":"ikzRh","./utils/isSingleItem.mjs":"ibUDI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kR32Q":[function(require,module,exports,__globalThis) {
+},{"./AssetExtension.mjs":"82i1j","./Assets.mjs":"7ujWu","./cache/index.mjs":"8SlXt","./detections/index.mjs":"9ZVbf","./loader/index.mjs":"hoDGI","./resolver/index.mjs":"5hCz5","./types.mjs":"eYQAU","./utils/index.mjs":"gdSxH","./cache/Cache.mjs":"2ks6w","./cache/parsers/cacheTextureArray.mjs":"1Ip0z","./detections/parsers/detectAvif.mjs":"7vck1","./detections/parsers/detectWebp.mjs":"d8tuv","./detections/parsers/detectDefaults.mjs":"kb6wg","./detections/parsers/detectWebm.mjs":"f2gat","./detections/parsers/detectMp4.mjs":"6v9wS","./detections/parsers/detectOgv.mjs":"1ht6P","./loader/parsers/LoaderParser.mjs":"lEOB6","./loader/parsers/loadJson.mjs":"ftDBO","./loader/parsers/loadTxt.mjs":"7t8vt","./loader/parsers/loadWebFont.mjs":"dMRCy","./loader/parsers/textures/loadSVG.mjs":"f5nOC","./loader/parsers/textures/loadTextures.mjs":"cH2Ag","./loader/parsers/textures/loadVideo.mjs":"dDEtq","./loader/parsers/textures/utils/createTexture.mjs":"bi2Ox","./resolver/parsers/resolveTextureUrl.mjs":"cpuZ2","./utils/checkDataUrl.mjs":"61dRZ","./utils/checkExtension.mjs":"k3vp2","./utils/convertToList.mjs":"7G418","./utils/copySearchParams.mjs":"lQx8f","./utils/createStringVariations.mjs":"7QApm","./utils/isSingleItem.mjs":"2JO9Q","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"82i1j":[function(require,module,exports,__globalThis) {
 var _core = require("@pixi/core");
 const assetKeyMap = {
     loader: (0, _core.ExtensionType).LoadParser,
@@ -20347,7 +20502,7 @@ const assetKeyMap = {
     Object.keys(assetKeyMap).filter((key)=>!!ref[key]).forEach((key)=>(0, _core.extensions).remove(ref[key]));
 });
 
-},{"@pixi/core":"f1ycj"}],"lbRmU":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp"}],"7ujWu":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Assets", ()=>Assets);
@@ -20684,7 +20839,7 @@ class AssetsClass {
 const Assets = new AssetsClass();
 (0, _core.extensions).handleByList((0, _core.ExtensionType).LoadParser, Assets.loader.parsers).handleByList((0, _core.ExtensionType).ResolveParser, Assets.resolver.parsers).handleByList((0, _core.ExtensionType).CacheParser, Assets.cache.parsers).handleByList((0, _core.ExtensionType).DetectionParser, Assets.detections);
 
-},{"@pixi/core":"f1ycj","./BackgroundLoader.mjs":"kPXeA","./cache/Cache.mjs":"bExk0","./loader/Loader.mjs":"gMyJq","./loader/parsers/index.mjs":"dA1jf","./resolver/Resolver.mjs":"kjyJf","./utils/convertToList.mjs":"2CZ2T","./utils/isSingleItem.mjs":"ibUDI","./loader/parsers/textures/loadTextures.mjs":"jqA0E","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kPXeA":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./BackgroundLoader.mjs":"koyRk","./cache/Cache.mjs":"2ks6w","./loader/Loader.mjs":"cyaTM","./loader/parsers/index.mjs":"lDDC2","./resolver/Resolver.mjs":"7F6P6","./utils/convertToList.mjs":"7G418","./utils/isSingleItem.mjs":"2JO9Q","./loader/parsers/textures/loadTextures.mjs":"cH2Ag","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"koyRk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BackgroundLoader", ()=>BackgroundLoader);
@@ -20726,7 +20881,7 @@ class BackgroundLoader {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bExk0":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2ks6w":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Cache", ()=>Cache);
@@ -20777,7 +20932,8 @@ class CacheClass {
         if (keys.forEach((key2)=>{
             this._cacheMap.set(key2, cachedAssets);
         }), cacheKeys.forEach((key2)=>{
-            this._cache.has(key2) && this._cache.get(key2) !== value && console.warn("[Cache] already has key:", key2), this._cache.set(key2, cacheableAssets[key2]);
+            const val = cacheableAssets ? cacheableAssets[key2] : value;
+            this._cache.has(key2) && this._cache.get(key2) !== val && console.warn("[Cache] already has key:", key2), this._cache.set(key2, cacheableAssets[key2]);
         }), value instanceof (0, _core.Texture)) {
             const texture = value;
             keys.forEach((key2)=>{
@@ -20808,7 +20964,7 @@ class CacheClass {
 }
 const Cache = new CacheClass();
 
-},{"@pixi/core":"f1ycj","../utils/index.mjs":"7CLjd","../utils/convertToList.mjs":"2CZ2T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7CLjd":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/index.mjs":"gdSxH","../utils/convertToList.mjs":"7G418","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gdSxH":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "checkDataUrl", ()=>(0, _checkDataUrlMjs.checkDataUrl));
@@ -20824,7 +20980,7 @@ var _copySearchParamsMjs = require("./copySearchParams.mjs");
 var _createStringVariationsMjs = require("./createStringVariations.mjs");
 var _isSingleItemMjs = require("./isSingleItem.mjs");
 
-},{"./checkDataUrl.mjs":"jcPHF","./checkExtension.mjs":"4ddoC","./convertToList.mjs":"2CZ2T","./copySearchParams.mjs":"115Ky","./createStringVariations.mjs":"ikzRh","./isSingleItem.mjs":"ibUDI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jcPHF":[function(require,module,exports,__globalThis) {
+},{"./checkDataUrl.mjs":"61dRZ","./checkExtension.mjs":"k3vp2","./convertToList.mjs":"7G418","./copySearchParams.mjs":"lQx8f","./createStringVariations.mjs":"7QApm","./isSingleItem.mjs":"2JO9Q","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"61dRZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "checkDataUrl", ()=>checkDataUrl);
@@ -20836,7 +20992,7 @@ function checkDataUrl(url, mimes) {
     return url.startsWith(`data:${mimes}`);
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4ddoC":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"k3vp2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "checkExtension", ()=>checkExtension);
@@ -20846,7 +21002,7 @@ function checkExtension(url, extension) {
     return Array.isArray(extension) ? extension.includes(ext) : ext === extension;
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2CZ2T":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7G418":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "convertToList", ()=>convertToList);
@@ -20854,7 +21010,7 @@ const convertToList = (input, transform, forceTransform = !1)=>(Array.isArray(in
         input
     ]), transform ? input.map((item)=>typeof item == "string" || forceTransform ? transform(item) : item) : input);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"115Ky":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lQx8f":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "copySearchParams", ()=>copySearchParams);
@@ -20863,7 +21019,7 @@ const copySearchParams = (targetUrl, sourceUrl)=>{
     return searchParams && (targetUrl += `?${searchParams}`), targetUrl;
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ikzRh":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7QApm":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createStringVariations", ()=>createStringVariations);
@@ -20886,13 +21042,13 @@ function createStringVariations(string) {
     return tags;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ibUDI":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2JO9Q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "isSingleItem", ()=>isSingleItem);
 const isSingleItem = (item)=>!Array.isArray(item);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gMyJq":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cyaTM":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Loader", ()=>Loader);
@@ -20992,7 +21148,7 @@ ${e}`);
     }
 }
 
-},{"@pixi/core":"f1ycj","../utils/index.mjs":"7CLjd","../utils/isSingleItem.mjs":"ibUDI","../utils/convertToList.mjs":"2CZ2T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dA1jf":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/index.mjs":"gdSxH","../utils/isSingleItem.mjs":"2JO9Q","../utils/convertToList.mjs":"7G418","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lDDC2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "LoaderParserPriority", ()=>(0, _loaderParserMjs.LoaderParserPriority));
@@ -21006,13 +21162,13 @@ var _loadTxtMjs = require("./loadTxt.mjs");
 var _loadWebFontMjs = require("./loadWebFont.mjs");
 var _indexMjs = require("./textures/index.mjs");
 
-},{"./LoaderParser.mjs":"5Wvb3","./loadJson.mjs":"fkV7n","./loadTxt.mjs":"3l4iZ","./loadWebFont.mjs":"azstY","./textures/index.mjs":"lgikr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5Wvb3":[function(require,module,exports,__globalThis) {
+},{"./LoaderParser.mjs":"lEOB6","./loadJson.mjs":"ftDBO","./loadTxt.mjs":"7t8vt","./loadWebFont.mjs":"dMRCy","./textures/index.mjs":"iYmS1","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lEOB6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "LoaderParserPriority", ()=>LoaderParserPriority);
 var LoaderParserPriority = /* @__PURE__ */ ((LoaderParserPriority2)=>(LoaderParserPriority2[LoaderParserPriority2.Low = 0] = "Low", LoaderParserPriority2[LoaderParserPriority2.Normal = 1] = "Normal", LoaderParserPriority2[LoaderParserPriority2.High = 2] = "High", LoaderParserPriority2))(LoaderParserPriority || {});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fkV7n":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ftDBO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadJson", ()=>loadJson);
@@ -21035,7 +21191,7 @@ const validJSONExtension = ".json", validJSONMIME = "application/json", loadJson
 };
 (0, _core.extensions).add(loadJson);
 
-},{"@pixi/core":"f1ycj","../../utils/checkDataUrl.mjs":"jcPHF","../../utils/checkExtension.mjs":"4ddoC","./LoaderParser.mjs":"5Wvb3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3l4iZ":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../utils/checkDataUrl.mjs":"61dRZ","../../utils/checkExtension.mjs":"k3vp2","./LoaderParser.mjs":"lEOB6","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7t8vt":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadTxt", ()=>loadTxt);
@@ -21058,7 +21214,7 @@ const validTXTExtension = ".txt", validTXTMIME = "text/plain", loadTxt = {
 };
 (0, _core.extensions).add(loadTxt);
 
-},{"@pixi/core":"f1ycj","../../utils/checkDataUrl.mjs":"jcPHF","../../utils/checkExtension.mjs":"4ddoC","./LoaderParser.mjs":"5Wvb3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"azstY":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../utils/checkDataUrl.mjs":"61dRZ","../../utils/checkExtension.mjs":"k3vp2","./LoaderParser.mjs":"lEOB6","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dMRCy":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getFontFamilyName", ()=>getFontFamilyName);
@@ -21138,7 +21294,7 @@ const loadWebFont = {
 };
 (0, _core.extensions).add(loadWebFont);
 
-},{"@pixi/core":"f1ycj","../../utils/checkDataUrl.mjs":"jcPHF","../../utils/checkExtension.mjs":"4ddoC","./LoaderParser.mjs":"5Wvb3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lgikr":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../utils/checkDataUrl.mjs":"61dRZ","../../utils/checkExtension.mjs":"k3vp2","./LoaderParser.mjs":"lEOB6","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iYmS1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadImageBitmap", ()=>(0, _loadTexturesMjs.loadImageBitmap));
@@ -21150,7 +21306,7 @@ var _loadTexturesMjs = require("./loadTextures.mjs");
 var _loadVideoMjs = require("./loadVideo.mjs");
 var _indexMjs = require("./utils/index.mjs");
 
-},{"./loadSVG.mjs":"f36ZD","./loadTextures.mjs":"jqA0E","./loadVideo.mjs":"jDMLH","./utils/index.mjs":"dGg8I","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f36ZD":[function(require,module,exports,__globalThis) {
+},{"./loadSVG.mjs":"f5nOC","./loadTextures.mjs":"cH2Ag","./loadVideo.mjs":"dDEtq","./utils/index.mjs":"4JsyU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"f5nOC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadSVG", ()=>loadSVG);
@@ -21188,7 +21344,7 @@ const validSVGExtension = ".svg", validSVGMIME = "image/svg+xml", loadSVG = {
 };
 (0, _core.extensions).add(loadSVG);
 
-},{"@pixi/core":"f1ycj","../../../utils/checkDataUrl.mjs":"jcPHF","../../../utils/checkExtension.mjs":"4ddoC","../LoaderParser.mjs":"5Wvb3","./loadTextures.mjs":"jqA0E","./utils/createTexture.mjs":"dulrJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jqA0E":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../../utils/checkDataUrl.mjs":"61dRZ","../../../utils/checkExtension.mjs":"k3vp2","../LoaderParser.mjs":"lEOB6","./loadTextures.mjs":"cH2Ag","./utils/createTexture.mjs":"bi2Ox","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cH2Ag":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadImageBitmap", ()=>loadImageBitmap);
@@ -21253,7 +21409,7 @@ const loadTextures = {
 };
 (0, _core.extensions).add(loadTextures);
 
-},{"@pixi/core":"f1ycj","../../../utils/checkDataUrl.mjs":"jcPHF","../../../utils/checkExtension.mjs":"4ddoC","../LoaderParser.mjs":"5Wvb3","../WorkerManager.mjs":"eSS4W","./utils/createTexture.mjs":"dulrJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eSS4W":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../../utils/checkDataUrl.mjs":"61dRZ","../../../utils/checkExtension.mjs":"k3vp2","../LoaderParser.mjs":"lEOB6","../WorkerManager.mjs":"1YKGr","./utils/createTexture.mjs":"bi2Ox","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1YKGr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "WorkerManager", ()=>WorkerManager);
@@ -21324,7 +21480,7 @@ class WorkerManagerClass {
 }
 const WorkerManager = new WorkerManagerClass();
 
-},{"../../_virtual/checkImageBitmap.worker.mjs":"3fMH0","../../_virtual/loadImageBitmap.worker.mjs":"esmnT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3fMH0":[function(require,module,exports,__globalThis) {
+},{"../../_virtual/checkImageBitmap.worker.mjs":"hvx4G","../../_virtual/loadImageBitmap.worker.mjs":"4O9xA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hvx4G":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>WorkerInstance);
@@ -21360,7 +21516,7 @@ WorkerInstance.revokeObjectURL = function() {
     WORKER_URL && (URL.revokeObjectURL(WORKER_URL), WORKER_URL = null);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"esmnT":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4O9xA":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>WorkerInstance);
@@ -21405,7 +21561,7 @@ WorkerInstance.revokeObjectURL = function() {
     WORKER_URL && (URL.revokeObjectURL(WORKER_URL), WORKER_URL = null);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dulrJ":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bi2Ox":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createTexture", ()=>createTexture);
@@ -21423,7 +21579,7 @@ function createTexture(base, loader, url) {
     }), texture;
 }
 
-},{"@pixi/core":"f1ycj","../../../../cache/Cache.mjs":"bExk0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jDMLH":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../../../cache/Cache.mjs":"2ks6w","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dDEtq":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadVideo", ()=>loadVideo);
@@ -21490,13 +21646,13 @@ const validVideoExtensions = [
 };
 (0, _core.extensions).add(loadVideo);
 
-},{"@pixi/core":"f1ycj","../../../utils/checkDataUrl.mjs":"jcPHF","../../../utils/checkExtension.mjs":"4ddoC","../LoaderParser.mjs":"5Wvb3","./utils/createTexture.mjs":"dulrJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dGg8I":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../../utils/checkDataUrl.mjs":"61dRZ","../../../utils/checkExtension.mjs":"k3vp2","../LoaderParser.mjs":"lEOB6","./utils/createTexture.mjs":"bi2Ox","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4JsyU":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createTexture", ()=>(0, _createTextureMjs.createTexture));
 var _createTextureMjs = require("./createTexture.mjs");
 
-},{"./createTexture.mjs":"dulrJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kjyJf":[function(require,module,exports,__globalThis) {
+},{"./createTexture.mjs":"bi2Ox","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7F6P6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Resolver", ()=>Resolver);
@@ -21885,7 +22041,7 @@ Please use Assets.add({ alias, src, data, format, loadParser }) instead.`), asse
     }
 }
 
-},{"@pixi/core":"f1ycj","../utils/convertToList.mjs":"2CZ2T","../utils/createStringVariations.mjs":"ikzRh","../utils/isSingleItem.mjs":"ibUDI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4xmUX":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/convertToList.mjs":"7G418","../utils/createStringVariations.mjs":"7QApm","../utils/isSingleItem.mjs":"2JO9Q","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8SlXt":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Cache", ()=>(0, _cacheMjs.Cache));
@@ -21893,15 +22049,15 @@ var _cacheMjs = require("./Cache.mjs");
 var _cacheParserMjs = require("./CacheParser.mjs");
 var _indexMjs = require("./parsers/index.mjs");
 
-},{"./Cache.mjs":"bExk0","./CacheParser.mjs":"6EwHF","./parsers/index.mjs":"dJGV2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6EwHF":[function(require,module,exports,__globalThis) {
+},{"./Cache.mjs":"2ks6w","./CacheParser.mjs":"2ZTLL","./parsers/index.mjs":"k899I","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2ZTLL":[function(require,module,exports,__globalThis) {
 
-},{}],"dJGV2":[function(require,module,exports,__globalThis) {
+},{}],"k899I":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "cacheTextureArray", ()=>(0, _cacheTextureArrayMjs.cacheTextureArray));
 var _cacheTextureArrayMjs = require("./cacheTextureArray.mjs");
 
-},{"./cacheTextureArray.mjs":"kuSVM","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kuSVM":[function(require,module,exports,__globalThis) {
+},{"./cacheTextureArray.mjs":"1Ip0z","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1Ip0z":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "cacheTextureArray", ()=>cacheTextureArray);
@@ -21920,10 +22076,10 @@ const cacheTextureArray = {
 };
 (0, _core.extensions).add(cacheTextureArray);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gsCsa":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9ZVbf":[function(require,module,exports,__globalThis) {
 var _indexMjs = require("./parsers/index.mjs");
 
-},{"./parsers/index.mjs":"lHNs1"}],"lHNs1":[function(require,module,exports,__globalThis) {
+},{"./parsers/index.mjs":"5eiPJ"}],"5eiPJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectAvif", ()=>(0, _detectAvifMjs.detectAvif));
@@ -21939,7 +22095,7 @@ var _detectWebmMjs = require("./detectWebm.mjs");
 var _detectMp4Mjs = require("./detectMp4.mjs");
 var _detectOgvMjs = require("./detectOgv.mjs");
 
-},{"./detectAvif.mjs":"3X8k7","./detectWebp.mjs":"lqPRv","./detectDefaults.mjs":"NJl5c","./detectWebm.mjs":"279io","./detectMp4.mjs":"aQB6z","./detectOgv.mjs":"8afYP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3X8k7":[function(require,module,exports,__globalThis) {
+},{"./detectAvif.mjs":"7vck1","./detectWebp.mjs":"d8tuv","./detectDefaults.mjs":"kb6wg","./detectWebm.mjs":"f2gat","./detectMp4.mjs":"6v9wS","./detectOgv.mjs":"1ht6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7vck1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectAvif", ()=>detectAvif);
@@ -21960,7 +22116,7 @@ const detectAvif = {
 };
 (0, _core.extensions).add(detectAvif);
 
-},{"@pixi/core":"f1ycj","../utils/testImageFormat.mjs":"2uHvV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2uHvV":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/testImageFormat.mjs":"kN4jd","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kN4jd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "testImageFormat", ()=>testImageFormat);
@@ -21985,7 +22141,7 @@ async function testImageFormat(imageData) {
     return !1;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lqPRv":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d8tuv":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectWebp", ()=>detectWebp);
@@ -22005,7 +22161,7 @@ const detectWebp = {
 };
 (0, _core.extensions).add(detectWebp);
 
-},{"@pixi/core":"f1ycj","../utils/testImageFormat.mjs":"2uHvV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"NJl5c":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/testImageFormat.mjs":"kN4jd","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kb6wg":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectDefaults", ()=>detectDefaults);
@@ -22028,7 +22184,7 @@ const imageFormats = [
 };
 (0, _core.extensions).add(detectDefaults);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"279io":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"f2gat":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectWebm", ()=>detectWebm);
@@ -22048,7 +22204,7 @@ const detectWebm = {
 };
 (0, _core.extensions).add(detectWebm);
 
-},{"@pixi/core":"f1ycj","../utils/testVideoFormat.mjs":"iDQ5O","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iDQ5O":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/testVideoFormat.mjs":"dZkDo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dZkDo":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "testVideoFormat", ()=>testVideoFormat);
@@ -22057,7 +22213,7 @@ function testVideoFormat(mimeType) {
     return inWorker ? !1 : document.createElement("video").canPlayType(mimeType) !== "";
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aQB6z":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6v9wS":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectMp4", ()=>detectMp4);
@@ -22078,7 +22234,7 @@ const detectMp4 = {
 };
 (0, _core.extensions).add(detectMp4);
 
-},{"@pixi/core":"f1ycj","../utils/testVideoFormat.mjs":"iDQ5O","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8afYP":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/testVideoFormat.mjs":"dZkDo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1ht6P":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectOgv", ()=>detectOgv);
@@ -22098,20 +22254,20 @@ const detectOgv = {
 };
 (0, _core.extensions).add(detectOgv);
 
-},{"@pixi/core":"f1ycj","../utils/testVideoFormat.mjs":"iDQ5O","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"k250j":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../utils/testVideoFormat.mjs":"dZkDo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hoDGI":[function(require,module,exports,__globalThis) {
 var _indexMjs = require("./parsers/index.mjs");
 
-},{"./parsers/index.mjs":"dA1jf"}],"caUHj":[function(require,module,exports,__globalThis) {
+},{"./parsers/index.mjs":"lDDC2"}],"5hCz5":[function(require,module,exports,__globalThis) {
 var _indexMjs = require("./parsers/index.mjs");
 var _typesMjs = require("./types.mjs");
 
-},{"./parsers/index.mjs":"lDxqH","./types.mjs":"b7xxS"}],"lDxqH":[function(require,module,exports,__globalThis) {
+},{"./parsers/index.mjs":"cvhA3","./types.mjs":"chjTu"}],"cvhA3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "resolveTextureUrl", ()=>(0, _resolveTextureUrlMjs.resolveTextureUrl));
 var _resolveTextureUrlMjs = require("./resolveTextureUrl.mjs");
 
-},{"./resolveTextureUrl.mjs":"jAc7j","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jAc7j":[function(require,module,exports,__globalThis) {
+},{"./resolveTextureUrl.mjs":"cpuZ2","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cpuZ2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "resolveTextureUrl", ()=>resolveTextureUrl);
@@ -22129,11 +22285,11 @@ const resolveTextureUrl = {
 };
 (0, _core.extensions).add(resolveTextureUrl);
 
-},{"@pixi/core":"f1ycj","../../loader/index.mjs":"k250j","../../loader/parsers/textures/loadTextures.mjs":"jqA0E","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"b7xxS":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../../loader/index.mjs":"hoDGI","../../loader/parsers/textures/loadTextures.mjs":"cH2Ag","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"chjTu":[function(require,module,exports,__globalThis) {
 
-},{}],"lwwFP":[function(require,module,exports,__globalThis) {
+},{}],"eYQAU":[function(require,module,exports,__globalThis) {
 
-},{}],"gxYo9":[function(require,module,exports,__globalThis) {
+},{}],"3ICOF":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlobResource", ()=>(0, _blobResourceMjs.BlobResource));
@@ -22162,7 +22318,7 @@ var _parseKTXMjs = require("./parsers/parseKTX.mjs");
 var _blobResourceMjs = require("./resources/BlobResource.mjs");
 var _compressedTextureResourceMjs = require("./resources/CompressedTextureResource.mjs");
 
-},{"./const.mjs":"chukW","./loaders/index.mjs":"30b13","./parsers/index.mjs":"fxF0i","./resources/index.mjs":"c3qm3","./loaders/detectCompressedTextures.mjs":"fJyxU","./loaders/loadDDS.mjs":"hwSuj","./loaders/loadKTX.mjs":"9b4U5","./loaders/resolveCompressedTextureUrl.mjs":"1BLZl","./parsers/parseDDS.mjs":"jjMz8","./parsers/parseKTX.mjs":"75ont","./resources/BlobResource.mjs":"5LJ2A","./resources/CompressedTextureResource.mjs":"gbJ28","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"chukW":[function(require,module,exports,__globalThis) {
+},{"./const.mjs":"4c0xf","./loaders/index.mjs":"kGfGR","./parsers/index.mjs":"bc7Sf","./resources/index.mjs":"8er2G","./loaders/detectCompressedTextures.mjs":"5PVsD","./loaders/loadDDS.mjs":"1nT79","./loaders/loadKTX.mjs":"bLXZg","./loaders/resolveCompressedTextureUrl.mjs":"3LCUr","./parsers/parseDDS.mjs":"eF9Ro","./parsers/parseKTX.mjs":"139ts","./resources/BlobResource.mjs":"kfn0B","./resources/CompressedTextureResource.mjs":"3XYde","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4c0xf":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "INTERNAL_FORMATS", ()=>INTERNAL_FORMATS);
@@ -22215,7 +22371,7 @@ const INTERNAL_FORMAT_TO_BYTES_PER_PIXEL = {
     36495: 1
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"30b13":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kGfGR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectCompressedTextures", ()=>(0, _detectCompressedTexturesMjs.detectCompressedTextures));
@@ -22228,9 +22384,9 @@ var _loadDDSMjs = require("./loadDDS.mjs");
 var _loadKTXMjs = require("./loadKTX.mjs");
 var _resolveCompressedTextureUrlMjs = require("./resolveCompressedTextureUrl.mjs");
 
-},{"./compressedTextureExtensions.mjs":"aUnoI","./detectCompressedTextures.mjs":"fJyxU","./loadDDS.mjs":"hwSuj","./loadKTX.mjs":"9b4U5","./resolveCompressedTextureUrl.mjs":"1BLZl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aUnoI":[function(require,module,exports,__globalThis) {
+},{"./compressedTextureExtensions.mjs":"6YgKN","./detectCompressedTextures.mjs":"5PVsD","./loadDDS.mjs":"1nT79","./loadKTX.mjs":"bLXZg","./resolveCompressedTextureUrl.mjs":"3LCUr","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6YgKN":[function(require,module,exports,__globalThis) {
 
-},{}],"fJyxU":[function(require,module,exports,__globalThis) {
+},{}],"5PVsD":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "detectCompressedTextures", ()=>detectCompressedTextures);
@@ -22270,7 +22426,7 @@ const detectCompressedTextures = {
 };
 (0, _core.extensions).add(detectCompressedTextures);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hwSuj":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1nT79":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadDDS", ()=>loadDDS);
@@ -22305,7 +22461,7 @@ const loadDDS = {
 };
 (0, _core.extensions).add(loadDDS);
 
-},{"@pixi/assets":"66RXo","@pixi/core":"f1ycj","../parsers/index.mjs":"fxF0i","../parsers/parseDDS.mjs":"jjMz8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fxF0i":[function(require,module,exports,__globalThis) {
+},{"@pixi/assets":"chMVG","@pixi/core":"jFyjp","../parsers/index.mjs":"bc7Sf","../parsers/parseDDS.mjs":"eF9Ro","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bc7Sf":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FORMATS_TO_COMPONENTS", ()=>(0, _parseKTXMjs.FORMATS_TO_COMPONENTS));
@@ -22316,7 +22472,7 @@ parcelHelpers.export(exports, "parseKTX", ()=>(0, _parseKTXMjs.parseKTX));
 var _parseDDSMjs = require("./parseDDS.mjs");
 var _parseKTXMjs = require("./parseKTX.mjs");
 
-},{"./parseDDS.mjs":"jjMz8","./parseKTX.mjs":"75ont","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jjMz8":[function(require,module,exports,__globalThis) {
+},{"./parseDDS.mjs":"eF9Ro","./parseKTX.mjs":"139ts","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eF9Ro":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "parseDDS", ()=>parseDDS);
@@ -22412,7 +22568,7 @@ function parseDDS(arrayBuffer) {
     throw formatFlags & DDPF_RGB ? new Error("DDSParser does not support uncompressed texture data.") : formatFlags & DDPF_YUV ? new Error("DDSParser does not supported YUV uncompressed texture data.") : formatFlags & DDPF_LUMINANCE ? new Error("DDSParser does not support single-channel (lumninance) texture data!") : formatFlags & DDPF_ALPHA ? new Error("DDSParser does not support single-channel (alpha) texture data!") : new Error("DDSParser failed to load a texture file due to an unknown reason!");
 }
 
-},{"../const.mjs":"chukW","../resources/index.mjs":"c3qm3","../resources/CompressedTextureResource.mjs":"gbJ28","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c3qm3":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"4c0xf","../resources/index.mjs":"8er2G","../resources/CompressedTextureResource.mjs":"3XYde","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8er2G":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlobResource", ()=>(0, _blobResourceMjs.BlobResource));
@@ -22420,7 +22576,7 @@ parcelHelpers.export(exports, "CompressedTextureResource", ()=>(0, _compressedTe
 var _blobResourceMjs = require("./BlobResource.mjs");
 var _compressedTextureResourceMjs = require("./CompressedTextureResource.mjs");
 
-},{"./BlobResource.mjs":"5LJ2A","./CompressedTextureResource.mjs":"gbJ28","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5LJ2A":[function(require,module,exports,__globalThis) {
+},{"./BlobResource.mjs":"kfn0B","./CompressedTextureResource.mjs":"3XYde","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kfn0B":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BlobResource", ()=>BlobResource);
@@ -22448,7 +22604,7 @@ class BlobResource extends (0, _core.BufferResource) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gbJ28":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3XYde":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CompressedTextureResource", ()=>CompressedTextureResource);
@@ -22526,7 +22682,7 @@ class CompressedTextureResource extends (0, _blobResourceMjs.BlobResource) {
     }
 }
 
-},{"../const.mjs":"chukW","./BlobResource.mjs":"5LJ2A","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"75ont":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"4c0xf","./BlobResource.mjs":"kfn0B","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"139ts":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FORMATS_TO_COMPONENTS", ()=>FORMATS_TO_COMPONENTS);
@@ -22677,7 +22833,7 @@ function parseKvData(dataView, bytesOfKeyValueData, littleEndian) {
     return kvData;
 }
 
-},{"@pixi/core":"f1ycj","../const.mjs":"chukW","../resources/index.mjs":"c3qm3","../resources/CompressedTextureResource.mjs":"gbJ28","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9b4U5":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../const.mjs":"4c0xf","../resources/index.mjs":"8er2G","../resources/CompressedTextureResource.mjs":"3XYde","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bLXZg":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadKTX", ()=>loadKTX);
@@ -22716,7 +22872,7 @@ const loadKTX = {
 };
 (0, _core.extensions).add(loadKTX);
 
-},{"@pixi/assets":"66RXo","@pixi/core":"f1ycj","../parsers/index.mjs":"fxF0i","../parsers/parseKTX.mjs":"75ont","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1BLZl":[function(require,module,exports,__globalThis) {
+},{"@pixi/assets":"chMVG","@pixi/core":"jFyjp","../parsers/index.mjs":"bc7Sf","../parsers/parseKTX.mjs":"139ts","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3LCUr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "resolveCompressedTextureUrl", ()=>resolveCompressedTextureUrl);
@@ -22762,13 +22918,13 @@ const knownFormats = [
 };
 (0, _core.extensions).add(resolveCompressedTextureUrl);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3B00v":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kGzcU":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Extract", ()=>(0, _extractMjs.Extract));
 var _extractMjs = require("./Extract.mjs");
 
-},{"./Extract.mjs":"iZa1Z","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iZa1Z":[function(require,module,exports,__globalThis) {
+},{"./Extract.mjs":"bsKRR","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bsKRR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Extract", ()=>Extract);
@@ -22907,7 +23063,7 @@ _Extract.extension = {
 let Extract = _Extract;
 (0, _core.extensions).add(Extract);
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kSqI4":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iTGtL":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FillStyle", ()=>(0, _fillStyleMjs.FillStyle));
@@ -22951,7 +23107,7 @@ const graphicsUtils = {
     DRAW_CALL_POOL: (0, _indexMjs.DRAW_CALL_POOL)
 };
 
-},{"./utils/index.mjs":"1SZtf","./const.mjs":"ieMT7","./Graphics.mjs":"2LMuH","./GraphicsData.mjs":"8utWw","./GraphicsGeometry.mjs":"c7SG6","./styles/FillStyle.mjs":"doHQ1","./styles/LineStyle.mjs":"1eUpX","./utils/buildPoly.mjs":"2zQnV","./utils/buildCircle.mjs":"4MMqZ","./utils/buildRectangle.mjs":"hs5P0","./utils/buildRoundedRectangle.mjs":"hIN77","./utils/buildLine.mjs":"4E7si","./utils/ArcUtils.mjs":"1Nga3","./utils/BezierUtils.mjs":"uSmAe","./utils/QuadraticUtils.mjs":"cYmtN","./utils/BatchPart.mjs":"6osTJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1SZtf":[function(require,module,exports,__globalThis) {
+},{"./utils/index.mjs":"lAqX3","./const.mjs":"gFSpD","./Graphics.mjs":"29TG8","./GraphicsData.mjs":"hqsdo","./GraphicsGeometry.mjs":"21qLj","./styles/FillStyle.mjs":"9yjyC","./styles/LineStyle.mjs":"4AEFY","./utils/buildPoly.mjs":"diBto","./utils/buildCircle.mjs":"dRvwO","./utils/buildRectangle.mjs":"2SJd0","./utils/buildRoundedRectangle.mjs":"cgX9o","./utils/buildLine.mjs":"GcrXD","./utils/ArcUtils.mjs":"kve5B","./utils/BezierUtils.mjs":"57EnE","./utils/QuadraticUtils.mjs":"3p7Sn","./utils/BatchPart.mjs":"3Of86","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lAqX3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ArcUtils", ()=>(0, _arcUtilsMjs.ArcUtils));
@@ -22984,7 +23140,7 @@ const FILL_COMMANDS = {
     [(0, _core.SHAPES).RREC]: (0, _buildRoundedRectangleMjs.buildRoundedRectangle)
 }, BATCH_POOL = [], DRAW_CALL_POOL = [];
 
-},{"@pixi/core":"f1ycj","./buildCircle.mjs":"4MMqZ","./buildPoly.mjs":"2zQnV","./buildRectangle.mjs":"hs5P0","./buildRoundedRectangle.mjs":"hIN77","./ArcUtils.mjs":"1Nga3","./BatchPart.mjs":"6osTJ","./BezierUtils.mjs":"uSmAe","./buildLine.mjs":"4E7si","./QuadraticUtils.mjs":"cYmtN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4MMqZ":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./buildCircle.mjs":"dRvwO","./buildPoly.mjs":"diBto","./buildRectangle.mjs":"2SJd0","./buildRoundedRectangle.mjs":"cgX9o","./ArcUtils.mjs":"kve5B","./BatchPart.mjs":"3Of86","./BezierUtils.mjs":"57EnE","./buildLine.mjs":"GcrXD","./QuadraticUtils.mjs":"3p7Sn","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dRvwO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "buildCircle", ()=>buildCircle);
@@ -23050,7 +23206,7 @@ const buildCircle = {
     }
 };
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2zQnV":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"diBto":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "buildPoly", ()=>buildPoly);
@@ -23100,7 +23256,7 @@ const buildPoly = {
     }
 };
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hs5P0":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2SJd0":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "buildRectangle", ()=>buildRectangle);
@@ -23117,7 +23273,7 @@ const buildRectangle = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hIN77":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cgX9o":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "buildRoundedRectangle", ()=>buildRoundedRectangle);
@@ -23131,7 +23287,7 @@ const buildRoundedRectangle = {
     }
 };
 
-},{"./buildCircle.mjs":"4MMqZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1Nga3":[function(require,module,exports,__globalThis) {
+},{"./buildCircle.mjs":"dRvwO","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kve5B":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ArcUtils", ()=>ArcUtils);
@@ -23185,7 +23341,7 @@ class ArcUtils {
     }
 }
 
-},{"@pixi/core":"f1ycj","../const.mjs":"ieMT7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ieMT7":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../const.mjs":"gFSpD","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gFSpD":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GRAPHICS_CURVES", ()=>GRAPHICS_CURVES);
@@ -23206,7 +23362,7 @@ const curves = {
     }
 }, GRAPHICS_CURVES = curves;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6osTJ":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3Of86":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BatchPart", ()=>BatchPart);
@@ -23234,7 +23390,7 @@ class BatchPart {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"uSmAe":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"57EnE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BezierUtils", ()=>BezierUtils);
@@ -23281,7 +23437,7 @@ class BezierUtils {
     }
 }
 
-},{"../const.mjs":"ieMT7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4E7si":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"gFSpD","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"GcrXD":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "buildLine", ()=>buildLine);
@@ -23388,7 +23544,7 @@ function buildLine(graphicsData, graphicsGeometry) {
     graphicsData.lineStyle.native ? buildNativeLine(graphicsData, graphicsGeometry) : buildNonNativeLine(graphicsData, graphicsGeometry);
 }
 
-},{"@pixi/core":"f1ycj","../const.mjs":"ieMT7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cYmtN":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","../const.mjs":"gFSpD","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3p7Sn":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "QuadraticUtils", ()=>QuadraticUtils);
@@ -23429,7 +23585,7 @@ class QuadraticUtils {
     }
 }
 
-},{"../const.mjs":"ieMT7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2LMuH":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"gFSpD","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"29TG8":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Graphics", ()=>Graphics);
@@ -23945,7 +24101,7 @@ _Graphics.curves = (0, _constMjs.curves), /**
 */ _Graphics._TEMP_POINT = new (0, _core.Point)();
 let Graphics = _Graphics;
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","./const.mjs":"ieMT7","./GraphicsGeometry.mjs":"c7SG6","./styles/FillStyle.mjs":"doHQ1","./styles/LineStyle.mjs":"1eUpX","./utils/index.mjs":"1SZtf","./utils/QuadraticUtils.mjs":"cYmtN","./utils/BezierUtils.mjs":"uSmAe","./utils/ArcUtils.mjs":"1Nga3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c7SG6":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","./const.mjs":"gFSpD","./GraphicsGeometry.mjs":"21qLj","./styles/FillStyle.mjs":"9yjyC","./styles/LineStyle.mjs":"4AEFY","./utils/index.mjs":"lAqX3","./utils/QuadraticUtils.mjs":"3p7Sn","./utils/BezierUtils.mjs":"57EnE","./utils/ArcUtils.mjs":"kve5B","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"21qLj":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GraphicsGeometry", ()=>GraphicsGeometry);
@@ -24223,7 +24379,7 @@ const tmpPoint = new (0, _core.Point)(), _GraphicsGeometry = class _GraphicsGeom
 _GraphicsGeometry.BATCHABLE_SIZE = 100;
 let GraphicsGeometry = _GraphicsGeometry;
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","./GraphicsData.mjs":"8utWw","./utils/index.mjs":"1SZtf","./utils/BatchPart.mjs":"6osTJ","./utils/buildPoly.mjs":"2zQnV","./utils/buildLine.mjs":"4E7si","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8utWw":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","./GraphicsData.mjs":"hqsdo","./utils/index.mjs":"lAqX3","./utils/BatchPart.mjs":"3Of86","./utils/buildPoly.mjs":"diBto","./utils/buildLine.mjs":"GcrXD","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hqsdo":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "GraphicsData", ()=>GraphicsData);
@@ -24247,7 +24403,7 @@ class GraphicsData {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"doHQ1":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9yjyC":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FillStyle", ()=>FillStyle);
@@ -24268,7 +24424,7 @@ class FillStyle {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1eUpX":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4AEFY":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "LineStyle", ()=>LineStyle);
@@ -24287,7 +24443,7 @@ class LineStyle extends (0, _fillStyleMjs.FillStyle) {
     }
 }
 
-},{"../const.mjs":"ieMT7","./FillStyle.mjs":"doHQ1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bm7IQ":[function(require,module,exports,__globalThis) {
+},{"../const.mjs":"gFSpD","./FillStyle.mjs":"9yjyC","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1zimi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Mesh", ()=>(0, _meshMjs.Mesh));
@@ -24299,7 +24455,7 @@ var _meshBatchUvsMjs = require("./MeshBatchUvs.mjs");
 var _meshGeometryMjs = require("./MeshGeometry.mjs");
 var _meshMaterialMjs = require("./MeshMaterial.mjs");
 
-},{"./Mesh.mjs":"8c6OA","./MeshBatchUvs.mjs":"bg6gE","./MeshGeometry.mjs":"bp9ri","./MeshMaterial.mjs":"bQBVg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8c6OA":[function(require,module,exports,__globalThis) {
+},{"./Mesh.mjs":"njNq2","./MeshBatchUvs.mjs":"lR3Kc","./MeshGeometry.mjs":"7RMNG","./MeshMaterial.mjs":"1uKvu","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"njNq2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Mesh", ()=>Mesh);
@@ -24460,7 +24616,7 @@ const tempPoint = new (0, _core.Point)(), tempPolygon = new (0, _core.Polygon)()
 _Mesh.BATCHABLE_SIZE = 100;
 let Mesh = _Mesh;
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","./MeshBatchUvs.mjs":"bg6gE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bg6gE":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","./MeshBatchUvs.mjs":"lR3Kc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lR3Kc":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MeshBatchUvs", ()=>MeshBatchUvs);
@@ -24482,7 +24638,7 @@ class MeshBatchUvs {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bp9ri":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7RMNG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MeshGeometry", ()=>MeshGeometry);
@@ -24506,7 +24662,7 @@ class MeshGeometry extends (0, _core.Geometry) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bQBVg":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1uKvu":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MeshMaterial", ()=>MeshMaterial);
@@ -24582,7 +24738,7 @@ class MeshMaterial extends (0, _core.Shader) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./shader/mesh.frag.mjs":"6jBBi","./shader/mesh.vert.mjs":"4JJE8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6jBBi":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./shader/mesh.frag.mjs":"lcxY2","./shader/mesh.vert.mjs":"eluX7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lcxY2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -24597,7 +24753,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4JJE8":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eluX7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>vertex);
@@ -24618,7 +24774,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e7czw":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jaxfj":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "NineSlicePlane", ()=>(0, _nineSlicePlaneMjs.NineSlicePlane));
@@ -24634,7 +24790,7 @@ var _simpleMeshMjs = require("./SimpleMesh.mjs");
 var _simplePlaneMjs = require("./SimplePlane.mjs");
 var _simpleRopeMjs = require("./SimpleRope.mjs");
 
-},{"./geometry/PlaneGeometry.mjs":"jmxSL","./geometry/RopeGeometry.mjs":"4vjjk","./NineSlicePlane.mjs":"2BGNN","./SimpleMesh.mjs":"a1ZoU","./SimplePlane.mjs":"C5JP2","./SimpleRope.mjs":"dSw9t","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jmxSL":[function(require,module,exports,__globalThis) {
+},{"./geometry/PlaneGeometry.mjs":"2Vg2u","./geometry/RopeGeometry.mjs":"jUs2y","./NineSlicePlane.mjs":"6gXp9","./SimpleMesh.mjs":"bulLF","./SimplePlane.mjs":"4tkmJ","./SimpleRope.mjs":"33MVQ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2Vg2u":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PlaneGeometry", ()=>PlaneGeometry);
@@ -24666,7 +24822,7 @@ class PlaneGeometry extends (0, _mesh.MeshGeometry) {
     }
 }
 
-},{"@pixi/mesh":"bm7IQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4vjjk":[function(require,module,exports,__globalThis) {
+},{"@pixi/mesh":"1zimi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jUs2y":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "RopeGeometry", ()=>RopeGeometry);
@@ -24736,7 +24892,7 @@ class RopeGeometry extends (0, _mesh.MeshGeometry) {
     }
 }
 
-},{"@pixi/mesh":"bm7IQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2BGNN":[function(require,module,exports,__globalThis) {
+},{"@pixi/mesh":"1zimi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6gXp9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "NineSlicePlane", ()=>NineSlicePlane);
@@ -24821,7 +24977,7 @@ class NineSlicePlane extends (0, _simplePlaneMjs.SimplePlane) {
     }
 }
 
-},{"@pixi/core":"f1ycj","./SimplePlane.mjs":"C5JP2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"C5JP2":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./SimplePlane.mjs":"4tkmJ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4tkmJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SimplePlane", ()=>SimplePlane);
@@ -24859,7 +25015,7 @@ class SimplePlane extends (0, _mesh.Mesh) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/mesh":"bm7IQ","./geometry/PlaneGeometry.mjs":"jmxSL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a1ZoU":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/mesh":"1zimi","./geometry/PlaneGeometry.mjs":"2Vg2u","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bulLF":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SimpleMesh", ()=>SimpleMesh);
@@ -24892,7 +25048,7 @@ class SimpleMesh extends (0, _mesh.Mesh) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/mesh":"bm7IQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dSw9t":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/mesh":"1zimi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"33MVQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SimpleRope", ()=>SimpleRope);
@@ -24917,7 +25073,7 @@ class SimpleRope extends (0, _mesh.Mesh) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/mesh":"bm7IQ","./geometry/RopeGeometry.mjs":"4vjjk","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e0YGY":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/mesh":"1zimi","./geometry/RopeGeometry.mjs":"jUs2y","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kjwt4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ParticleContainer", ()=>(0, _particleContainerMjs.ParticleContainer));
@@ -24925,7 +25081,7 @@ parcelHelpers.export(exports, "ParticleRenderer", ()=>(0, _particleRendererMjs.P
 var _particleContainerMjs = require("./ParticleContainer.mjs");
 var _particleRendererMjs = require("./ParticleRenderer.mjs");
 
-},{"./ParticleContainer.mjs":"2nNjO","./ParticleRenderer.mjs":"dOVg4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2nNjO":[function(require,module,exports,__globalThis) {
+},{"./ParticleContainer.mjs":"lTdnG","./ParticleRenderer.mjs":"bxrHn","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lTdnG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ParticleContainer", ()=>ParticleContainer);
@@ -25011,7 +25167,7 @@ class ParticleContainer extends (0, _display.Container) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dOVg4":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bxrHn":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ParticleRenderer", ()=>ParticleRenderer);
@@ -25186,7 +25342,7 @@ ParticleRenderer.extension = {
 };
 (0, _core.extensions).add(ParticleRenderer);
 
-},{"@pixi/core":"f1ycj","./ParticleBuffer.mjs":"2N6Z0","./particles.frag.mjs":"kNrrY","./particles.vert.mjs":"8shdt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2N6Z0":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./ParticleBuffer.mjs":"gtPie","./particles.frag.mjs":"e8yxU","./particles.vert.mjs":"5KIOB","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gtPie":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ParticleBuffer", ()=>ParticleBuffer);
@@ -25266,7 +25422,7 @@ class ParticleBuffer {
     }
 }
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kNrrY":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"e8yxU":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragment);
@@ -25280,7 +25436,7 @@ void main(void){
     gl_FragColor = color;
 }`;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8shdt":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5KIOB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>vertex);
@@ -25311,7 +25467,7 @@ void main(void){
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8BtAq":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aY0RT":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BasePrepare", ()=>(0, _basePrepareMjs.BasePrepare));
@@ -25324,7 +25480,7 @@ var _countLimiterMjs = require("./CountLimiter.mjs");
 var _prepareMjs = require("./Prepare.mjs");
 var _timeLimiterMjs = require("./TimeLimiter.mjs");
 
-},{"./settings.mjs":"eEEfz","./BasePrepare.mjs":"629uH","./CountLimiter.mjs":"jXY82","./Prepare.mjs":"9R3tU","./TimeLimiter.mjs":"TQcI7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eEEfz":[function(require,module,exports,__globalThis) {
+},{"./settings.mjs":"3k6uP","./BasePrepare.mjs":"jzUeb","./CountLimiter.mjs":"XVxz3","./Prepare.mjs":"7MD2j","./TimeLimiter.mjs":"gbXvd","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3k6uP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "settings", ()=>(0, _core.settings));
@@ -25349,7 +25505,7 @@ Object.defineProperties((0, _core.settings), {
     }
 });
 
-},{"@pixi/core":"f1ycj","./BasePrepare.mjs":"629uH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"629uH":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./BasePrepare.mjs":"jzUeb","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jzUeb":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BasePrepare", ()=>BasePrepare);
@@ -25484,7 +25640,7 @@ const _BasePrepare = class _BasePrepare2 {
 _BasePrepare.uploadsPerFrame = 4;
 let BasePrepare = _BasePrepare;
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@pixi/text":"kpCX2","./CountLimiter.mjs":"jXY82","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kpCX2":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@pixi/text":"gsN2L","./CountLimiter.mjs":"XVxz3","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gsN2L":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TEXT_GRADIENT", ()=>(0, _constMjs.TEXT_GRADIENT));
@@ -25496,13 +25652,13 @@ var _textMjs = require("./Text.mjs");
 var _textMetricsMjs = require("./TextMetrics.mjs");
 var _textStyleMjs = require("./TextStyle.mjs");
 
-},{"./const.mjs":"feRYJ","./Text.mjs":"fGpTH","./TextMetrics.mjs":"1qd16","./TextStyle.mjs":"97eiW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"feRYJ":[function(require,module,exports,__globalThis) {
+},{"./const.mjs":"1bK4k","./Text.mjs":"61W1s","./TextMetrics.mjs":"fc9TQ","./TextStyle.mjs":"4dASw","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1bK4k":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TEXT_GRADIENT", ()=>TEXT_GRADIENT);
 var TEXT_GRADIENT = /* @__PURE__ */ ((TEXT_GRADIENT2)=>(TEXT_GRADIENT2[TEXT_GRADIENT2.LINEAR_VERTICAL = 0] = "LINEAR_VERTICAL", TEXT_GRADIENT2[TEXT_GRADIENT2.LINEAR_HORIZONTAL = 1] = "LINEAR_HORIZONTAL", TEXT_GRADIENT2))(TEXT_GRADIENT || {});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fGpTH":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"61W1s":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Text", ()=>Text);
@@ -25733,7 +25889,7 @@ const defaultDestroyOptions = {
 _Text.defaultAutoResolution = !0;
 let Text = _Text;
 
-},{"@pixi/core":"f1ycj","@pixi/sprite":"cDBeU","./const.mjs":"feRYJ","./TextMetrics.mjs":"1qd16","./TextStyle.mjs":"97eiW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1qd16":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/sprite":"3ke5j","./const.mjs":"1bK4k","./TextMetrics.mjs":"fc9TQ","./TextStyle.mjs":"4dASw","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fc9TQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextMetrics", ()=>TextMetrics);
@@ -26104,7 +26260,7 @@ _TextMetrics.METRICS_STRING = "|\xC9q\xC5", /** Baseline symbol for calculate fo
 ];
 let TextMetrics = _TextMetrics;
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"97eiW":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4dASw":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextStyle", ()=>TextStyle);
@@ -26493,7 +26649,7 @@ function deepCopyProperties(target, source, propertyObj) {
     for(const prop in propertyObj)Array.isArray(source[prop]) ? target[prop] = source[prop].slice() : target[prop] = source[prop];
 }
 
-},{"./const.mjs":"feRYJ","@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jXY82":[function(require,module,exports,__globalThis) {
+},{"./const.mjs":"1bK4k","@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"XVxz3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CountLimiter", ()=>CountLimiter);
@@ -26514,7 +26670,7 @@ class CountLimiter {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9R3tU":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7MD2j":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Prepare", ()=>Prepare);
@@ -26551,7 +26707,7 @@ Prepare.extension = {
 };
 (0, _core.extensions).add(Prepare);
 
-},{"@pixi/core":"f1ycj","@pixi/graphics":"kSqI4","./BasePrepare.mjs":"629uH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"TQcI7":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/graphics":"iTGtL","./BasePrepare.mjs":"jzUeb","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gbXvd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TimeLimiter", ()=>TimeLimiter);
@@ -26570,13 +26726,13 @@ class TimeLimiter {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lY2GG":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dYJ6G":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AnimatedSprite", ()=>(0, _animatedSpriteMjs.AnimatedSprite));
 var _animatedSpriteMjs = require("./AnimatedSprite.mjs");
 
-},{"./AnimatedSprite.mjs":"dsN9d","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsN9d":[function(require,module,exports,__globalThis) {
+},{"./AnimatedSprite.mjs":"6Zjpi","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6Zjpi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AnimatedSprite", ()=>AnimatedSprite);
@@ -26698,7 +26854,7 @@ class AnimatedSprite extends (0, _sprite.Sprite) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/sprite":"cDBeU","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3bolC":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/sprite":"3ke5j","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l5Sr6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TilingSprite", ()=>(0, _tilingSpriteMjs.TilingSprite));
@@ -26706,7 +26862,7 @@ parcelHelpers.export(exports, "TilingSpriteRenderer", ()=>(0, _tilingSpriteRende
 var _tilingSpriteMjs = require("./TilingSprite.mjs");
 var _tilingSpriteRendererMjs = require("./TilingSpriteRenderer.mjs");
 
-},{"./TilingSprite.mjs":"af1CY","./TilingSpriteRenderer.mjs":"52tYG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"af1CY":[function(require,module,exports,__globalThis) {
+},{"./TilingSprite.mjs":"DGBd6","./TilingSpriteRenderer.mjs":"d2fO2","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"DGBd6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TilingSprite", ()=>TilingSprite);
@@ -26820,7 +26976,7 @@ class TilingSprite extends (0, _sprite.Sprite) {
     }
 }
 
-},{"@pixi/core":"f1ycj","@pixi/sprite":"cDBeU","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"52tYG":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/sprite":"3ke5j","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2fO2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TilingSpriteRenderer", ()=>TilingSpriteRenderer);
@@ -26870,7 +27026,7 @@ TilingSpriteRenderer.extension = {
 };
 (0, _core.extensions).add(TilingSpriteRenderer);
 
-},{"@pixi/core":"f1ycj","./sprite-tiling.frag.mjs":"ioyUH","./sprite-tiling.vert.mjs":"cmnyf","./sprite-tiling-fallback.frag.mjs":"depVJ","./sprite-tiling-fallback.vert.mjs":"bXKBM","./sprite-tiling-simple.frag.mjs":"5Xocw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ioyUH":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./sprite-tiling.frag.mjs":"1vWXE","./sprite-tiling.vert.mjs":"7FHYj","./sprite-tiling-fallback.frag.mjs":"gb4z7","./sprite-tiling-fallback.vert.mjs":"kQFYy","./sprite-tiling-simple.frag.mjs":"d6JQz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1vWXE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>gl2FragmentSrc);
@@ -26902,7 +27058,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cmnyf":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7FHYj":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>gl2VertexSrc);
@@ -26928,7 +27084,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"depVJ":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gb4z7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>gl1FragmentSrc);
@@ -26967,7 +27123,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bXKBM":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kQFYy":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>gl1VertexSrc);
@@ -26993,7 +27149,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5Xocw":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d6JQz":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>fragmentSimpleSrc);
@@ -27014,7 +27170,7 @@ void main(void)
 }
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8GuQ7":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5LSCZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Spritesheet", ()=>(0, _spritesheetMjs.Spritesheet));
@@ -27022,7 +27178,7 @@ parcelHelpers.export(exports, "spritesheetAsset", ()=>(0, _spritesheetAssetMjs.s
 var _spritesheetMjs = require("./Spritesheet.mjs");
 var _spritesheetAssetMjs = require("./spritesheetAsset.mjs");
 
-},{"./Spritesheet.mjs":"6x2kd","./spritesheetAsset.mjs":"cebOx","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6x2kd":[function(require,module,exports,__globalThis) {
+},{"./Spritesheet.mjs":"jL4S7","./spritesheetAsset.mjs":"JmGMp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jL4S7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Spritesheet", ()=>Spritesheet);
@@ -27105,7 +27261,7 @@ const _Spritesheet = class _Spritesheet2 {
 _Spritesheet.BATCH_SIZE = 1e3;
 let Spritesheet = _Spritesheet;
 
-},{"@pixi/core":"f1ycj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cebOx":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"JmGMp":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "spritesheetAsset", ()=>spritesheetAsset);
@@ -27228,7 +27384,7 @@ const spritesheetAsset = {
 };
 (0, _core.extensions).add(spritesheetAsset);
 
-},{"@pixi/assets":"66RXo","@pixi/core":"f1ycj","./Spritesheet.mjs":"6x2kd","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6pTsU":[function(require,module,exports,__globalThis) {
+},{"@pixi/assets":"chMVG","@pixi/core":"jFyjp","./Spritesheet.mjs":"jL4S7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gLS4H":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BitmapFont", ()=>(0, _bitmapFontMjs.BitmapFont));
@@ -27249,7 +27405,7 @@ var _textFormatMjs = require("./formats/TextFormat.mjs");
 var _xmlformatMjs = require("./formats/XMLFormat.mjs");
 var _xmlstringFormatMjs = require("./formats/XMLStringFormat.mjs");
 
-},{"./BitmapFont.mjs":"bqB6u","./BitmapFontData.mjs":"5usPv","./BitmapText.mjs":"fOsih","./BitmapTextStyle.mjs":"2oLV9","./formats/index.mjs":"eh6TO","./loadBitmapFont.mjs":"gTvqz","./formats/TextFormat.mjs":"keKRN","./formats/XMLFormat.mjs":"la2gr","./formats/XMLStringFormat.mjs":"1Y5FL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bqB6u":[function(require,module,exports,__globalThis) {
+},{"./BitmapFont.mjs":"hbroK","./BitmapFontData.mjs":"hprQQ","./BitmapText.mjs":"js2Zh","./BitmapTextStyle.mjs":"qenPn","./formats/index.mjs":"airRW","./loadBitmapFont.mjs":"lEXTK","./formats/TextFormat.mjs":"9sVKX","./formats/XMLFormat.mjs":"auiGN","./formats/XMLStringFormat.mjs":"3UUra","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hbroK":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BitmapFont", ()=>BitmapFont);
@@ -27488,7 +27644,7 @@ _BitmapFont.ALPHA = [
 }, /** Collection of available/installed fonts. */ _BitmapFont.available = {};
 let BitmapFont = _BitmapFont;
 
-},{"@pixi/core":"f1ycj","@pixi/text":"kpCX2","./BitmapFontData.mjs":"5usPv","./formats/index.mjs":"eh6TO","./utils/index.mjs":"c9shC","./utils/resolveCharacters.mjs":"5DVED","./utils/drawGlyph.mjs":"85izV","./utils/extractCharCode.mjs":"e3Er0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5usPv":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/text":"gsN2L","./BitmapFontData.mjs":"hprQQ","./formats/index.mjs":"airRW","./utils/index.mjs":"juG2g","./utils/resolveCharacters.mjs":"5Tcrd","./utils/drawGlyph.mjs":"4laEy","./utils/extractCharCode.mjs":"4DZtE","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hprQQ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BitmapFontData", ()=>BitmapFontData);
@@ -27498,7 +27654,7 @@ class BitmapFontData {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eh6TO":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"airRW":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextFormat", ()=>(0, _textFormatMjs.TextFormat));
@@ -27518,7 +27674,7 @@ function autoDetectFormat(data) {
     return null;
 }
 
-},{"./TextFormat.mjs":"keKRN","./XMLFormat.mjs":"la2gr","./XMLStringFormat.mjs":"1Y5FL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"keKRN":[function(require,module,exports,__globalThis) {
+},{"./TextFormat.mjs":"9sVKX","./XMLFormat.mjs":"auiGN","./XMLStringFormat.mjs":"3UUra","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"9sVKX":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TextFormat", ()=>TextFormat);
@@ -27584,7 +27740,7 @@ class TextFormat {
     }
 }
 
-},{"../BitmapFontData.mjs":"5usPv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"la2gr":[function(require,module,exports,__globalThis) {
+},{"../BitmapFontData.mjs":"hprQQ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"auiGN":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "XMLFormat", ()=>XMLFormat);
@@ -27642,7 +27798,7 @@ class XMLFormat {
     }
 }
 
-},{"../BitmapFontData.mjs":"5usPv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1Y5FL":[function(require,module,exports,__globalThis) {
+},{"../BitmapFontData.mjs":"hprQQ","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3UUra":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "XMLStringFormat", ()=>XMLStringFormat);
@@ -27665,7 +27821,7 @@ class XMLStringFormat {
     }
 }
 
-},{"@pixi/core":"f1ycj","./XMLFormat.mjs":"la2gr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c9shC":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./XMLFormat.mjs":"auiGN","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"juG2g":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "drawGlyph", ()=>(0, _drawGlyphMjs.drawGlyph));
@@ -27679,7 +27835,7 @@ var _generateFillStyleMjs = require("./generateFillStyle.mjs");
 var _resolveCharactersMjs = require("./resolveCharacters.mjs");
 var _splitTextToCharactersMjs = require("./splitTextToCharacters.mjs");
 
-},{"./drawGlyph.mjs":"85izV","./extractCharCode.mjs":"e3Er0","./generateFillStyle.mjs":"gyAh1","./resolveCharacters.mjs":"5DVED","./splitTextToCharacters.mjs":"67gnc","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"85izV":[function(require,module,exports,__globalThis) {
+},{"./drawGlyph.mjs":"4laEy","./extractCharCode.mjs":"4DZtE","./generateFillStyle.mjs":"lEEvr","./resolveCharacters.mjs":"5Tcrd","./splitTextToCharacters.mjs":"dGB2g","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4laEy":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "drawGlyph", ()=>drawGlyph);
@@ -27698,7 +27854,7 @@ function drawGlyph(canvas, context, metrics, x, y, resolution, style) {
     style.stroke && style.strokeThickness && context.strokeText(char, tx, ty + metrics.lineHeight - fontProperties.descent), style.fill && context.fillText(char, tx, ty + metrics.lineHeight - fontProperties.descent), context.setTransform(1, 0, 0, 1, 0, 0), context.fillStyle = "rgba(0, 0, 0, 0)";
 }
 
-},{"@pixi/core":"f1ycj","./generateFillStyle.mjs":"gyAh1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gyAh1":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","./generateFillStyle.mjs":"lEEvr","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lEEvr":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "generateFillStyle", ()=>generateFillStyle);
@@ -27740,7 +27896,7 @@ function generateFillStyle(canvas, context, style, resolution, lines, metrics) {
     return gradient;
 }
 
-},{"@pixi/text":"kpCX2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e3Er0":[function(require,module,exports,__globalThis) {
+},{"@pixi/text":"gsN2L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4DZtE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "extractCharCode", ()=>extractCharCode);
@@ -27748,7 +27904,7 @@ function extractCharCode(str) {
     return str.codePointAt ? str.codePointAt(0) : str.charCodeAt(0);
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5DVED":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5Tcrd":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "resolveCharacters", ()=>resolveCharacters);
@@ -27771,7 +27927,7 @@ function resolveCharacters(chars) {
     return result;
 }
 
-},{"./splitTextToCharacters.mjs":"67gnc","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"67gnc":[function(require,module,exports,__globalThis) {
+},{"./splitTextToCharacters.mjs":"dGB2g","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"dGB2g":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "splitTextToCharacters", ()=>splitTextToCharacters);
@@ -27779,7 +27935,7 @@ function splitTextToCharacters(text) {
     return Array.from ? Array.from(text) : text.split("");
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fOsih":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"js2Zh":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BitmapText", ()=>BitmapText);
@@ -28073,7 +28229,7 @@ _BitmapText.styleDefaults = {
 };
 let BitmapText = _BitmapText;
 
-},{"@pixi/core":"f1ycj","@pixi/display":"hCm6V","@pixi/mesh":"bm7IQ","./BitmapFont.mjs":"bqB6u","./shader/msdf.frag.mjs":"6oRHT","./shader/msdf.vert.mjs":"ifIUb","./utils/index.mjs":"c9shC","./utils/splitTextToCharacters.mjs":"67gnc","./utils/extractCharCode.mjs":"e3Er0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6oRHT":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/display":"gKqmo","@pixi/mesh":"1zimi","./BitmapFont.mjs":"hbroK","./shader/msdf.frag.mjs":"grcq8","./shader/msdf.vert.mjs":"kI2q5","./utils/index.mjs":"juG2g","./utils/splitTextToCharacters.mjs":"dGB2g","./utils/extractCharCode.mjs":"4DZtE","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"grcq8":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>msdfFrag);
@@ -28117,7 +28273,7 @@ void main(void) {\r
 }\r
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ifIUb":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kI2q5":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>msdfVert);
@@ -28139,9 +28295,9 @@ void main(void)\r
 }\r
 `;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2oLV9":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"qenPn":[function(require,module,exports,__globalThis) {
 
-},{}],"gTvqz":[function(require,module,exports,__globalThis) {
+},{}],"lEXTK":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "loadBitmapFont", ()=>loadBitmapFont);
@@ -28185,7 +28341,7 @@ const validExtensions = [
 };
 (0, _core.extensions).add(loadBitmapFont);
 
-},{"@pixi/assets":"66RXo","@pixi/core":"f1ycj","./BitmapFont.mjs":"bqB6u","./formats/index.mjs":"eh6TO","./formats/TextFormat.mjs":"keKRN","./formats/XMLStringFormat.mjs":"1Y5FL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kP8We":[function(require,module,exports,__globalThis) {
+},{"@pixi/assets":"chMVG","@pixi/core":"jFyjp","./BitmapFont.mjs":"hbroK","./formats/index.mjs":"airRW","./formats/TextFormat.mjs":"9sVKX","./formats/XMLStringFormat.mjs":"3UUra","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h49RZ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "HTMLText", ()=>(0, _htmltextMjs.HTMLText));
@@ -28193,7 +28349,7 @@ parcelHelpers.export(exports, "HTMLTextStyle", ()=>(0, _htmltextStyleMjs.HTMLTex
 var _htmltextMjs = require("./HTMLText.mjs");
 var _htmltextStyleMjs = require("./HTMLTextStyle.mjs");
 
-},{"./HTMLText.mjs":"7D78w","./HTMLTextStyle.mjs":"hZTyY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7D78w":[function(require,module,exports,__globalThis) {
+},{"./HTMLText.mjs":"1cvEE","./HTMLTextStyle.mjs":"cgLTf","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1cvEE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "HTMLText", ()=>HTMLText);
@@ -28388,7 +28544,7 @@ _HTMLText.defaultDestroyOptions = {
 }, /** Default maxWidth, set at construction */ _HTMLText.defaultMaxWidth = 2024, /** Default maxHeight, set at construction */ _HTMLText.defaultMaxHeight = 2024, /** Default autoResolution for all HTMLText objects */ _HTMLText.defaultAutoResolution = !0;
 let HTMLText = _HTMLText;
 
-},{"@pixi/core":"f1ycj","@pixi/sprite":"cDBeU","@pixi/text":"kpCX2","./HTMLTextStyle.mjs":"hZTyY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hZTyY":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/sprite":"3ke5j","@pixi/text":"gsN2L","./HTMLTextStyle.mjs":"cgLTf","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cgLTf":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "HTMLTextStyle", ()=>HTMLTextStyle);
@@ -28637,47 +28793,42 @@ _HTMLTextStyle.availableFonts = {}, /**
 };
 let HTMLTextStyle = _HTMLTextStyle;
 
-},{"@pixi/core":"f1ycj","@pixi/text":"kpCX2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e5Mjq":[function(require,module,exports,__globalThis) {
+},{"@pixi/core":"jFyjp","@pixi/text":"gsN2L","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bu3NE":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "FaceDetector", ()=>tc) //# sourceMappingURL=vision_bundle_mjs.js.map
+parcelHelpers.export(exports, "DrawingUtils", ()=>La) //# sourceMappingURL=vision_bundle_mjs.js.map
 ;
-parcelHelpers.export(exports, "FaceLandmarker", ()=>fc);
-parcelHelpers.export(exports, "FaceStylizer", ()=>dc);
-parcelHelpers.export(exports, "FilesetResolver", ()=>Do);
-parcelHelpers.export(exports, "GestureRecognizer", ()=>_c);
-parcelHelpers.export(exports, "HandLandmarker", ()=>Ec);
-parcelHelpers.export(exports, "HolisticLandmarker", ()=>kc);
-parcelHelpers.export(exports, "ImageClassifier", ()=>Sc);
-parcelHelpers.export(exports, "ImageEmbedder", ()=>xc);
-parcelHelpers.export(exports, "ImageSegmenter", ()=>Ic);
-parcelHelpers.export(exports, "ImageSegmenterResult", ()=>Lc);
-parcelHelpers.export(exports, "InteractiveSegmenter", ()=>Hc);
-parcelHelpers.export(exports, "InteractiveSegmenterResult", ()=>Mc);
-parcelHelpers.export(exports, "MPImage", ()=>Va);
-parcelHelpers.export(exports, "MPMask", ()=>Ta);
-parcelHelpers.export(exports, "ObjectDetector", ()=>Wc);
-parcelHelpers.export(exports, "PoseLandmarker", ()=>$c);
-parcelHelpers.export(exports, "VisionTaskRunner", ()=>Qa);
+parcelHelpers.export(exports, "FaceDetector", ()=>$a);
+parcelHelpers.export(exports, "FaceLandmarker", ()=>ac);
+parcelHelpers.export(exports, "FaceStylizer", ()=>cc);
+parcelHelpers.export(exports, "FilesetResolver", ()=>Po);
+parcelHelpers.export(exports, "GestureRecognizer", ()=>fc);
+parcelHelpers.export(exports, "HandLandmarker", ()=>gc);
+parcelHelpers.export(exports, "HolisticLandmarker", ()=>Ec);
+parcelHelpers.export(exports, "ImageClassifier", ()=>wc);
+parcelHelpers.export(exports, "ImageEmbedder", ()=>Tc);
+parcelHelpers.export(exports, "ImageSegmenter", ()=>Sc);
+parcelHelpers.export(exports, "ImageSegmenterResult", ()=>Ac);
+parcelHelpers.export(exports, "InteractiveSegmenter", ()=>Bc);
+parcelHelpers.export(exports, "InteractiveSegmenterResult", ()=>xc);
+parcelHelpers.export(exports, "MPImage", ()=>Da);
+parcelHelpers.export(exports, "MPMask", ()=>ya);
+parcelHelpers.export(exports, "ObjectDetector", ()=>Gc);
+parcelHelpers.export(exports, "PoseLandmarker", ()=>Hc);
+parcelHelpers.export(exports, "VisionTaskRunner", ()=>Ya);
 var t = "undefined" != typeof self ? self : {};
-function e(e, n) {
-    e = e.split(".");
-    var r, i = t;
-    e[0] in i || void 0 === i.execScript || i.execScript("var " + e[0]);
-    for(; e.length && (r = e.shift());)e.length || void 0 === n ? i = i[r] && i[r] !== Object.prototype[r] ? i[r] : i[r] = {} : i[r] = n;
-}
-function n() {
+function e() {
     throw Error("Invalid UTF8");
 }
-function r(t, e) {
+function n(t, e) {
     return e = String.fromCharCode.apply(null, e), null == t ? e : t + e;
 }
-let i, s;
-const o = "undefined" != typeof TextDecoder;
-let a;
-const c = "undefined" != typeof TextEncoder;
-function h(t) {
-    if (c) t = (a ||= new TextEncoder).encode(t);
+let r, i;
+const s = "undefined" != typeof TextDecoder;
+let o;
+const a = "undefined" != typeof TextEncoder;
+function c(t) {
+    if (a) t = (o ||= new TextEncoder).encode(t);
     else {
         let n = 0;
         const r = new Uint8Array(3 * t.length);
@@ -28707,40 +28858,40 @@ function h(t) {
     }
     return t;
 }
-var u, l;
+var h, u;
 t: {
-    for(var f = [
+    for(var l = [
         "CLOSURE_FLAGS"
-    ], d = t, p = 0; p < f.length; p++)if (null == (d = d[f[p]])) {
-        l = null;
+    ], d = t, f = 0; f < l.length; f++)if (null == (d = d[l[f]])) {
+        u = null;
         break t;
     }
-    l = d;
+    u = d;
 }
-var g, m = l && l[610401301];
-u = null != m && m;
-const y = t.navigator;
-function _(t) {
-    return !!u && !!g && g.brands.some(({ brand: e })=>e && -1 != e.indexOf(t));
+var p, g = u && u[610401301];
+h = null != g && g;
+const m = t.navigator;
+function y(t) {
+    return !!h && !!p && p.brands.some(({ brand: e })=>e && -1 != e.indexOf(t));
 }
-function v(e) {
+function _(e) {
     var n;
     return (n = t.navigator) && (n = n.userAgent) || (n = ""), -1 != n.indexOf(e);
 }
+function v() {
+    return !!h && !!p && p.brands.length > 0;
+}
 function E() {
-    return !!u && !!g && g.brands.length > 0;
+    return v() ? y("Chromium") : (_("Chrome") || _("CriOS")) && !(!v() && _("Edge")) || _("Silk");
 }
-function w() {
-    return E() ? _("Chromium") : (v("Chrome") || v("CriOS")) && !(!E() && v("Edge")) || v("Silk");
+function w(t) {
+    return w[" "](t), t;
 }
-function T(t) {
-    return T[" "](t), t;
-}
-g = y && y.userAgentData || null, T[" "] = function() {};
-var b = !E() && (v("Trident") || v("MSIE"));
-!v("Android") || w(), w(), v("Safari") && (w() || !E() && v("Coast") || !E() && v("Opera") || !E() && v("Edge") || (E() ? _("Microsoft Edge") : v("Edg/")) || E() && _("Opera"));
-var A = {}, k = null;
-function S(t) {
+p = m && m.userAgentData || null, w[" "] = function() {};
+var T = !v() && (_("Trident") || _("MSIE"));
+!_("Android") || E(), E(), _("Safari") && (E() || !v() && _("Coast") || !v() && _("Opera") || !v() && _("Edge") || (v() ? y("Microsoft Edge") : _("Edg/")) || v() && y("Opera"));
+var A = {}, b = null;
+function k(t) {
     const e = t.length;
     let n = 3 * e / 4;
     n % 3 ? n = Math.floor(n) : -1 != "=.".indexOf(t[e - 1]) && (n = -1 != "=.".indexOf(t[e - 2]) ? n - 2 : n - 1);
@@ -28749,13 +28900,13 @@ function S(t) {
     return function(t, e) {
         function n(e) {
             for(; r < t.length;){
-                const e = t.charAt(r++), n = k[e];
+                const e = t.charAt(r++), n = b[e];
                 if (null != n) return n;
                 if (!/^[\s\xa0]*$/.test(e)) throw Error("Unknown base64 encoding at char: " + e);
             }
             return e;
         }
-        x();
+        S();
         let r = 0;
         for(;;){
             const t = n(-1), r = n(0), i = n(64), s = n(64);
@@ -28766,9 +28917,9 @@ function S(t) {
         r[i++] = t;
     }), i !== n ? r.subarray(0, i) : r;
 }
-function x() {
-    if (!k) {
-        k = {};
+function S() {
+    if (!b) {
+        b = {};
         var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split(""), e = [
             "+/=",
             "+/",
@@ -28781,16 +28932,16 @@ function x() {
             A[n] = r;
             for(let t = 0; t < r.length; t++){
                 const e = r[t];
-                void 0 === k[e] && (k[e] = t);
+                void 0 === b[e] && (b[e] = t);
             }
         }
     }
 }
-var L = "undefined" != typeof Uint8Array, R = !b && "function" == typeof btoa;
-function F(t) {
-    if (!R) {
+var x = "undefined" != typeof Uint8Array, L = !T && "function" == typeof btoa;
+function R(t) {
+    if (!L) {
         var e;
-        void 0 === e && (e = 0), x(), e = A[e];
+        void 0 === e && (e = 0), S(), e = A[e];
         var n = Array(Math.floor(t.length / 3)), r = e[64] || "";
         let c = 0, h = 0;
         for(; c < t.length - 2; c += 3){
@@ -28808,117 +28959,97 @@ function F(t) {
     for(e = "", n = 0, r = t.length - 10240; n < r;)e += String.fromCharCode.apply(null, t.subarray(n, n += 10240));
     return e += String.fromCharCode.apply(null, n ? t.subarray(n) : t), btoa(e);
 }
-const I = /[-_.]/g, M = {
+const F = /[-_.]/g, I = {
     "-": "+",
     _: "/",
     ".": "="
 };
-function P(t) {
-    return M[t] || "";
+function M(t) {
+    return I[t] || "";
 }
-function O(t) {
-    if (!R) return S(t);
-    I.test(t) && (t = t.replace(I, P)), t = atob(t);
+function P(t) {
+    if (!L) return k(t);
+    F.test(t) && (t = t.replace(F, M)), t = atob(t);
     const e = new Uint8Array(t.length);
     for(let n = 0; n < t.length; n++)e[n] = t.charCodeAt(n);
     return e;
 }
-function C(t) {
-    return L && null != t && t instanceof Uint8Array;
+function O(t) {
+    return x && null != t && t instanceof Uint8Array;
 }
-var U = {};
-function N() {
-    return G ||= new B(null, U);
+var C = {};
+function U() {
+    return B ||= new N(null, C);
 }
 function D(t) {
-    V(U);
+    j(C);
     var e = t.g;
-    return null == (e = null == e || C(e) ? e : "string" == typeof e ? O(e) : null) ? e : t.g = e;
+    return null == (e = null == e || O(e) ? e : "string" == typeof e ? P(e) : null) ? e : t.g = e;
 }
-var B = class {
+var N = class {
     h() {
         return new Uint8Array(D(this) || 0);
     }
     constructor(t, e){
-        if (V(e), this.g = t, null != t && 0 === t.length) throw Error("ByteString should be constructed with non-empty values");
+        if (j(e), this.g = t, null != t && 0 === t.length) throw Error("ByteString should be constructed with non-empty values");
     }
 };
-let G, j;
-function V(t) {
-    if (t !== U) throw Error("illegal external caller");
+let B, G;
+function j(t) {
+    if (t !== C) throw Error("illegal external caller");
 }
-function X(t, e) {
+function V(t, e) {
     t.__closure__error__context__984382 || (t.__closure__error__context__984382 = {}), t.__closure__error__context__984382.severity = e;
 }
-function H() {
-    const e = Error();
-    X(e, "incident"), function(e) {
-        t.setTimeout(()=>{
-            throw e;
-        }, 0);
-    }(e);
+function X(t) {
+    return V(t = Error(t), "warning"), t;
 }
-function W(t) {
-    return X(t = Error(t), "warning"), t;
+var H = "function" == typeof Symbol && "symbol" == typeof Symbol(), W = new Set;
+function z(t, e, n = !1, r = !1) {
+    return t = "function" == typeof Symbol && "symbol" == typeof Symbol() ? r && Symbol.for && t ? Symbol.for(t) : null != t ? Symbol(t) : Symbol() : e, n && W.add(t), t;
 }
-function z() {
+var K = z("jas", void 0, !0, !0), Y = z(void 0, "0di"), $ = z(void 0, "2ex"), q = z(void 0, "1oa", !0), J = z(void 0, Symbol(), !0);
+const Z = H ? K : "Ga", Q = {
+    Ga: {
+        value: 0,
+        configurable: !0,
+        writable: !0,
+        enumerable: !1
+    }
+}, tt = Object.defineProperties;
+function et(t, e) {
+    H || Z in t || tt(t, Q), t[Z] |= e;
+}
+function nt(t, e) {
+    H || Z in t || tt(t, Q), t[Z] = e;
+}
+function rt(t) {
+    return et(t, 34), t;
+}
+function it(t, e) {
+    nt(e, -30975 & (0 | t));
+}
+function st(t, e) {
+    nt(e, -30941 & (34 | t));
+}
+function ot() {
     return "function" == typeof BigInt;
 }
-function K(t) {
+function at(t) {
     return Array.prototype.slice.call(t);
-}
-var Y = "function" == typeof Symbol && "symbol" == typeof Symbol();
-function $(t) {
-    return "function" == typeof Symbol && "symbol" == typeof Symbol() ? Symbol() : t;
-}
-var q = $(), J = $("0di"), Z = $("2ex"), Q = $("1oa"), tt = Y ? (t, e)=>{
-    t[q] |= e;
-} : (t, e)=>{
-    void 0 !== t.G ? t.G |= e : Object.defineProperties(t, {
-        G: {
-            value: e,
-            configurable: !0,
-            writable: !0,
-            enumerable: !1
-        }
-    });
-}, et = Y ? (t, e)=>{
-    t[q] &= ~e;
-} : (t, e)=>{
-    void 0 !== t.G && (t.G &= ~e);
-}, nt = Y ? (t)=>0 | t[q] : (t)=>0 | t.G, rt = Y ? (t)=>t[q] : (t)=>t.G, it = Y ? (t, e)=>{
-    t[q] = e;
-} : (t, e)=>{
-    void 0 !== t.G ? t.G = e : Object.defineProperties(t, {
-        G: {
-            value: e,
-            configurable: !0,
-            writable: !0,
-            enumerable: !1
-        }
-    });
-};
-function st(t) {
-    return tt(t, 34), t;
-}
-function ot(t, e) {
-    it(e, -30975 & (0 | t));
-}
-function at(t, e) {
-    it(e, -30941 & (34 | t));
 }
 var ct, ht = {}, ut = {};
 function lt(t) {
     return !(!t || "object" != typeof t || t.Ia !== ut);
 }
-function ft(t) {
+function dt(t) {
     return null !== t && "object" == typeof t && !Array.isArray(t) && t.constructor === Object;
 }
-function dt(t, e) {
+function ft(t, e) {
     if (null != t) {
-        if ("string" == typeof t) t = t ? new B(t, U) : N();
-        else if (t.constructor !== B) {
-            if (C(t)) t = t.length ? new B(new Uint8Array(t), U) : N();
+        if ("string" == typeof t) t = t ? new N(t, C) : U();
+        else if (t.constructor !== N) {
+            if (O(t)) t = t.length ? new N(new Uint8Array(t), C) : U();
             else {
                 if (!e) throw Error();
                 t = void 0;
@@ -28928,13 +29059,13 @@ function dt(t, e) {
     return t;
 }
 function pt(t) {
-    return !(!Array.isArray(t) || t.length) && !!(1 & nt(t));
+    return !(!Array.isArray(t) || t.length) && !!(1 & (0 | t[Z]));
 }
 const gt = [];
 function mt(t) {
     if (2 & t) throw Error();
 }
-it(gt, 55), ct = Object.freeze(gt);
+nt(gt, 55), ct = Object.freeze(gt);
 class yt {
     constructor(t, e, n){
         this.l = 0, this.g = t, this.h = e, this.m = n;
@@ -28956,17 +29087,16 @@ class yt {
         return new yt(this.g, this.h, this.m);
     }
 }
-let _t;
-function vt(t, e) {
-    (e = _t ? e[_t] : void 0) && (t[_t] = K(e));
+function _t(t) {
+    return J ? t[J] : void 0;
 }
-var Et = Object.freeze({});
-function wt(t) {
-    return t.Pa = !0, t;
+var vt = Object.freeze({});
+function Et(t) {
+    return t.Qa = !0, t;
 }
-var Tt = wt((t)=>"number" == typeof t), bt = wt((t)=>"string" == typeof t), At = wt((t)=>"boolean" == typeof t), kt = "function" == typeof t.BigInt && "bigint" == typeof t.BigInt(0), St = wt((t)=>kt ? t >= Lt && t <= Ft : "-" === t[0] ? It(t, xt) : It(t, Rt));
-const xt = Number.MIN_SAFE_INTEGER.toString(), Lt = kt ? BigInt(Number.MIN_SAFE_INTEGER) : void 0, Rt = Number.MAX_SAFE_INTEGER.toString(), Ft = kt ? BigInt(Number.MAX_SAFE_INTEGER) : void 0;
-function It(t, e) {
+var wt = Et((t)=>"number" == typeof t), Tt = Et((t)=>"string" == typeof t), At = Et((t)=>"boolean" == typeof t), bt = "function" == typeof t.BigInt && "bigint" == typeof t.BigInt(0), kt = Et((t)=>bt ? t >= xt && t <= Rt : "-" === t[0] ? Ft(t, St) : Ft(t, Lt));
+const St = Number.MIN_SAFE_INTEGER.toString(), xt = bt ? BigInt(Number.MIN_SAFE_INTEGER) : void 0, Lt = Number.MAX_SAFE_INTEGER.toString(), Rt = bt ? BigInt(Number.MAX_SAFE_INTEGER) : void 0;
+function Ft(t, e) {
     if (t.length > e.length) return !1;
     if (t.length < e.length || t === e) return !0;
     for(let n = 0; n < t.length; n++){
@@ -28975,228 +29105,176 @@ function It(t, e) {
         if (r < i) return !0;
     }
 }
-const Mt = "function" == typeof Uint8Array.prototype.slice;
-let Pt, Ot = 0, Ct = 0;
-function Ut(t) {
+const It = "function" == typeof Uint8Array.prototype.slice;
+let Mt, Pt = 0, Ot = 0;
+function Ct(t) {
     const e = t >>> 0;
-    Ot = e, Ct = (t - e) / 4294967296 >>> 0;
+    Pt = e, Ot = (t - e) / 4294967296 >>> 0;
 }
-function Nt(t) {
+function Ut(t) {
     if (t < 0) {
-        Ut(-t);
-        const [e, n] = Ht(Ot, Ct);
-        Ot = e >>> 0, Ct = n >>> 0;
-    } else Ut(t);
+        Ct(-t);
+        const [e, n] = Xt(Pt, Ot);
+        Pt = e >>> 0, Ot = n >>> 0;
+    } else Ct(t);
 }
 function Dt(t) {
-    const e = Pt ||= new DataView(new ArrayBuffer(8));
-    e.setFloat32(0, +t, !0), Ct = 0, Ot = e.getUint32(0, !0);
+    const e = Mt ||= new DataView(new ArrayBuffer(8));
+    e.setFloat32(0, +t, !0), Ot = 0, Pt = e.getUint32(0, !0);
+}
+function Nt(t, e) {
+    const n = 4294967296 * e + (t >>> 0);
+    return Number.isSafeInteger(n) ? n : Gt(t, e);
 }
 function Bt(t, e) {
-    const n = 4294967296 * e + (t >>> 0);
-    return Number.isSafeInteger(n) ? n : jt(t, e);
+    const n = 2147483648 & e;
+    return n && (e = ~e >>> 0, 0 == (t = 1 + ~t >>> 0) && (e = e + 1 >>> 0)), "number" == typeof (t = Nt(t, e)) ? n ? -t : t : n ? "-" + t : t;
 }
 function Gt(t, e) {
-    const n = 2147483648 & e;
-    return n && (e = ~e >>> 0, 0 == (t = 1 + ~t >>> 0) && (e = e + 1 >>> 0)), "number" == typeof (t = Bt(t, e)) ? n ? -t : t : n ? "-" + t : t;
-}
-function jt(t, e) {
     if (t >>>= 0, (e >>>= 0) <= 2097151) var n = "" + (4294967296 * e + t);
-    else z() ? n = "" + (BigInt(e) << BigInt(32) | BigInt(t)) : (t = (16777215 & t) + 6777216 * (n = 16777215 & (t >>> 24 | e << 8)) + 6710656 * (e = e >> 16 & 65535), n += 8147497 * e, e *= 2, t >= 1e7 && (n += t / 1e7 >>> 0, t %= 1e7), n >= 1e7 && (e += n / 1e7 >>> 0, n %= 1e7), n = e + Vt(n) + Vt(t));
+    else ot() ? n = "" + (BigInt(e) << BigInt(32) | BigInt(t)) : (t = (16777215 & t) + 6777216 * (n = 16777215 & (t >>> 24 | e << 8)) + 6710656 * (e = e >> 16 & 65535), n += 8147497 * e, e *= 2, t >= 1e7 && (n += t / 1e7 >>> 0, t %= 1e7), n >= 1e7 && (e += n / 1e7 >>> 0, n %= 1e7), n = e + jt(n) + jt(t));
     return n;
 }
-function Vt(t) {
+function jt(t) {
     return t = String(t), "0000000".slice(t.length) + t;
 }
-function Xt(t) {
-    if (t.length < 16) Nt(Number(t));
-    else if (z()) t = BigInt(t), Ot = Number(t & BigInt(4294967295)) >>> 0, Ct = Number(t >> BigInt(32) & BigInt(4294967295));
+function Vt(t) {
+    if (t.length < 16) Ut(Number(t));
+    else if (ot()) t = BigInt(t), Pt = Number(t & BigInt(4294967295)) >>> 0, Ot = Number(t >> BigInt(32) & BigInt(4294967295));
     else {
         const e = +("-" === t[0]);
-        Ct = Ot = 0;
+        Ot = Pt = 0;
         const n = t.length;
         for(let r = e, i = (n - e) % 6 + e; i <= n; r = i, i += 6){
             const e = Number(t.slice(r, i));
-            Ct *= 1e6, Ot = 1e6 * Ot + e, Ot >= 4294967296 && (Ct += Math.trunc(Ot / 4294967296), Ct >>>= 0, Ot >>>= 0);
+            Ot *= 1e6, Pt = 1e6 * Pt + e, Pt >= 4294967296 && (Ot += Math.trunc(Pt / 4294967296), Ot >>>= 0, Pt >>>= 0);
         }
         if (e) {
-            const [t, e] = Ht(Ot, Ct);
-            Ot = t, Ct = e;
+            const [t, e] = Xt(Pt, Ot);
+            Pt = t, Ot = e;
         }
     }
 }
-function Ht(t, e) {
+function Xt(t, e) {
     return e = ~e, t ? t = 1 + ~t : e += 1, [
         t,
         e
     ];
 }
-function Wt(t) {
+const Ht = "function" == typeof BigInt ? BigInt.asIntN : void 0, Wt = "function" == typeof BigInt ? BigInt.asUintN : void 0, zt = Number.isSafeInteger, Kt = Number.isFinite, Yt = Math.trunc;
+function $t(t) {
     return null == t || "number" == typeof t ? t : "NaN" === t || "Infinity" === t || "-Infinity" === t ? Number(t) : void 0;
 }
-function zt(t) {
+function qt(t) {
     return null == t || "boolean" == typeof t ? t : "number" == typeof t ? !!t : void 0;
 }
-const Kt = /^-?([1-9][0-9]*|0)(\.[0-9]+)?$/;
-function Yt(t) {
-    const e = typeof t;
-    switch(e){
+const Jt = /^-?([1-9][0-9]*|0)(\.[0-9]+)?$/;
+function Zt(t) {
+    switch(typeof t){
         case "bigint":
             return !0;
         case "number":
-            return Number.isFinite(t);
+            return Kt(t);
+        case "string":
+            return Jt.test(t);
+        default:
+            return !1;
     }
-    return "string" === e && Kt.test(t);
-}
-function $t(t) {
-    if (null == t) return t;
-    if ("string" == typeof t) {
-        if (!t) return;
-        t = +t;
-    }
-    return "number" == typeof t && Number.isFinite(t) ? 0 | t : void 0;
-}
-function qt(t) {
-    if (null == t) return t;
-    if ("string" == typeof t) {
-        if (!t) return;
-        t = +t;
-    }
-    return "number" == typeof t && Number.isFinite(t) ? t >>> 0 : void 0;
-}
-function Jt(t) {
-    return "-" !== t[0] && (t.length < 20 || 20 === t.length && Number(t.substring(0, 6)) < 184467);
-}
-function Zt(t) {
-    return t = Math.trunc(t), Number.isSafeInteger(t) || (Nt(t), t = Gt(Ot, Ct)), t;
 }
 function Qt(t) {
-    var e = Math.trunc(Number(t));
-    if (Number.isSafeInteger(e)) return String(e);
-    if (-1 !== (e = t.indexOf(".")) && (t = t.substring(0, e)), !("-" === t[0] ? t.length < 20 || 20 === t.length && Number(t.substring(0, 7)) > -922337 : t.length < 19 || 19 === t.length && Number(t.substring(0, 6)) < 922337)) {
-        if (Xt(t), t = Ot, 2147483648 & (e = Ct)) {
-            if (z()) t = "" + (BigInt(0 | e) << BigInt(32) | BigInt(t >>> 0));
-            else {
-                const [n, r] = Ht(t, e);
-                t = "-" + jt(n, r);
-            }
-        } else t = jt(t, e);
-    }
-    return t;
+    if (null == t) return t;
+    if ("string" == typeof t && t) t = +t;
+    else if ("number" != typeof t) return;
+    return Kt(t) ? 0 | t : void 0;
 }
 function te(t) {
-    return null == t ? t : "bigint" == typeof t ? (St(t) ? t = Number(t) : (t = BigInt.asIntN(64, t), t = St(t) ? Number(t) : String(t)), t) : Yt(t) ? "number" == typeof t ? Zt(t) : Qt(t) : void 0;
+    if (null == t) return t;
+    if ("string" == typeof t && t) t = +t;
+    else if ("number" != typeof t) return;
+    return Kt(t) ? t >>> 0 : void 0;
 }
 function ee(t) {
-    if (null == t) return t;
-    var e = typeof t;
-    if ("bigint" === e) return String(BigInt.asUintN(64, t));
-    if (Yt(t)) {
-        if ("string" === e) return e = Math.trunc(Number(t)), Number.isSafeInteger(e) && e >= 0 ? t = String(e) : (-1 !== (e = t.indexOf(".")) && (t = t.substring(0, e)), Jt(t) || (Xt(t), t = jt(Ot, Ct))), t;
-        if ("number" === e) return (t = Math.trunc(t)) >= 0 && Number.isSafeInteger(t) ? t : function(t) {
-            if (t < 0) {
-                Nt(t);
-                var e = jt(Ot, Ct);
-                return t = Number(e), Number.isSafeInteger(t) ? t : e;
-            }
-            return Jt(e = String(t)) ? e : (Nt(t), Bt(Ot, Ct));
-        }(t);
-    }
+    if ("-" === t[0]) return !1;
+    const e = t.length;
+    return e < 20 || 20 === e && Number(t.substring(0, 6)) < 184467;
 }
 function ne(t) {
-    if ("string" != typeof t) throw Error();
-    return t;
+    return t = Yt(t), zt(t) || (Ut(t), t = Bt(Pt, Ot)), t;
 }
 function re(t) {
-    if (null != t && "string" != typeof t) throw Error();
+    var e = Yt(Number(t));
+    if (zt(e)) return String(e);
+    if (-1 !== (e = t.indexOf(".")) && (t = t.substring(0, e)), e = t.length, !("-" === t[0] ? e < 20 || 20 === e && Number(t.substring(0, 7)) > -922337 : e < 19 || 19 === e && Number(t.substring(0, 6)) < 922337)) {
+        if (Vt(t), t = Pt, 2147483648 & (e = Ot)) {
+            if (ot()) t = "" + (BigInt(0 | e) << BigInt(32) | BigInt(t >>> 0));
+            else {
+                const [n, r] = Xt(t, e);
+                t = "-" + Gt(n, r);
+            }
+        } else t = Gt(t, e);
+    }
     return t;
 }
 function ie(t) {
-    return null == t || "string" == typeof t ? t : void 0;
+    return null == t ? t : "bigint" == typeof t ? (kt(t) ? t = Number(t) : (t = Ht(64, t), t = kt(t) ? Number(t) : String(t)), t) : Zt(t) ? "number" == typeof t ? ne(t) : re(t) : void 0;
 }
-function se(t, e, n, r) {
-    if (null != t && "object" == typeof t && t.X === ht) return t;
-    if (!Array.isArray(t)) return n ? 2 & r ? (t = e[J]) ? e = t : (st((t = new e).u), e = e[J] = t) : e = new e : e = void 0, e;
-    let i = n = nt(t);
-    return 0 === i && (i |= 32 & r), i |= 2 & r, i !== n && it(t, i), new e(t);
-}
-function oe(t, e, n) {
-    if (e) t: {
-        if (!Yt(e = t)) throw W("int64");
-        switch(typeof e){
-            case "string":
-                e = Qt(e);
-                break t;
-            case "bigint":
-                if (t = e = BigInt.asIntN(64, e), bt(t)) {
-                    if (!/^\s*(?:-?[1-9]\d*|0)?\s*$/.test(t)) throw Error(String(t));
-                } else if (Tt(t) && !Number.isSafeInteger(t)) throw Error(String(t));
-                e = kt ? BigInt(e) : At(e) ? e ? "1" : "0" : bt(e) ? e.trim() || "0" : String(e);
-                break t;
-            default:
-                e = Zt(e);
-        }
+function se(t) {
+    if (null == t) return t;
+    var e = typeof t;
+    if ("bigint" === e) return String(Wt(64, t));
+    if (Zt(t)) {
+        if ("string" === e) return e = Yt(Number(t)), zt(e) && e >= 0 ? t = String(e) : (-1 !== (e = t.indexOf(".")) && (t = t.substring(0, e)), ee(t) || (Vt(t), t = Gt(Pt, Ot))), t;
+        if ("number" === e) return (t = Yt(t)) >= 0 && zt(t) ? t : function(t) {
+            if (t < 0) {
+                Ut(t);
+                var e = Gt(Pt, Ot);
+                return t = Number(e), zt(t) ? t : e;
+            }
+            return ee(e = String(t)) ? e : (Ut(t), Nt(Pt, Ot));
+        }(t);
     }
-    else e = te(t);
-    return "string" == typeof (n = null == (t = e) ? n ? 0 : void 0 : t) && (e = +n, Number.isSafeInteger(e)) ? e : n;
+}
+function oe(t) {
+    if ("string" != typeof t) throw Error();
+    return t;
 }
 function ae(t) {
-    var e;
-    return void 0 === ue && (ue = "function" == typeof Proxy ? me(Proxy) : null), (e = !ue) || (void 0 === le && (le = "function" == typeof WeakMap ? me(WeakMap) : null), e = !le), e ? t : (e = ce?.get(t)) ? e : Math.random() > .01 ? t : (function(t) {
-        if (void 0 === fe) {
-            const t = new ue([], {});
-            fe = 1 === Array.prototype.concat.call([], t).length;
-        }
-        fe && "function" == typeof Symbol && Symbol.isConcatSpreadable && (t[Symbol.isConcatSpreadable] = !0);
-    }(t), function(t, e) {
-        (ce ||= new le).set(t, e), (he ||= new le).set(e, t);
-    }(t, e = new ue(t, {
-        set: (t, e, n)=>(H(), t[e] = n, !0)
-    })), e);
+    if (null != t && "string" != typeof t) throw Error();
+    return t;
 }
-let ce, he, ue, le, fe, de, pe, ge;
-function me(t) {
-    try {
-        return -1 !== t.toString().indexOf("[native code]") ? t : null;
-    } catch  {
-        return null;
-    }
+function ce(t) {
+    return null == t || "string" == typeof t ? t : void 0;
 }
-function ye(t, e, n) {
-    return t = _e(t, e[0], e[1], n ? 1 : 2), e !== pe && n && tt(t, 16384), t;
+function he(t, e, n, r) {
+    if (null != t && "object" == typeof t && t.W === ht) return t;
+    if (!Array.isArray(t)) return n ? 2 & r ? ((t = e[Y]) || (rt((t = new e).u), t = e[Y] = t), e = t) : e = new e : e = void 0, e;
+    let i = n = 0 | t[Z];
+    return 0 === i && (i |= 32 & r), i |= 2 & r, i !== n && nt(t, i), new e(t);
 }
-function _e(t, e, n, r) {
-    if (r = r ?? 0, null == t && (t = de), de = void 0, null == t) {
-        var i = 96;
-        n ? (t = [
-            n
-        ], i |= 512) : t = [], e && (i = -33521665 & i | (1023 & e) << 15);
-    } else {
-        if (!Array.isArray(t)) throw Error("narr");
-        if (2048 & (i = nt(t))) throw Error("farr");
-        if (64 & i) return t;
-        if (1 === r || 2 === r || (i |= 64), n && (i |= 512, n !== t[0])) throw Error("mid");
-        t: {
-            if (r = (n = t).length) {
-                const t = r - 1;
-                if (ft(n[t])) {
-                    if ((e = t - (+!!(512 & (i |= 256)) - 1)) >= 1024) throw Error("pvtlmt");
-                    i = -33521665 & i | (1023 & e) << 15;
-                    break t;
-                }
-            }
-            if (e) {
-                if ((e = Math.max(e, r - (+!!(512 & i) - 1))) > 1024) throw Error("spvt");
-                i = -33521665 & i | (1023 & e) << 15;
-            }
+function ue(t, e, n) {
+    if (e) t: {
+        if (!Zt(e = t)) throw X("int64");
+        switch(typeof e){
+            case "string":
+                e = re(e);
+                break t;
+            case "bigint":
+                if (t = e = Ht(64, e), Tt(t)) {
+                    if (!/^\s*(?:-?[1-9]\d*|0)?\s*$/.test(t)) throw Error(String(t));
+                } else if (wt(t) && !Number.isSafeInteger(t)) throw Error(String(t));
+                e = bt ? BigInt(e) : At(e) ? e ? "1" : "0" : Tt(e) ? e.trim() || "0" : String(e);
+                break t;
+            default:
+                e = ne(e);
         }
     }
-    return it(t, i), t;
+    else e = ie(t);
+    return "string" == typeof (n = null == (t = e) ? n ? 0 : void 0 : t) && zt(e = +n) ? e : n;
 }
-const ve = {};
-let Ee = function() {
+const le = {};
+let de = function() {
     try {
-        return T(new class extends Map {
+        return w(new class extends Map {
             constructor(){
                 super();
             }
@@ -29205,7 +29283,7 @@ let Ee = function() {
         return !0;
     }
 }();
-class we {
+class fe {
     constructor(){
         this.g = new Map;
     }
@@ -29240,59 +29318,59 @@ class we {
         return this.entries();
     }
 }
-const Te = Ee ? (Object.setPrototypeOf(we.prototype, Map.prototype), Object.defineProperties(we.prototype, {
+const pe = de ? (Object.setPrototypeOf(fe.prototype, Map.prototype), Object.defineProperties(fe.prototype, {
     size: {
         value: 0,
         configurable: !0,
         enumerable: !0,
         writable: !0
     }
-}), we) : class extends Map {
+}), fe) : class extends Map {
     constructor(){
         super();
     }
 };
-function be(t) {
+function ge(t) {
     return t;
 }
-function Ae(t) {
-    if (2 & t.M) throw Error("Cannot mutate an immutable Map");
+function me(t) {
+    if (2 & t.L) throw Error("Cannot mutate an immutable Map");
 }
-var ke = class extends Te {
-    constructor(t, e, n = be, r = be){
+var ye = class extends pe {
+    constructor(t, e, n = ge, r = ge){
         super();
-        let i = nt(t);
-        i |= 64, it(t, i), this.M = i, this.T = e, this.S = n, this.Z = this.T ? Se : r;
+        let i = 0 | t[Z];
+        i |= 64, nt(t, i), this.L = i, this.S = e, this.R = n, this.Y = this.S ? _e : r;
         for(let s = 0; s < t.length; s++){
             const o = t[s], a = n(o[0], !1, !0);
             let c = o[1];
             e ? void 0 === c && (c = null) : c = r(o[1], !1, !0, void 0, void 0, i), super.set(a, c);
         }
     }
-    oa(t = xe) {
-        if (0 !== this.size) return this.Y(t);
+    na(t = ve) {
+        if (0 !== this.size) return this.X(t);
     }
-    Y(t = xe) {
+    X(t = ve) {
         const e = [], n = super.entries();
         for(var r; !(r = n.next()).done;)(r = r.value)[0] = t(r[0]), r[1] = t(r[1]), e.push(r);
         return e;
     }
     clear() {
-        Ae(this), super.clear();
+        me(this), super.clear();
     }
     delete(t) {
-        return Ae(this), super.delete(this.S(t, !0, !1));
+        return me(this), super.delete(this.R(t, !0, !1));
     }
     entries() {
-        var t = this.na();
-        return new yt(t, Le, this);
+        var t = this.ma();
+        return new yt(t, Ee, this);
     }
     keys() {
         return this.Ha();
     }
     values() {
-        var t = this.na();
-        return new yt(t, ke.prototype.get, this);
+        var t = this.ma();
+        return new yt(t, ye.prototype.get, this);
     }
     forEach(t, e) {
         super.forEach((n, r)=>{
@@ -29300,24 +29378,24 @@ var ke = class extends Te {
         });
     }
     set(t, e) {
-        return Ae(this), null == (t = this.S(t, !0, !1)) ? this : null == e ? (super.delete(t), this) : super.set(t, this.Z(e, !0, !0, this.T, !1, this.M));
+        return me(this), null == (t = this.R(t, !0, !1)) ? this : null == e ? (super.delete(t), this) : super.set(t, this.Y(e, !0, !0, this.S, !1, this.L));
     }
     Na(t) {
-        const e = this.S(t[0], !1, !0);
-        t = t[1], t = this.T ? void 0 === t ? null : t : this.Z(t, !1, !0, void 0, !1, this.M), super.set(e, t);
+        const e = this.R(t[0], !1, !0);
+        t = t[1], t = this.S ? void 0 === t ? null : t : this.Y(t, !1, !0, void 0, !1, this.L), super.set(e, t);
     }
     has(t) {
-        return super.has(this.S(t, !1, !1));
+        return super.has(this.R(t, !1, !1));
     }
     get(t) {
-        t = this.S(t, !1, !1);
+        t = this.R(t, !1, !1);
         const e = super.get(t);
         if (void 0 !== e) {
-            var n = this.T;
-            return n ? ((n = this.Z(e, !1, !0, n, this.sa, this.M)) !== e && super.set(t, n), n) : e;
+            var n = this.S;
+            return n ? ((n = this.Y(e, !1, !0, n, this.ra, this.L)) !== e && super.set(t, n), n) : e;
         }
     }
-    na() {
+    ma() {
         return Array.from(super.keys());
     }
     Ha() {
@@ -29327,50 +29405,49 @@ var ke = class extends Te {
         return this.entries();
     }
 };
-function Se(t, e, n, r, i, s) {
-    return t = se(t, r, n, s), i && (t = De(t)), t;
+function _e(t, e, n, r, i, s) {
+    return t = he(t, r, n, s), i && (t = Oe(t)), t;
 }
-function xe(t) {
+function ve(t) {
     return t;
 }
-function Le(t) {
+function Ee(t) {
     return [
         t,
         this.get(t)
     ];
 }
-let Re;
-function Fe() {
-    return Re ||= new ke(st([]), void 0, void 0, void 0, ve);
+let we, Te, Ae;
+function be() {
+    return we ||= new ye(rt([]), void 0, void 0, void 0, le);
 }
-function Ie(t, e, n, r, i) {
+function ke(t, e, n, r, i) {
     if (null != t) {
-        if (Array.isArray(t)) t = pt(t) ? void 0 : i && 2 & nt(t) ? t : Me(t, e, n, void 0 !== r, i);
-        else if (ft(t)) {
+        if (Array.isArray(t)) t = pt(t) ? void 0 : i && 2 & (0 | t[Z]) ? t : Se(t, e, n, void 0 !== r, i);
+        else if (dt(t)) {
             const s = {};
-            for(let o in t)s[o] = Ie(t[o], e, n, r, i);
+            for(let o in t)s[o] = ke(t[o], e, n, r, i);
             t = s;
         } else t = e(t, r);
         return t;
     }
 }
-function Me(t, e, n, r, i) {
-    const s = r || n ? nt(t) : 0;
-    r = r ? !!(32 & s) : void 0;
-    const o = K(t);
-    for(let t = 0; t < o.length; t++)o[t] = Ie(o[t], e, n, r, i);
-    return n && (vt(o, t), n(s, o)), o;
+function Se(t, e, n, r, i) {
+    const s = r || n ? 0 | t[Z] : 0, o = r ? !!(32 & s) : void 0;
+    r = at(t);
+    for(let t = 0; t < r.length; t++)r[t] = ke(r[t], e, n, o, i);
+    return n && ((t = _t(t)) && (r[J] = at(t)), n(s, r)), r;
 }
-function Pe(t) {
-    return Ie(t, Oe, void 0, void 0, !1);
+function xe(t) {
+    return ke(t, Le, void 0, void 0, !1);
 }
-function Oe(t) {
-    return t.X === ht ? t.toJSON() : t instanceof ke ? t.oa(Pe) : function(t) {
+function Le(t) {
+    return t.W === ht ? t.toJSON() : t instanceof ye ? t.na(xe) : function(t) {
         switch(typeof t){
             case "number":
                 return isFinite(t) ? t : String(t);
             case "bigint":
-                return St(t) ? Number(t) : String(t);
+                return kt(t) ? Number(t) : String(t);
             case "boolean":
                 return t ? 1 : 0;
             case "object":
@@ -29378,35 +29455,66 @@ function Oe(t) {
                     if (Array.isArray(t)) {
                         if (pt(t)) return;
                     } else {
-                        if (C(t)) return F(t);
-                        if (t instanceof B) {
+                        if (O(t)) return R(t);
+                        if (t instanceof N) {
                             const e = t.g;
-                            return null == e ? "" : "string" == typeof e ? e : t.g = F(e);
+                            return null == e ? "" : "string" == typeof e ? e : t.g = R(e);
                         }
-                        if (t instanceof ke) return t.oa();
+                        if (t instanceof ye) return t.na();
                     }
                 }
         }
         return t;
     }(t);
 }
-function Ce(t, e, n = at) {
-    if (null != t) {
-        if (L && t instanceof Uint8Array) return e ? t : new Uint8Array(t);
-        if (Array.isArray(t)) {
-            var r = nt(t);
-            return 2 & r ? t : (e &&= 0 === r || !!(32 & r) && !(64 & r || !(16 & r)), e ? (it(t, -12293 & (34 | r)), t) : Me(t, Ce, 4 & r ? at : n, !0, !0));
+function Re(t) {
+    return Se(t, Le, void 0, void 0, !1);
+}
+function Fe(t, e, n) {
+    return t = Ie(t, e[0], e[1], n ? 1 : 2), e !== Te && n && et(t, 16384), t;
+}
+function Ie(t, e, n, r) {
+    if (null == t) {
+        var i = 96;
+        n ? (t = [
+            n
+        ], i |= 512) : t = [], e && (i = -33521665 & i | (1023 & e) << 15);
+    } else {
+        if (!Array.isArray(t)) throw Error("narr");
+        if (2048 & (i = 0 | t[Z])) throw Error("farr");
+        if (64 & i) return t;
+        if (1 === r || 2 === r || (i |= 64), n && (i |= 512, n !== t[0])) throw Error("mid");
+        t: {
+            if (r = (n = t).length) {
+                const t = r - 1;
+                if (dt(n[t])) {
+                    if ((e = t - (512 & (i |= 256) ? 0 : -1)) >= 1024) throw Error("pvtlmt");
+                    i = -33521665 & i | (1023 & e) << 15;
+                    break t;
+                }
+            }
+            if (e) {
+                if ((e = Math.max(e, r - (512 & i ? 0 : -1))) > 1024) throw Error("spvt");
+                i = -33521665 & i | (1023 & e) << 15;
+            }
         }
-        return t.X === ht ? (n = t.u, t = 2 & (r = rt(n)) ? t : Ue(t, n, r, !0)) : t instanceof ke && !(2 & t.M) && (n = st(t.Y(Ce)), t = new ke(n, t.T, t.S, t.Z)), t;
+    }
+    return nt(t, i), t;
+}
+function Me(t, e, n = st) {
+    if (null != t) {
+        if (x && t instanceof Uint8Array) return e ? t : new Uint8Array(t);
+        if (Array.isArray(t)) {
+            var r = 0 | t[Z];
+            return 2 & r ? t : (e &&= 0 === r || !!(32 & r) && !(64 & r || !(16 & r)), e ? (nt(t, -12293 & (34 | r)), t) : Se(t, Me, 4 & r ? st : n, !0, !0));
+        }
+        return t.W === ht ? t = 2 & (r = 0 | (n = t.u)[Z]) ? t : new t.constructor(Pe(n, r, !0)) : t instanceof ye && !(2 & t.L) && (n = rt(t.X(Me)), t = new ye(n, t.S, t.R, t.Y)), t;
     }
 }
-function Ue(t, e, n, r) {
-    return t = t.constructor, de = e = Ne(e, n, r), e = new t(e), de = void 0, e;
-}
-function Ne(t, e, n) {
-    const r = n || 2 & e ? at : ot, i = !!(32 & e);
+function Pe(t, e, n) {
+    const r = n || 2 & e ? st : it, i = !!(32 & e);
     return t = function(t, e, n) {
-        const r = K(t);
+        const r = at(t);
         var i = r.length;
         const s = 256 & e ? r[i - 1] : void 0;
         for(i += s ? -1 : 0, e = 512 & e ? 1 : 0; e < i; e++)r[e] = n(r[e]);
@@ -29414,418 +29522,400 @@ function Ne(t, e, n) {
             e = r[e] = {};
             for(const t in s)e[t] = n(s[t]);
         }
-        return vt(r, t), r;
-    }(t, e, (t)=>Ce(t, i, r)), tt(t, 32 | (n ? 2 : 0)), t;
+        return (t = _t(t)) && (r[J] = at(t)), r;
+    }(t, e, (t)=>Me(t, i, r)), et(t, 32 | (n ? 2 : 0)), t;
 }
-function De(t) {
-    const e = t.u, n = rt(e);
-    return 2 & n ? Ue(t, e, n, !1) : t;
+function Oe(t) {
+    const e = t.u, n = 0 | e[Z];
+    return 2 & n ? new t.constructor(Pe(e, n, !1)) : t;
+}
+function Ce(t, e) {
+    return Ue(t = t.u, 0 | t[Z], e);
+}
+function Ue(e, n, r, i) {
+    if (-1 === r) return null;
+    var s = r + (512 & n ? 0 : -1);
+    const o = e.length - 1;
+    return s >= o && 256 & n ? e[o][r] : i && 256 & n && null != (n = e[o][r]) ? (null != e[s] && null != $ && ((s = (e = G ??= {})[$] || 0) >= 4 || (e[$] = s + 1, V(e = Error(), "incident"), function(e) {
+        t.setTimeout(()=>{
+            throw e;
+        }, 0);
+    }(e))), n) : s <= o ? e[s] : void 0;
+}
+function De(t, e, n) {
+    const r = t.u;
+    let i = 0 | r[Z];
+    return mt(i), Ne(r, i, e, n), t;
+}
+function Ne(t, e, n, r) {
+    const i = 512 & e ? 0 : -1, s = n + i;
+    var o = t.length - 1;
+    return s >= o && 256 & e ? (t[o][n] = r, e) : s <= o ? (t[s] = r, 256 & e && n in (t = t[o]) && delete t[n], e) : (void 0 !== r && (n >= (o = e >> 15 & 1023 || 536870912) ? null != r && (t[o + i] = {
+        [n]: r
+    }, nt(t, e |= 256)) : t[s] = r), e);
 }
 function Be(t, e) {
-    return je(t = t.u, rt(t), e);
+    let n = 0 | (t = t.u)[Z];
+    const r = Ue(t, n, e), i = $t(r);
+    return null != i && i !== r && Ne(t, n, e, i), i;
 }
-function Ge(t, e, n, r) {
-    if (!((e = r + (+!!(512 & e) - 1)) < 0 || e >= t.length || e >= n)) return t[e];
+function Ge(t) {
+    let e = 0 | (t = t.u)[Z];
+    const n = Ue(t, e, 1), r = ft(n, !0);
+    return null != r && r !== n && Ne(t, e, 1, r), r;
 }
-function je(t, e, n, r) {
-    if (-1 === n) return null;
-    const i = e >> 15 & 1023 || 536870912;
-    if (!(n >= i)) {
-        var s = t.length;
-        return r && 256 & e && null != (r = t[s - 1][n]) ? (Ge(t, e, i, n) && null != Z && ((e = (t = j ??= {})[Z] || 0) >= 4 || (t[Z] = e + 1, H())), r) : Ge(t, e, i, n);
-    }
-    return 256 & e ? t[t.length - 1][n] : void 0;
+function je() {
+    return void 0 === vt ? 2 : 4;
 }
-function Ve(t, e, n) {
-    const r = t.u;
-    let i = rt(r);
-    return mt(i), Xe(r, i, e, n), t;
-}
-function Xe(t, e, n, r) {
-    const i = e >> 15 & 1023 || 536870912;
-    if (n >= i) {
-        let s, o = e;
-        if (256 & e) s = t[t.length - 1];
-        else {
-            if (null == r) return o;
-            s = t[i + (+!!(512 & e) - 1)] = {}, o |= 256;
-        }
-        return s[n] = r, n < i && (t[n + (+!!(512 & e) - 1)] = void 0), o !== e && it(t, o), o;
-    }
-    return t[n + (+!!(512 & e) - 1)] = r, 256 & e && n in (t = t[t.length - 1]) && delete t[n], e;
-}
-function He(t, e) {
-    t = t.u;
-    let n = rt(t);
-    const r = je(t, n, e), i = Wt(r);
-    return null != i && i !== r && Xe(t, n, e, i), i;
-}
-function We(t) {
-    t = t.u;
-    let e = rt(t);
-    const n = je(t, e, 1), r = dt(n, !0);
-    return null != r && r !== n && Xe(t, e, 1, r), r;
-}
-function ze() {
-    return void 0 === Et ? 2 : 4;
-}
-function Ke(t, e, n, r, i) {
-    const s = t.u, o = 2 & (t = rt(s)) ? 1 : r;
-    i = !!i, r = Ye(s, t, e);
-    var a = nt(r);
+function Ve(t, e, n, r, i) {
+    const s = t.u, o = 2 & (t = 0 | s[Z]) ? 1 : r;
+    i = !!i;
+    let a = 0 | (r = Xe(s, t, e))[Z];
     if (!(4 & a)) {
-        4 & a && (r = K(r), a = fn(a, t), t = Xe(s, t, e, r));
+        4 & a && (r = at(r), a = an(a, t), t = Ne(s, t, e, r));
         let i = 0, o = 0;
         for(; i < r.length; i++){
             const t = n(r[i]);
             null != t && (r[o++] = t);
         }
-        o < i && (r.length = o), a = -4097 & (20 | (a = $e(a, t))), it(r, a &= -8193), 2 & a && Object.freeze(r);
+        o < i && (r.length = o), a = He(a, t), n = -4097 & (20 | a), a = n &= -8193, nt(r, a), 2 & a && Object.freeze(r);
     }
-    let c;
-    return 1 === o || 4 === o && 32 & a ? qe(a) || (i = a, (a |= 2) !== i && it(r, a), Object.freeze(r)) : (n = 5 === o && (!!(32 & a) || qe(a) || !!ce?.get(r)), (2 === o || n) && qe(a) && (r = K(r), a = dn(a = fn(a, t), t, i), it(r, a), t = Xe(s, t, e, r)), qe(a) || (e = a, (a = dn(a, t, i)) !== e && it(r, a)), n ? c = ae(r) : 2 !== o || i || ce?.delete(r)), c || r;
+    return 1 === o || 4 === o && 32 & a ? We(a) || (i = a, a |= 2, a !== i && nt(r, a), Object.freeze(r)) : (2 === o && We(a) && (r = at(r), a = an(a, t), a = cn(a, t, i), nt(r, a), t = Ne(s, t, e, r)), We(a) || (e = a, a = cn(a, t, i), a !== e && nt(r, a))), r;
 }
-function Ye(t, e, n, r) {
-    return t = je(t, e, n, r), Array.isArray(t) ? t : ct;
+function Xe(t, e, n, r) {
+    return t = Ue(t, e, n, r), Array.isArray(t) ? t : ct;
 }
-function $e(t, e) {
-    return 0 === t && (t = fn(t, e)), 1 | t;
+function He(t, e) {
+    return 0 === t && (t = an(t, e)), 1 | t;
 }
-function qe(t) {
+function We(t) {
     return !!(2 & t) && !!(4 & t) || !!(2048 & t);
 }
-function Je(t) {
-    t = K(t);
+function ze(t) {
+    t = at(t);
     for(let e = 0; e < t.length; e++){
-        const n = t[e] = K(t[e]);
-        Array.isArray(n[1]) && (n[1] = st(n[1]));
+        const n = t[e] = at(t[e]);
+        Array.isArray(n[1]) && (n[1] = rt(n[1]));
     }
     return t;
 }
-function Ze(t, e, n, r) {
-    t = t.u;
-    let i = rt(t);
-    mt(i), Xe(t, i, e, ("0" === r ? 0 === Number(n) : n === r) ? void 0 : n);
+function Ke(t, e, n, r) {
+    let i = 0 | (t = t.u)[Z];
+    mt(i), Ne(t, i, e, ("0" === r ? 0 === Number(n) : n === r) ? void 0 : n);
 }
-function Qe(t, e, n, r, i) {
+function Ye(t, e, n, r, i) {
     mt(e);
     var s = !(!(64 & e) && 16384 & e);
-    const o = (i = Ye(t, e, n, i)) !== ct;
+    const o = (i = Xe(t, e, n, i)) !== ct;
     if (s || !o) {
-        let a = s = o ? nt(i) : 0;
-        (!o || 2 & a || qe(a) || 4 & a && !(32 & a)) && (i = K(i), a = fn(a, e), e = Xe(t, e, n, i)), a = -13 & $e(a, e), a = dn(r ? -17 & a : 16 | a, e, !0), a !== s && it(i, a);
+        let a = s = o ? 0 | i[Z] : 0;
+        (!o || 2 & a || We(a) || 4 & a && !(32 & a)) && (i = at(i), a = an(a, e), e = Ne(t, e, n, i)), a = -13 & He(a, e), a = cn(r ? -17 & a : 16 | a, e, !0), a !== s && nt(i, a);
     }
     return i;
 }
-function tn(t, e) {
-    var n = As;
-    return rn(en(t = t.u), t, rt(t), n) === e ? e : -1;
+function $e(t, e) {
+    var n = vs;
+    return Ze(qe(t = t.u), t, 0 | t[Z], n) === e ? e : -1;
 }
-function en(t) {
-    if (Y) return t[Q] ?? (t[Q] = new Map);
-    if (Q in t) return t[Q];
+function qe(t) {
+    if (H) return t[q] ?? (t[q] = new Map);
+    if (q in t) return t[q];
     const e = new Map;
-    return Object.defineProperty(t, Q, {
+    return Object.defineProperty(t, q, {
         value: e
     }), e;
 }
-function nn(t, e, n, r) {
-    const i = en(t), s = rn(i, t, e, n);
-    return s !== r && (s && (e = Xe(t, e, s)), i.set(n, r)), e;
+function Je(t, e, n, r) {
+    const i = qe(t), s = Ze(i, t, e, n);
+    return s !== r && (s && (e = Ne(t, e, s)), i.set(n, r)), e;
 }
-function rn(t, e, n, r) {
+function Ze(t, e, n, r) {
     let i = t.get(r);
     if (null != i) return i;
     i = 0;
     for(let t = 0; t < r.length; t++){
         const s = r[t];
-        null != je(e, n, s) && (0 !== i && (n = Xe(e, n, i)), i = s);
+        null != Ue(e, n, s) && (0 !== i && (n = Ne(e, n, i)), i = s);
     }
     return t.set(r, i), i;
 }
-function sn(t, e, n, r) {
-    let i, s = rt(t);
-    if (null != (r = je(t, s, n, r)) && r.X === ht) return (e = De(r)) !== r && Xe(t, s, n, e), e.u;
+function Qe(t, e, n, r) {
+    let i, s = 0 | t[Z];
+    if (null != (r = Ue(t, s, n, r)) && r.W === ht) return (e = Oe(r)) !== r && Ne(t, s, n, e), e.u;
     if (Array.isArray(r)) {
-        const t = nt(r);
-        i = 2 & t ? ye(Ne(r, t, !1), e, !0) : 64 & t ? r : ye(i, e, !0);
-    } else i = ye(void 0, e, !0);
-    return i !== r && Xe(t, s, n, i), i;
+        const t = 0 | r[Z];
+        i = 2 & t ? Fe(Pe(r, t, !1), e, !0) : 64 & t ? r : Fe(i, e, !0);
+    } else i = Fe(void 0, e, !0);
+    return i !== r && Ne(t, s, n, i), i;
 }
-function on(t, e, n, r) {
-    t = t.u;
-    let i = rt(t);
-    return (e = se(r = je(t, i, n, r), e, !1, i)) !== r && null != e && Xe(t, i, n, e), e;
+function tn(t, e, n, r) {
+    let i = 0 | (t = t.u)[Z];
+    return (e = he(r = Ue(t, i, n, r), e, !1, i)) !== r && null != e && Ne(t, i, n, e), e;
 }
-function an(t, e, n, r = !1) {
-    if (null == (e = on(t, e, n, r))) return e;
-    if (t = t.u, !(2 & (r = rt(t)))) {
-        const i = De(e);
-        i !== e && Xe(t, r, n, e = i);
+function en(t, e, n, r = !1) {
+    if (null == (e = tn(t, e, n, r))) return e;
+    if (!(2 & (r = 0 | (t = t.u)[Z]))) {
+        const i = Oe(e);
+        i !== e && Ne(t, r, n, e = i);
     }
     return e;
 }
-function cn(t, e, n, r, i, s, o) {
+function nn(t, e, n, r, i, s, o) {
     t = t.u;
     var a = !!(2 & e);
-    i = a ? 1 : i, s = !!s, o &&= !a, a = Ye(t, e, r);
-    var c = nt(a), h = !!(4 & c);
-    if (!h) {
-        var u = a, l = e;
-        const t = !!(2 & (c = $e(c, e)));
+    const c = a ? 1 : i;
+    s = !!s, o &&= !a;
+    var h = 0 | (i = Xe(t, e, r))[Z];
+    if (!(a = !!(4 & h))) {
+        var u = i, l = e;
+        const t = !!(2 & (h = He(h, e)));
         t && (l |= 2);
-        let r = !t, i = !0, s = 0, o = 0;
-        for(; s < u.length; s++){
-            const e = se(u[s], n, !1, l);
+        let r = !t, s = !0, o = 0, a = 0;
+        for(; o < u.length; o++){
+            const e = he(u[o], n, !1, l);
             if (e instanceof n) {
                 if (!t) {
-                    const t = !!(2 & nt(e.u));
-                    r &&= !t, i &&= t;
+                    const t = !!(2 & (0 | e.u[Z]));
+                    r &&= !t, s &&= t;
                 }
-                u[o++] = e;
+                u[a++] = e;
             }
         }
-        o < s && (u.length = o), c |= 4, c = i ? 16 | c : -17 & c, it(u, c = r ? 8 | c : -9 & c), t && Object.freeze(u);
+        a < o && (u.length = a), h |= 4, h = s ? 16 | h : -17 & h, nt(u, h = r ? 8 | h : -9 & h), t && Object.freeze(u);
     }
-    if (o && !(8 & c || !a.length && (1 === i || 4 === i && 32 & c))) {
-        for(qe(c) && (a = K(a), c = fn(c, e), e = Xe(t, e, r, a)), n = a, o = c, u = 0; u < n.length; u++)(c = n[u]) !== (l = De(c)) && (n[u] = l);
-        o |= 8, o = n.length ? -17 & o : 16 | o, it(n, o), c = o;
+    if (o && !(8 & h || !i.length && (1 === c || 4 === c && 32 & h))) {
+        for(We(h) && (i = at(i), h = an(h, e), e = Ne(t, e, r, i)), n = i, o = h, u = 0; u < n.length; u++)(h = n[u]) !== (l = Oe(h)) && (n[u] = l);
+        o |= 8, nt(n, o = n.length ? -17 & o : 16 | o), h = o;
     }
-    let f;
-    return 1 === i || 4 === i && 32 & c ? qe(c) || (e = c, (c |= !a.length || 16 & c && (!h || 32 & c) ? 2 : 2048) !== e && it(a, c), Object.freeze(a)) : (h = 5 === i && (!!(32 & c) || qe(c) || !!ce?.get(a)), (2 === i || h) && qe(c) && (a = K(a), c = dn(c = fn(c, e), e, s), it(a, c), e = Xe(t, e, r, a)), qe(c) || (r = c, (c = dn(c, e, s)) !== r && it(a, c)), h ? f = ae(a) : 2 !== i || s || ce?.delete(a)), f || a;
+    return 1 === c || 4 === c && 32 & h ? We(h) || (e = h, (h |= !i.length || 16 & h && (!a || 32 & h) ? 2 : 2048) !== e && nt(i, h), Object.freeze(i)) : (2 === c && We(h) && (nt(i = at(i), h = cn(h = an(h, e), e, s)), e = Ne(t, e, r, i)), We(h) || (r = h, (h = cn(h, e, s)) !== r && nt(i, h))), i;
 }
-function hn(t, e, n) {
-    const r = rt(t.u);
-    return cn(t, r, e, n, ze(), !1, !(2 & r));
+function rn(t, e, n) {
+    const r = 0 | t.u[Z];
+    return nn(t, r, e, n, je(), !1, !(2 & r));
 }
-function un(t, e, n, r) {
-    return null == r && (r = void 0), Ve(t, n, r);
+function sn(t, e, n, r) {
+    return null == r && (r = void 0), De(t, n, r);
 }
-function ln(t, e, n, r) {
+function on(t, e, n, r) {
     null == r && (r = void 0);
     t: {
-        t = t.u;
-        let i = rt(t);
+        let i = 0 | (t = t.u)[Z];
         if (mt(i), null == r) {
-            const r = en(t);
-            if (rn(r, t, i, n) !== e) break t;
+            const r = qe(t);
+            if (Ze(r, t, i, n) !== e) break t;
             r.set(n, 0);
-        } else i = nn(t, i, n, e);
-        Xe(t, i, e, r);
+        } else i = Je(t, i, n, e);
+        Ne(t, i, e, r);
     }
 }
-function fn(t, e) {
+function an(t, e) {
     return -2049 & (t = 32 | (2 & e ? 2 | t : -3 & t));
 }
-function dn(t, e, n) {
+function cn(t, e, n) {
     return 32 & e && n || (t &= -33), t;
 }
-function pn(t, e, n, r) {
-    const i = rt(t.u);
-    mt(i), t = cn(t, i, n, e, 2, !0), r = null != r ? r : new n, t.push(r), 2 & nt(r.u) ? et(t, 8) : et(t, 16);
+function hn(t, e, n, r) {
+    const i = 0 | t.u[Z];
+    mt(i), t = nn(t, i, n, e, 2, !0), r = null != r ? r : new n, t.push(r), t[Z] = 2 & (0 | r.u[Z]) ? -9 & t[Z] : -17 & t[Z];
 }
-function gn(t, e) {
-    return t ?? e;
+function un(t, e) {
+    return Qt(Ce(t, e));
 }
-function mn(t, e) {
-    return $t(Be(t, e));
+function ln(t, e) {
+    return ce(Ce(t, e));
 }
-function yn(t, e) {
-    return gn(He(t, e), 0);
+function dn(t, e) {
+    return Be(t, e) ?? 0;
 }
-function _n(t, e) {
-    return gn(ie(Be(t, e)), "");
-}
-function vn(t, e, n) {
+function fn(t, e, n) {
     if (null != n && "boolean" != typeof n) throw t = typeof n, Error(`Expected boolean but got ${"object" != t ? t : n ? Array.isArray(n) ? "array" : t : "null"}: ${n}`);
-    Ve(t, e, n);
+    De(t, e, n);
 }
-function En(t, e, n) {
+function pn(t, e, n) {
     if (null != n) {
-        if ("number" != typeof n) throw W("int32");
-        if (!Number.isFinite(n)) throw W("int32");
+        if ("number" != typeof n) throw X("int32");
+        if (!Kt(n)) throw X("int32");
         n |= 0;
     }
-    Ve(t, e, n);
+    De(t, e, n);
 }
-function wn(t, e, n) {
+function gn(t, e, n) {
     if (null != n && "number" != typeof n) throw Error(`Value of float/double field must be a number, found ${typeof n}: ${n}`);
-    Ve(t, e, n);
+    De(t, e, n);
 }
-function Tn(t, e, n) {
+function mn(t, e, n) {
     {
         const o = t.u;
-        let a = rt(o);
-        if (mt(a), null == n) Xe(o, a, e);
+        let a = 0 | o[Z];
+        if (mt(a), null == n) Ne(o, a, e);
         else {
-            n = he?.get(n) || n;
-            var r = t = nt(n), i = qe(t), s = i || Object.isFrozen(n);
-            for(i || (t = 0), s || (n = K(n), r = 0, t = dn(t = fn(t, a), a, !0), s = !1), t |= 21, i = 0; i < n.length; i++){
-                const e = n[i], o = ne(e);
-                Object.is(e, o) || (s && (n = K(n), r = 0, t = dn(t = fn(t, a), a, !0), s = !1), n[i] = o);
+            var r = t = 0 | n[Z], i = We(t), s = i || Object.isFrozen(n);
+            for(i || (t = 0), s || (n = at(n), r = 0, t = cn(t = an(t, a), a, !0), s = !1), t |= 21, i = 0; i < n.length; i++){
+                const e = n[i], o = oe(e);
+                Object.is(e, o) || (s && (n = at(n), r = 0, t = cn(t = an(t, a), a, !0), s = !1), n[i] = o);
             }
-            t !== r && (s && (n = K(n), t = dn(t = fn(t, a), a, !0)), it(n, t)), Xe(o, a, e, n);
+            t !== r && (s && (n = at(n), t = cn(t = an(t, a), a, !0)), nt(n, t)), Ne(o, a, e, n);
         }
     }
 }
-function bn(t, e, n) {
-    mt(rt(t.u)), Ke(t, e, ie, 2, !0).push(ne(n));
+function yn(t, e, n) {
+    mt(0 | t.u[Z]), Ve(t, e, ce, 2, !0).push(oe(n));
 }
-function An(t, e) {
+function _n(t, e) {
     return Error(`Invalid wire type: ${t} (at position ${e})`);
 }
-function kn() {
+function vn() {
     return Error("Failed to read varint, encoding is invalid.");
 }
-function Sn(t, e) {
+function En(t, e) {
     return Error(`Tried to read past the end of the data ${e} > ${t}`);
 }
-function xn(t) {
+function wn(t) {
     if ("string" == typeof t) return {
-        buffer: O(t),
-        O: !1
+        buffer: P(t),
+        N: !1
     };
     if (Array.isArray(t)) return {
         buffer: new Uint8Array(t),
-        O: !1
+        N: !1
     };
     if (t.constructor === Uint8Array) return {
         buffer: t,
-        O: !1
+        N: !1
     };
     if (t.constructor === ArrayBuffer) return {
         buffer: new Uint8Array(t),
-        O: !1
+        N: !1
     };
-    if (t.constructor === B) return {
+    if (t.constructor === N) return {
         buffer: D(t) || new Uint8Array(0),
-        O: !0
+        N: !0
     };
     if (t instanceof Uint8Array) return {
         buffer: new Uint8Array(t.buffer, t.byteOffset, t.byteLength),
-        O: !1
+        N: !1
     };
     throw Error("Type not convertible to a Uint8Array, expected a Uint8Array, an ArrayBuffer, a base64 encoded string, a ByteString or an Array of numbers");
 }
-function Ln(t, e) {
+function Tn(t, e) {
     let n, r = 0, i = 0, s = 0;
     const o = t.h;
     let a = t.g;
     do n = o[a++], r |= (127 & n) << s, s += 7;
     while (s < 32 && 128 & n);
     for(s > 32 && (i |= (127 & n) >> 4), s = 3; s < 32 && 128 & n; s += 7)n = o[a++], i |= (127 & n) << s;
-    if (Un(t, a), n < 128) return e(r >>> 0, i >>> 0);
-    throw kn();
+    if (Fn(t, a), n < 128) return e(r >>> 0, i >>> 0);
+    throw vn();
 }
-function Rn(t) {
+function An(t) {
     let e = 0, n = t.g;
     const r = n + 10, i = t.h;
     for(; n < r;){
         const r = i[n++];
-        if (e |= r, 0 == (128 & r)) return Un(t, n), !!(127 & e);
+        if (e |= r, 0 == (128 & r)) return Fn(t, n), !!(127 & e);
     }
-    throw kn();
+    throw vn();
 }
-function Fn(t) {
+function bn(t) {
     const e = t.h;
     let n = t.g, r = e[n++], i = 127 & r;
-    if (128 & r && (r = e[n++], i |= (127 & r) << 7, 128 & r && (r = e[n++], i |= (127 & r) << 14, 128 & r && (r = e[n++], i |= (127 & r) << 21, 128 & r && (r = e[n++], i |= r << 28, 128 & r && 128 & e[n++] && 128 & e[n++] && 128 & e[n++] && 128 & e[n++] && 128 & e[n++]))))) throw kn();
-    return Un(t, n), i;
+    if (128 & r && (r = e[n++], i |= (127 & r) << 7, 128 & r && (r = e[n++], i |= (127 & r) << 14, 128 & r && (r = e[n++], i |= (127 & r) << 21, 128 & r && (r = e[n++], i |= r << 28, 128 & r && 128 & e[n++] && 128 & e[n++] && 128 & e[n++] && 128 & e[n++] && 128 & e[n++]))))) throw vn();
+    return Fn(t, n), i;
 }
-function In(t) {
-    return Fn(t) >>> 0;
+function kn(t) {
+    return bn(t) >>> 0;
 }
-function Mn(t) {
+function Sn(t) {
     var e = t.h;
     const n = t.g, r = e[n], i = e[n + 1], s = e[n + 2];
-    return e = e[n + 3], Un(t, t.g + 4), (r << 0 | i << 8 | s << 16 | e << 24) >>> 0;
+    return e = e[n + 3], Fn(t, t.g + 4), (r << 0 | i << 8 | s << 16 | e << 24) >>> 0;
 }
-function Pn(t) {
-    var e = Mn(t);
+function xn(t) {
+    var e = Sn(t);
     t = 2 * (e >> 31) + 1;
     const n = e >>> 23 & 255;
     return e &= 8388607, 255 == n ? e ? NaN : t * (1 / 0) : 0 == n ? 1401298464324817e-60 * t * e : t * Math.pow(2, n - 150) * (e + 8388608);
 }
-function On(t) {
-    return Fn(t);
+function Ln(t) {
+    return bn(t);
 }
-function Cn(t, e, { ca: n = !1 } = {}) {
-    t.ca = n, e && (e = xn(e), t.h = e.buffer, t.m = e.O, t.j = 0, t.l = t.h.length, t.g = t.j);
+function Rn(t, e, { ba: n = !1 } = {}) {
+    t.ba = n, e && (e = wn(e), t.h = e.buffer, t.m = e.N, t.j = 0, t.l = t.h.length, t.g = t.j);
 }
-function Un(t, e) {
-    if (t.g = e, e > t.l) throw Sn(t.l, e);
+function Fn(t, e) {
+    if (t.g = e, e > t.l) throw En(t.l, e);
 }
-function Nn(t, e) {
+function In(t, e) {
     if (e < 0) throw Error(`Tried to read a negative byte length: ${e}`);
     const n = t.g, r = n + e;
-    if (r > t.l) throw Sn(e, t.l - n);
+    if (r > t.l) throw En(e, t.l - n);
     return t.g = r, n;
 }
-function Dn(t, e) {
-    if (0 == e) return N();
-    var n = Nn(t, e);
-    return t.ca && t.m ? n = t.h.subarray(n, n + e) : (t = t.h, n = n === (e = n + e) ? new Uint8Array(0) : Mt ? t.slice(n, e) : new Uint8Array(t.subarray(n, e))), 0 == n.length ? N() : new B(n, U);
+function Mn(t, e) {
+    if (0 == e) return U();
+    var n = In(t, e);
+    return t.ba && t.m ? n = t.h.subarray(n, n + e) : (t = t.h, n = n === (e = n + e) ? new Uint8Array(0) : It ? t.slice(n, e) : new Uint8Array(t.subarray(n, e))), 0 == n.length ? U() : new N(n, C);
 }
-ke.prototype.toJSON = void 0, ke.prototype.Ia = ut;
-var Bn = [];
-function Gn(t) {
+ye.prototype.toJSON = void 0, ye.prototype.Ia = ut;
+var Pn = [];
+function On(t) {
     var e = t.g;
     if (e.g == e.l) return !1;
     t.l = t.g.g;
-    var n = In(t.g);
-    if (e = n >>> 3, !((n &= 7) >= 0 && n <= 5)) throw An(n, t.l);
+    var n = kn(t.g);
+    if (e = n >>> 3, !((n &= 7) >= 0 && n <= 5)) throw _n(n, t.l);
     if (e < 1) throw Error(`Invalid field number: ${e} (at position ${t.l})`);
     return t.m = e, t.h = n, !0;
 }
-function jn(t) {
+function Cn(t) {
     switch(t.h){
         case 0:
-            0 != t.h ? jn(t) : Rn(t.g);
+            0 != t.h ? Cn(t) : An(t.g);
             break;
         case 1:
-            Un(t = t.g, t.g + 8);
+            Fn(t = t.g, t.g + 8);
             break;
         case 2:
-            if (2 != t.h) jn(t);
+            if (2 != t.h) Cn(t);
             else {
-                var e = In(t.g);
-                Un(t = t.g, t.g + e);
+                var e = kn(t.g);
+                Fn(t = t.g, t.g + e);
             }
             break;
         case 5:
-            Un(t = t.g, t.g + 4);
+            Fn(t = t.g, t.g + 4);
             break;
         case 3:
             for(e = t.m;;){
-                if (!Gn(t)) throw Error("Unmatched start-group tag: stream EOF");
+                if (!On(t)) throw Error("Unmatched start-group tag: stream EOF");
                 if (4 == t.h) {
                     if (t.m != e) throw Error("Unmatched end-group tag");
                     break;
                 }
-                jn(t);
+                Cn(t);
             }
             break;
         default:
-            throw An(t.h, t.l);
+            throw _n(t.h, t.l);
     }
 }
-function Vn(t, e, n) {
-    const r = t.g.l, i = In(t.g), s = t.g.g + i;
+function Un(t, e, n) {
+    const r = t.g.l, i = kn(t.g), s = t.g.g + i;
     let o = s - r;
     if (o <= 0 && (t.g.l = s, n(e, t, void 0, void 0, void 0), o = s - t.g.g), o) throw Error(`Message parsing ended unexpectedly. Expected to read ${i} bytes, instead read ${i - o} bytes, either the data ended unexpectedly or the message misreported its own length`);
     return t.g.g = s, t.g.l = r, e;
 }
-function Xn(t) {
-    var e = In(t.g), a = Nn(t = t.g, e);
-    if (t = t.h, o) {
+function Dn(t) {
+    var o = kn(t.g), a = In(t = t.g, o);
+    if (t = t.h, s) {
         var c, h = t;
-        (c = s) || (c = s = new TextDecoder("utf-8", {
+        (c = i) || (c = i = new TextDecoder("utf-8", {
             fatal: !0
-        })), e = a + e, h = 0 === a && e === h.length ? h : h.subarray(a, e);
+        })), o = a + o, h = 0 === a && o === h.length ? h : h.subarray(a, o);
         try {
             var u = c.decode(h);
         } catch (t) {
-            if (void 0 === i) {
+            if (void 0 === r) {
                 try {
                     c.decode(new Uint8Array([
                         128
@@ -29834,63 +29924,71 @@ function Xn(t) {
                 try {
                     c.decode(new Uint8Array([
                         97
-                    ])), i = !0;
+                    ])), r = !0;
                 } catch (t) {
-                    i = !1;
+                    r = !1;
                 }
             }
-            throw !i && (s = void 0), t;
+            throw !r && (i = void 0), t;
         }
     } else {
-        e = (u = a) + e, a = [];
-        let i, s = null;
-        for(; u < e;){
+        o = (u = a) + o, a = [];
+        let r, i = null;
+        for(; u < o;){
             var l = t[u++];
-            l < 128 ? a.push(l) : l < 224 ? u >= e ? n() : (i = t[u++], l < 194 || 128 != (192 & i) ? (u--, n()) : a.push((31 & l) << 6 | 63 & i)) : l < 240 ? u >= e - 1 ? n() : (i = t[u++], 128 != (192 & i) || 224 === l && i < 160 || 237 === l && i >= 160 || 128 != (192 & (c = t[u++])) ? (u--, n()) : a.push((15 & l) << 12 | (63 & i) << 6 | 63 & c)) : l <= 244 ? u >= e - 2 ? n() : (i = t[u++], 128 != (192 & i) || i - 144 + (l << 28) >> 30 != 0 || 128 != (192 & (c = t[u++])) || 128 != (192 & (h = t[u++])) ? (u--, n()) : (l = (7 & l) << 18 | (63 & i) << 12 | (63 & c) << 6 | 63 & h, l -= 65536, a.push(55296 + (l >> 10 & 1023), 56320 + (1023 & l)))) : n(), a.length >= 8192 && (s = r(s, a), a.length = 0);
+            l < 128 ? a.push(l) : l < 224 ? u >= o ? e() : (r = t[u++], l < 194 || 128 != (192 & r) ? (u--, e()) : a.push((31 & l) << 6 | 63 & r)) : l < 240 ? u >= o - 1 ? e() : (r = t[u++], 128 != (192 & r) || 224 === l && r < 160 || 237 === l && r >= 160 || 128 != (192 & (c = t[u++])) ? (u--, e()) : a.push((15 & l) << 12 | (63 & r) << 6 | 63 & c)) : l <= 244 ? u >= o - 2 ? e() : (r = t[u++], 128 != (192 & r) || r - 144 + (l << 28) >> 30 != 0 || 128 != (192 & (c = t[u++])) || 128 != (192 & (h = t[u++])) ? (u--, e()) : (l = (7 & l) << 18 | (63 & r) << 12 | (63 & c) << 6 | 63 & h, l -= 65536, a.push(55296 + (l >> 10 & 1023), 56320 + (1023 & l)))) : e(), a.length >= 8192 && (i = n(i, a), a.length = 0);
         }
-        u = r(s, a);
+        u = n(i, a);
     }
     return u;
 }
-function Hn(t) {
-    const e = In(t.g);
-    return Dn(t.g, e);
+function Nn(t) {
+    const e = kn(t.g);
+    return Mn(t.g, e);
 }
-function Wn(t, e, n) {
-    var r = In(t.g);
+function Bn(t, e, n) {
+    var r = kn(t.g);
     for(r = t.g.g + r; t.g.g < r;)n.push(e(t.g));
 }
-var zn = [];
-let Kn;
-function Yn(t, e, n) {
-    e.g ? e.m(t, e.g, e.h, n, !0) : e.m(t, e.h, n, !0);
+var Gn = [];
+function jn(t) {
+    return t;
 }
-var $n = class {
+let Vn;
+function Xn(t, e, n) {
+    e.g ? e.m(t, e.g, e.h, n) : e.m(t, e.h, n);
+}
+var Hn = class {
     constructor(t, e){
-        this.u = _e(t, e);
+        this.u = Ie(t, e);
     }
     toJSON() {
-        return qn(this);
+        const t = !Vn;
+        try {
+            return t && (Vn = Re), Wn(this);
+        } finally{
+            t && (Vn = void 0);
+        }
     }
     l() {
-        var t = Eo;
+        var t = go;
         return t.g ? t.l(this, t.g, t.h, !0) : t.l(this, t.h, t.defaultValue, !0);
     }
     clone() {
         const t = this.u;
-        return Ue(this, t, rt(t), !1);
+        return new this.constructor(Pe(t, 0 | t[Z], !1));
     }
-    O() {
-        return !!(2 & nt(this.u));
+    N() {
+        return !!(2 & (0 | this.u[Z]));
     }
 };
-function qn(t) {
-    t = t.u, t = Kn ? t : Me(t, Oe, void 0, void 0, !1);
+function Wn(t) {
+    var e = t.u;
     {
-        var e = !Kn;
+        e = (t = Vn(e)) !== e;
         let h = t.length;
         if (h) {
-            var n = t[h - 1], r = ft(n);
+            var n = t[h - 1], r = dt(n);
             r ? h-- : n = void 0;
             var i = t;
             if (r) {
@@ -29911,70 +30009,70 @@ function qn(t) {
     }
     return c;
 }
-function Jn(t) {
-    return t ? /^\d+$/.test(t) ? (Xt(t), new Zn(Ot, Ct)) : null : Qn ||= new Zn(0, 0);
+function zn(t) {
+    return t ? /^\d+$/.test(t) ? (Vt(t), new Kn(Pt, Ot)) : null : Yn ||= new Kn(0, 0);
 }
-$n.prototype.X = ht, $n.prototype.toString = function() {
+Hn.prototype.W = ht, Hn.prototype.toString = function() {
     try {
-        return Kn = !0, qn(this).toString();
+        return Vn = jn, Wn(this).toString();
     } finally{
-        Kn = !1;
+        Vn = void 0;
     }
 };
-var Zn = class {
+var Kn = class {
     constructor(t, e){
         this.h = t >>> 0, this.g = e >>> 0;
     }
 };
-let Qn;
-function tr(t) {
-    return t ? /^-?\d+$/.test(t) ? (Xt(t), new er(Ot, Ct)) : null : nr ||= new er(0, 0);
+let Yn;
+function $n(t) {
+    return t ? /^-?\d+$/.test(t) ? (Vt(t), new qn(Pt, Ot)) : null : Jn ||= new qn(0, 0);
 }
-var er = class {
+var qn = class {
     constructor(t, e){
         this.h = t >>> 0, this.g = e >>> 0;
     }
 };
-let nr;
-function rr(t, e, n) {
+let Jn;
+function Zn(t, e, n) {
     for(; n > 0 || e > 127;)t.g.push(127 & e | 128), e = (e >>> 7 | n << 25) >>> 0, n >>>= 7;
     t.g.push(e);
 }
-function ir(t, e) {
+function Qn(t, e) {
     for(; e > 127;)t.g.push(127 & e | 128), e >>>= 7;
     t.g.push(e);
 }
-function sr(t, e) {
-    if (e >= 0) ir(t, e);
+function tr(t, e) {
+    if (e >= 0) Qn(t, e);
     else {
         for(let n = 0; n < 9; n++)t.g.push(127 & e | 128), e >>= 7;
         t.g.push(1);
     }
 }
-function or(t, e) {
+function er(t, e) {
     t.g.push(e >>> 0 & 255), t.g.push(e >>> 8 & 255), t.g.push(e >>> 16 & 255), t.g.push(e >>> 24 & 255);
 }
-function ar(t, e) {
+function nr(t, e) {
     0 !== e.length && (t.l.push(e), t.h += e.length);
 }
-function cr(t, e, n) {
-    ir(t.g, 8 * e + n);
+function rr(t, e, n) {
+    Qn(t.g, 8 * e + n);
 }
-function hr(t, e) {
-    return cr(t, e, 2), e = t.g.end(), ar(t, e), e.push(t.h), e;
+function ir(t, e) {
+    return rr(t, e, 2), e = t.g.end(), nr(t, e), e.push(t.h), e;
 }
-function ur(t, e) {
+function sr(t, e) {
     var n = e.pop();
     for(n = t.h + t.g.length() - n; n > 127;)e.push(127 & n | 128), n >>>= 7, t.h++;
     e.push(n), t.h++;
 }
-function lr(t, e, n) {
-    cr(t, e, 2), ir(t.g, n.length), ar(t, t.g.end()), ar(t, n);
+function or(t, e, n) {
+    rr(t, e, 2), Qn(t.g, n.length), nr(t, t.g.end()), nr(t, n);
 }
-function fr(t, e, n, r) {
-    null != n && (e = hr(t, e), r(n, t), ur(t, e));
+function ar(t, e, n, r) {
+    null != n && (e = ir(t, e), r(n, t), sr(t, e));
 }
-function dr() {
+function cr() {
     const t = class {
         constructor(){
             throw Error();
@@ -29982,37 +30080,37 @@ function dr() {
     };
     return Object.setPrototypeOf(t, t.prototype), t;
 }
-var pr = dr(), gr = dr(), mr = dr(), yr = dr(), _r = dr(), vr = dr(), Er = dr(), wr = dr(), Tr = dr(), br = class {
+var hr = cr(), ur = cr(), lr = cr(), dr = cr(), fr = cr(), pr = cr(), gr = cr(), mr = cr(), yr = cr(), _r = class {
     constructor(t, e, n){
-        this.g = t, this.h = e, t = pr, this.l = !!t && n === t || !1;
+        this.g = t, this.h = e, t = hr, this.l = !!t && n === t || !1;
     }
 };
-function Ar(t, e) {
-    return new br(t, e, pr);
+function vr(t, e) {
+    return new _r(t, e, hr);
 }
-function kr(t, e, n, r, i) {
-    fr(t, n, Ur(e, r), i);
+function Er(t, e, n, r, i) {
+    ar(t, n, Ir(e, r), i);
 }
-const Sr = Ar(function(t, e, n, r, i) {
-    return 2 === t.h && (Vn(t, sn(e, r, n), i), !0);
-}, kr), xr = Ar(function(t, e, n, r, i) {
-    return 2 === t.h && (Vn(t, sn(e, r, n, !0), i), !0);
-}, kr);
-var Lr = Symbol(), Rr = Symbol(), Fr = Symbol(), Ir = Symbol();
-let Mr, Pr;
-function Or(t, e, n, r) {
+const wr = vr(function(t, e, n, r, i) {
+    return 2 === t.h && (Un(t, Qe(e, r, n), i), !0);
+}, Er), Tr = vr(function(t, e, n, r, i) {
+    return 2 === t.h && (Un(t, Qe(e, r, n, !0), i), !0);
+}, Er);
+var Ar = Symbol(), br = Symbol(), kr = Symbol(), Sr = Symbol();
+let xr, Lr;
+function Rr(t, e, n, r) {
     var i = r[t];
     if (i) return i;
-    (i = {}).W = function(t) {
+    (i = {}).Pa = r, i.V = function(t) {
         switch(typeof t){
             case "boolean":
-                return pe ||= [
+                return Te ||= [
                     0,
                     void 0,
                     !0
                 ];
             case "number":
-                return t > 0 ? void 0 : 0 === t ? ge ||= [
+                return t > 0 ? void 0 : 0 === t ? Ae ||= [
                     0,
                     void 0
                 ] : [
@@ -30030,7 +30128,7 @@ function Or(t, e, n, r) {
     }(r[0]);
     var s = r[1];
     let o = 1;
-    s && s.constructor === Object && (i.ha = s, "function" == typeof (s = r[++o]) && (i.ma = !0, Mr ??= s, Pr ??= r[o + 1], s = r[o += 2]));
+    s && s.constructor === Object && (i.ga = s, "function" == typeof (s = r[++o]) && (i.la = !0, xr ??= s, Lr ??= r[o + 1], s = r[o += 2]));
     const a = {};
     for(; s && Array.isArray(s) && s.length && "number" == typeof s[0] && s[0] > 0;){
         for(var c = 0; c < s.length; c++)a[s[c]] = s;
@@ -30040,7 +30138,7 @@ function Or(t, e, n, r) {
         let t;
         "number" == typeof s && (c += s, s = r[++o]);
         var h = void 0;
-        if (s instanceof br ? t = s : (t = Sr, o--), t?.l) {
+        if (s instanceof _r ? t = s : (t = wr, o--), t?.l) {
             s = r[++o], h = r;
             var u = o;
             "function" == typeof s && (s = s(), h[u] = s), h = s;
@@ -30052,315 +30150,315 @@ function Or(t, e, n, r) {
     }
     return r[t] = i;
 }
-function Cr(t) {
-    return Array.isArray(t) ? t[0] instanceof br ? t : [
-        xr,
+function Fr(t) {
+    return Array.isArray(t) ? t[0] instanceof _r ? t : [
+        Tr,
         t
     ] : [
         t,
         void 0
     ];
 }
-function Ur(t, e) {
-    return t instanceof $n ? t.u : Array.isArray(t) ? ye(t, e, !1) : void 0;
+function Ir(t, e) {
+    return t instanceof Hn ? t.u : Array.isArray(t) ? Fe(t, e, !1) : void 0;
 }
-function Nr(t, e, n, r) {
+function Mr(t, e, n, r) {
     const i = n.g;
     t[e] = r ? (t, e, n)=>i(t, e, n, r) : i;
 }
-function Dr(t, e, n, r, i) {
+function Pr(t, e, n, r, i) {
     const s = n.g;
     let o, a;
-    t[e] = (t, e, n)=>s(t, e, n, a ||= Or(Rr, Nr, Dr, r).W, o ||= Br(r), i);
+    t[e] = (t, e, n)=>s(t, e, n, a ||= Rr(br, Mr, Pr, r).V, o ||= Or(r), i);
 }
-function Br(t) {
-    let e = t[Fr];
+function Or(t) {
+    let e = t[kr];
     if (null != e) return e;
-    const n = Or(Rr, Nr, Dr, t);
-    return e = n.ma ? (t, e)=>Mr(t, e, n) : (t, e)=>{
-        const r = rt(t);
-        for(; Gn(e) && 4 != e.h;){
+    const n = Rr(br, Mr, Pr, t);
+    return e = n.la ? (t, e)=>xr(t, e, n) : (t, e)=>{
+        const r = 0 | t[Z];
+        for(; On(e) && 4 != e.h;){
             var i = e.m, s = n[i];
             if (null == s) {
-                var o = n.ha;
-                o && (o = o[i]) && null != (o = Gr(o)) && (s = n[i] = o);
+                var o = n.ga;
+                o && (o = o[i]) && null != (o = Cr(o)) && (s = n[i] = o);
             }
-            null != s && s(e, t, i) || (i = (s = e).l, jn(s), s.ga ? s = void 0 : (o = s.g.g - i, s.g.g = i, s = Dn(s.g, o)), i = t, s && (_t ||= Symbol(), (o = i[_t]) ? o.push(s) : i[_t] = [
+            null != s && s(e, t, i) || (i = (s = e).l, Cn(s), s.fa ? s = void 0 : (o = s.g.g - i, s.g.g = i, s = Mn(s.g, o)), i = t, s && ((o = i[J]) ? o.push(s) : i[J] = [
                 s
             ]));
         }
-        return 16384 & r && st(t), !0;
-    }, t[Fr] = e;
+        return 16384 & r && rt(t), !0;
+    }, t[kr] = e;
 }
-function Gr(t) {
-    const e = (t = Cr(t))[0].g;
+function Cr(t) {
+    const e = (t = Fr(t))[0].g;
     if (t = t[1]) {
-        const n = Br(t), r = Or(Rr, Nr, Dr, t).W;
+        const n = Or(t), r = Rr(br, Mr, Pr, t).V;
         return (t, i, s)=>e(t, i, s, r, n);
     }
     return e;
 }
-function jr(t, e, n) {
+function Ur(t, e, n) {
     t[e] = n.h;
 }
-function Vr(t, e, n, r) {
+function Dr(t, e, n, r) {
     let i, s;
     const o = n.h;
-    t[e] = (t, e, n)=>o(t, e, n, s ||= Or(Lr, jr, Vr, r).W, i ||= Xr(r));
+    t[e] = (t, e, n)=>o(t, e, n, s ||= Rr(Ar, Ur, Dr, r).V, i ||= Nr(r));
 }
-function Xr(t) {
-    let e = t[Ir];
+function Nr(t) {
+    let e = t[Sr];
     if (!e) {
-        const n = Or(Lr, jr, Vr, t);
-        e = (t, e)=>Hr(t, e, n), t[Ir] = e;
+        const n = Rr(Ar, Ur, Dr, t);
+        e = (t, e)=>Br(t, e, n), t[Sr] = e;
     }
     return e;
 }
-function Hr(t, e, n) {
-    for(var r = nt(t), i = +!!(512 & r) - 1, s = t.length, o = 512 & r ? 1 : 0, a = s + (256 & r ? -1 : 0); o < a; o++){
+function Br(t, e, n) {
+    for(var r = 0 | t[Z], i = 512 & r ? 0 : -1, s = t.length, o = 512 & r ? 1 : 0, a = s + (256 & r ? -1 : 0); o < a; o++){
         const r = t[o];
         if (null == r) continue;
-        const s = o - i, a = Wr(n, s);
+        const s = o - i, a = Gr(n, s);
         a && a(e, r, s);
     }
     if (256 & r) {
         r = t[s - 1];
-        for(const t in r)i = +t, Number.isNaN(i) || null != (s = r[i]) && (a = Wr(n, i)) && a(e, s, i);
+        for(const t in r)i = +t, Number.isNaN(i) || null != (s = r[i]) && (a = Gr(n, i)) && a(e, s, i);
     }
-    if (t = _t ? t[_t] : void 0) for(ar(e, e.g.end()), n = 0; n < t.length; n++)ar(e, D(t[n]) || new Uint8Array(0));
+    if (t = _t(t)) for(nr(e, e.g.end()), n = 0; n < t.length; n++)nr(e, D(t[n]) || new Uint8Array(0));
 }
-function Wr(t, e) {
+function Gr(t, e) {
     var n = t[e];
     if (n) return n;
-    if ((n = t.ha) && (n = n[e])) {
-        var r = (n = Cr(n))[0].h;
+    if ((n = t.ga) && (n = n[e])) {
+        var r = (n = Fr(n))[0].h;
         if (n = n[1]) {
-            const e = Xr(n), i = Or(Lr, jr, Vr, n).W;
-            n = t.ma ? Pr(i, e) : (t, n, s)=>r(t, n, s, i, e);
+            const e = Nr(n), i = Rr(Ar, Ur, Dr, n).V;
+            n = t.la ? Lr(i, e) : (t, n, s)=>r(t, n, s, i, e);
         } else n = r;
         return t[e] = n;
     }
 }
-function zr(t, e) {
+function jr(t, e) {
     if (Array.isArray(e)) {
-        var n = nt(e);
+        var n = 0 | e[Z];
         if (4 & n) return e;
         for(var r = 0, i = 0; r < e.length; r++){
             const n = t(e[r]);
             null != n && (e[i++] = n);
         }
-        return i < r && (e.length = i), it(e, -12289 & (5 | n)), 2 & n && Object.freeze(e), e;
+        return i < r && (e.length = i), nt(e, -12289 & (5 | n)), 2 & n && Object.freeze(e), e;
     }
 }
-function Kr(t, e, n) {
-    return new br(t, e, n);
+function Vr(t, e, n) {
+    return new _r(t, e, n);
 }
-function Yr(t, e, n) {
-    return new br(t, e, n);
+function Xr(t, e, n) {
+    return new _r(t, e, n);
 }
-function $r(t, e, n) {
-    Xe(t, rt(t), e, n);
+function Hr(t, e, n) {
+    Ne(t, 0 | t[Z], e, n);
 }
-var qr = Ar(function(t, e, n, r, i) {
-    return 2 === t.h && (t = Vn(t, ye([
+var Wr = vr(function(t, e, n, r, i) {
+    return 2 === t.h && (t = Un(t, Fe([
         void 0,
         void 0
-    ], r, !0), i), mt(r = rt(e)), (i = je(e, r, n)) instanceof ke ? 0 != (2 & i.M) ? ((i = i.Y()).push(t), Xe(e, r, n, i)) : i.Na(t) : Array.isArray(i) ? (2 & nt(i) && Xe(e, r, n, i = Je(i)), i.push(t)) : Xe(e, r, n, [
+    ], r, !0), i), mt(r = 0 | e[Z]), (i = Ue(e, r, n)) instanceof ye ? 0 != (2 & i.L) ? ((i = i.X()).push(t), Ne(e, r, n, i)) : i.Na(t) : Array.isArray(i) ? (2 & (0 | i[Z]) && Ne(e, r, n, i = ze(i)), i.push(t)) : Ne(e, r, n, [
         t
     ]), !0);
 }, function(t, e, n, r, i) {
-    if (e instanceof ke) e.forEach((e, s)=>{
-        fr(t, n, ye([
+    if (e instanceof ye) e.forEach((e, s)=>{
+        ar(t, n, Fe([
             s,
             e
         ], r, !1), i);
     });
     else if (Array.isArray(e)) for(let s = 0; s < e.length; s++){
         const o = e[s];
-        Array.isArray(o) && fr(t, n, ye(o, r, !1), i);
+        Array.isArray(o) && ar(t, n, Fe(o, r, !1), i);
     }
 });
-function Jr(t, e, n) {
+function zr(t, e, n) {
     if (e = function(t) {
         if (null == t) return t;
         const e = typeof t;
-        if ("bigint" === e) return String(BigInt.asIntN(64, t));
-        if (Yt(t)) {
-            if ("string" === e) return Qt(t);
-            if ("number" === e) return Zt(t);
+        if ("bigint" === e) return String(Ht(64, t));
+        if (Zt(t)) {
+            if ("string" === e) return re(t);
+            if ("number" === e) return ne(t);
         }
     }(e), null != e) {
-        if ("string" == typeof e) tr(e);
-        if (null != e) switch(cr(t, n, 0), typeof e){
+        if ("string" == typeof e) $n(e);
+        if (null != e) switch(rr(t, n, 0), typeof e){
             case "number":
-                t = t.g, Nt(e), rr(t, Ot, Ct);
+                t = t.g, Ut(e), Zn(t, Pt, Ot);
                 break;
             case "bigint":
-                n = BigInt.asUintN(64, e), n = new er(Number(n & BigInt(4294967295)), Number(n >> BigInt(32))), rr(t.g, n.h, n.g);
+                n = BigInt.asUintN(64, e), n = new qn(Number(n & BigInt(4294967295)), Number(n >> BigInt(32))), Zn(t.g, n.h, n.g);
                 break;
             default:
-                n = tr(e), rr(t.g, n.h, n.g);
+                n = $n(e), Zn(t.g, n.h, n.g);
         }
     }
+}
+function Kr(t, e, n) {
+    null != (e = Qt(e)) && null != e && (rr(t, n, 0), tr(t.g, e));
+}
+function Yr(t, e, n) {
+    null != (e = qt(e)) && (rr(t, n, 0), t.g.g.push(e ? 1 : 0));
+}
+function $r(t, e, n) {
+    null != (e = ce(e)) && or(t, n, c(e));
+}
+function qr(t, e, n, r, i) {
+    ar(t, n, Ir(e, r), i);
+}
+function Jr(t, e, n) {
+    null != (e = null == e || "string" == typeof e || O(e) || e instanceof N ? e : void 0) && or(t, n, wn(e).buffer);
 }
 function Zr(t, e, n) {
-    null != (e = $t(e)) && null != e && (cr(t, n, 0), sr(t.g, e));
+    return (5 === t.h || 2 === t.h) && (e = Ye(e, 0 | e[Z], n, !1, !1), 2 == t.h ? Bn(t, xn, e) : e.push(xn(t.g)), !0);
 }
-function Qr(t, e, n) {
-    null != (e = zt(e)) && (cr(t, n, 0), t.g.g.push(e ? 1 : 0));
-}
-function ti(t, e, n) {
-    null != (e = ie(e)) && lr(t, n, h(e));
-}
-function ei(t, e, n, r, i) {
-    fr(t, n, Ur(e, r), i);
-}
-function ni(t, e, n) {
-    null != (e = null == e || "string" == typeof e || C(e) || e instanceof B ? e : void 0) && lr(t, n, xn(e).buffer);
-}
-function ri(t, e, n) {
-    return (5 === t.h || 2 === t.h) && (e = Qe(e, rt(e), n, !1, !1), 2 == t.h ? Wn(t, Pn, e) : e.push(Pn(t.g)), !0);
-}
-var ii = Kr(function(t, e, n) {
+var Qr = Vr(function(t, e, n) {
     if (1 !== t.h) return !1;
     var r = t.g;
-    t = Mn(r);
-    const i = Mn(r);
+    t = Sn(r);
+    const i = Sn(r);
     r = 2 * (i >> 31) + 1;
     const s = i >>> 20 & 2047;
-    return t = 4294967296 * (1048575 & i) + t, $r(e, n, 2047 == s ? t ? NaN : r * (1 / 0) : 0 == s ? 5e-324 * r * t : r * Math.pow(2, s - 1075) * (t + 4503599627370496)), !0;
+    return t = 4294967296 * (1048575 & i) + t, Hr(e, n, 2047 == s ? t ? NaN : r * (1 / 0) : 0 == s ? 5e-324 * r * t : r * Math.pow(2, s - 1075) * (t + 4503599627370496)), !0;
 }, function(t, e, n) {
-    null != (e = Wt(e)) && (cr(t, n, 1), t = t.g, (n = Pt ||= new DataView(new ArrayBuffer(8))).setFloat64(0, +e, !0), Ot = n.getUint32(0, !0), Ct = n.getUint32(4, !0), or(t, Ot), or(t, Ct));
-}, dr()), si = Kr(function(t, e, n) {
-    return 5 === t.h && ($r(e, n, Pn(t.g)), !0);
+    null != (e = $t(e)) && (rr(t, n, 1), t = t.g, (n = Mt ||= new DataView(new ArrayBuffer(8))).setFloat64(0, +e, !0), Pt = n.getUint32(0, !0), Ot = n.getUint32(4, !0), er(t, Pt), er(t, Ot));
+}, cr()), ti = Vr(function(t, e, n) {
+    return 5 === t.h && (Hr(e, n, xn(t.g)), !0);
 }, function(t, e, n) {
-    null != (e = Wt(e)) && (cr(t, n, 5), t = t.g, Dt(e), or(t, Ot));
-}, Er), oi = Yr(ri, function(t, e, n) {
-    if (null != (e = zr(Wt, e))) for(let o = 0; o < e.length; o++){
+    null != (e = $t(e)) && (rr(t, n, 5), t = t.g, Dt(e), er(t, Pt));
+}, gr), ei = Xr(Zr, function(t, e, n) {
+    if (null != (e = jr($t, e))) for(let o = 0; o < e.length; o++){
         var r = t, i = n, s = e[o];
-        null != s && (cr(r, i, 5), r = r.g, Dt(s), or(r, Ot));
+        null != s && (rr(r, i, 5), r = r.g, Dt(s), er(r, Pt));
     }
-}, Er), ai = Yr(ri, function(t, e, n) {
-    if (null != (e = zr(Wt, e)) && e.length) {
-        cr(t, n, 2), ir(t.g, 4 * e.length);
-        for(let r = 0; r < e.length; r++)n = t.g, Dt(e[r]), or(n, Ot);
+}, gr), ni = Xr(Zr, function(t, e, n) {
+    if (null != (e = jr($t, e)) && e.length) {
+        rr(t, n, 2), Qn(t.g, 4 * e.length);
+        for(let r = 0; r < e.length; r++)n = t.g, Dt(e[r]), er(n, Pt);
     }
-}, Er), ci = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, Ln(t.g, Gt)), !0);
-}, Jr, vr), hi = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, 0 === (t = Ln(t.g, Gt)) ? void 0 : t), !0);
-}, Jr, vr), ui = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, Ln(t.g, Bt)), !0);
+}, gr), ri = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, Tn(t.g, Bt)), !0);
+}, zr, pr), ii = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, 0 === (t = Tn(t.g, Bt)) ? void 0 : t), !0);
+}, zr, pr), si = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, Tn(t.g, Nt)), !0);
 }, function(t, e, n) {
-    if (null != (e = ee(e))) {
-        if ("string" == typeof e) Jn(e);
-        if (null != e) switch(cr(t, n, 0), typeof e){
+    if (null != (e = se(e))) {
+        if ("string" == typeof e) zn(e);
+        if (null != e) switch(rr(t, n, 0), typeof e){
             case "number":
-                t = t.g, Nt(e), rr(t, Ot, Ct);
+                t = t.g, Ut(e), Zn(t, Pt, Ot);
                 break;
             case "bigint":
-                n = BigInt.asUintN(64, e), n = new Zn(Number(n & BigInt(4294967295)), Number(n >> BigInt(32))), rr(t.g, n.h, n.g);
+                n = BigInt.asUintN(64, e), n = new Kn(Number(n & BigInt(4294967295)), Number(n >> BigInt(32))), Zn(t.g, n.h, n.g);
                 break;
             default:
-                n = Jn(e), rr(t.g, n.h, n.g);
+                n = zn(e), Zn(t.g, n.h, n.g);
         }
     }
-}, dr()), li = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, Fn(t.g)), !0);
-}, Zr, yr), fi = Yr(function(t, e, n) {
-    return (0 === t.h || 2 === t.h) && (e = Qe(e, rt(e), n, !1, !1), 2 == t.h ? Wn(t, Fn, e) : e.push(Fn(t.g)), !0);
+}, cr()), oi = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, bn(t.g)), !0);
+}, Kr, dr), ai = Xr(function(t, e, n) {
+    return (0 === t.h || 2 === t.h) && (e = Ye(e, 0 | e[Z], n, !1, !1), 2 == t.h ? Bn(t, bn, e) : e.push(bn(t.g)), !0);
 }, function(t, e, n) {
-    if (null != (e = zr($t, e)) && e.length) {
-        n = hr(t, n);
-        for(let n = 0; n < e.length; n++)sr(t.g, e[n]);
-        ur(t, n);
+    if (null != (e = jr(Qt, e)) && e.length) {
+        n = ir(t, n);
+        for(let n = 0; n < e.length; n++)tr(t.g, e[n]);
+        sr(t, n);
     }
-}, yr), di = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, 0 === (t = Fn(t.g)) ? void 0 : t), !0);
-}, Zr, yr), pi = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, Rn(t.g)), !0);
-}, Qr, gr), gi = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, !1 === (t = Rn(t.g)) ? void 0 : t), !0);
-}, Qr, gr), mi = Yr(function(t, e, n) {
-    return 2 === t.h && (t = Xn(t), Qe(e, rt(e), n, !1).push(t), !0);
+}, dr), ci = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, 0 === (t = bn(t.g)) ? void 0 : t), !0);
+}, Kr, dr), hi = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, An(t.g)), !0);
+}, Yr, ur), ui = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, !1 === (t = An(t.g)) ? void 0 : t), !0);
+}, Yr, ur), li = Xr(function(t, e, n) {
+    return 2 === t.h && (t = Dn(t), Ye(e, 0 | e[Z], n, !1).push(t), !0);
 }, function(t, e, n) {
-    if (null != (e = zr(ie, e))) for(let o = 0; o < e.length; o++){
+    if (null != (e = jr(ce, e))) for(let o = 0; o < e.length; o++){
         var r = t, i = n, s = e[o];
-        null != s && lr(r, i, h(s));
+        null != s && or(r, i, c(s));
     }
-}, mr), yi = Kr(function(t, e, n) {
-    return 2 === t.h && ($r(e, n, "" === (t = Xn(t)) ? void 0 : t), !0);
-}, ti, mr), _i = Kr(function(t, e, n) {
-    return 2 === t.h && ($r(e, n, Xn(t)), !0);
-}, ti, mr), vi = function(t, e, n = pr) {
-    return new br(t, e, n);
+}, lr), di = Vr(function(t, e, n) {
+    return 2 === t.h && (Hr(e, n, "" === (t = Dn(t)) ? void 0 : t), !0);
+}, $r, lr), fi = Vr(function(t, e, n) {
+    return 2 === t.h && (Hr(e, n, Dn(t)), !0);
+}, $r, lr), pi = function(t, e, n = hr) {
+    return new _r(t, e, n);
 }(function(t, e, n, r, i) {
-    return 2 === t.h && (r = ye(void 0, r, !0), Qe(e, rt(e), n, !0).push(r), Vn(t, r, i), !0);
+    return 2 === t.h && (r = Fe(void 0, r, !0), Ye(e, 0 | e[Z], n, !0).push(r), Un(t, r, i), !0);
 }, function(t, e, n, r, i) {
-    if (Array.isArray(e)) for(let s = 0; s < e.length; s++)ei(t, e[s], n, r, i);
-}), Ei = Ar(function(t, e, n, r, i, s) {
-    return 2 === t.h && (nn(e, nt(e), s, n), Vn(t, e = sn(e, r, n), i), !0);
-}, ei), wi = Kr(function(t, e, n) {
-    return 2 === t.h && ($r(e, n, Hn(t)), !0);
-}, ni, wr), Ti = Yr(function(t, e, n) {
-    return (0 === t.h || 2 === t.h) && (e = Qe(e, rt(e), n, !1, !1), 2 == t.h ? Wn(t, In, e) : e.push(In(t.g)), !0);
+    if (Array.isArray(e)) for(let s = 0; s < e.length; s++)qr(t, e[s], n, r, i);
+}), gi = vr(function(t, e, n, r, i, s) {
+    return 2 === t.h && (Je(e, 0 | e[Z], s, n), Un(t, e = Qe(e, r, n), i), !0);
+}, qr), mi = Vr(function(t, e, n) {
+    return 2 === t.h && (Hr(e, n, Nn(t)), !0);
+}, Jr, mr), yi = Xr(function(t, e, n) {
+    return (0 === t.h || 2 === t.h) && (e = Ye(e, 0 | e[Z], n, !1, !1), 2 == t.h ? Bn(t, kn, e) : e.push(kn(t.g)), !0);
 }, function(t, e, n) {
-    if (null != (e = zr(qt, e))) for(let o = 0; o < e.length; o++){
+    if (null != (e = jr(te, e))) for(let o = 0; o < e.length; o++){
         var r = t, i = n, s = e[o];
-        null != s && (cr(r, i, 0), ir(r.g, s));
+        null != s && (rr(r, i, 0), Qn(r.g, s));
     }
-}, _r), bi = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, 0 === (t = In(t.g)) ? void 0 : t), !0);
+}, fr), _i = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, 0 === (t = kn(t.g)) ? void 0 : t), !0);
 }, function(t, e, n) {
-    null != (e = qt(e)) && null != e && (cr(t, n, 0), ir(t.g, e));
-}, _r), Ai = Kr(function(t, e, n) {
-    return 0 === t.h && ($r(e, n, Fn(t.g)), !0);
+    null != (e = te(e)) && null != e && (rr(t, n, 0), Qn(t.g, e));
+}, fr), vi = Vr(function(t, e, n) {
+    return 0 === t.h && (Hr(e, n, bn(t.g)), !0);
 }, function(t, e, n) {
-    null != (e = $t(e)) && (e = parseInt(e, 10), cr(t, n, 0), sr(t.g, e));
-}, Tr);
-class ki {
+    null != (e = Qt(e)) && (e = parseInt(e, 10), rr(t, n, 0), tr(t.g, e));
+}, yr);
+class Ei {
     constructor(t, e){
-        this.h = t, this.g = e, this.l = an, this.m = un, this.defaultValue = void 0;
+        this.h = t, this.g = e, this.l = en, this.m = sn, this.defaultValue = void 0;
     }
 }
-function Si(t, e) {
-    return new ki(t, e);
+function wi(t, e) {
+    return new Ei(t, e);
 }
-function xi(t, e) {
+function Ti(t, e) {
     return (n, r)=>{
-        if (zn.length) {
-            const t = zn.pop();
-            t.o(r), Cn(t.g, n, r), n = t;
+        if (Gn.length) {
+            const t = Gn.pop();
+            t.o(r), Rn(t.g, n, r), n = t;
         } else n = new class {
             constructor(t, e){
-                if (Bn.length) {
-                    const n = Bn.pop();
-                    Cn(n, t, e), t = n;
+                if (Pn.length) {
+                    const n = Pn.pop();
+                    Rn(n, t, e), t = n;
                 } else t = new class {
                     constructor(t, e){
-                        this.h = null, this.m = !1, this.g = this.l = this.j = 0, Cn(this, t, e);
+                        this.h = null, this.m = !1, this.g = this.l = this.j = 0, Rn(this, t, e);
                     }
                     clear() {
-                        this.h = null, this.m = !1, this.g = this.l = this.j = 0, this.ca = !1;
+                        this.h = null, this.m = !1, this.g = this.l = this.j = 0, this.ba = !1;
                     }
                 }(t, e);
                 this.g = t, this.l = this.g.g, this.h = this.m = -1, this.o(e);
             }
-            o({ ga: t = !1 } = {}) {
-                this.ga = t;
+            o({ fa: t = !1 } = {}) {
+                this.fa = t;
             }
         }(n, r);
         try {
             const r = new t, s = r.u;
-            Br(e)(s, n);
+            Or(e)(s, n);
             var i = r;
         } finally{
-            n.g.clear(), n.m = -1, n.h = -1, zn.length < 100 && zn.push(n);
+            n.g.clear(), n.m = -1, n.h = -1, Gn.length < 100 && Gn.push(n);
         }
         return i;
     };
 }
-function Li(t) {
+function Ai(t) {
     return function() {
         const e = new class {
             constructor(){
@@ -30378,7 +30476,7 @@ function Li(t) {
                 };
             }
         };
-        Hr(this.u, e, Or(Lr, jr, Vr, t)), ar(e, e.g.end());
+        Br(this.u, e, Rr(Ar, Ur, Dr, t)), nr(e, e.g.end());
         const n = new Uint8Array(e.h), r = e.l, i = r.length;
         let s = 0;
         for(let t = 0; t < i; t++){
@@ -30390,34 +30488,34 @@ function Li(t) {
         ], n;
     };
 }
-var Ri = class extends $n {
+var bi = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Fi = [
+}, ki = [
     0,
-    yi,
-    Kr(function(t, e, n) {
-        return 2 === t.h && ($r(e, n, (t = Hn(t)) === N() ? void 0 : t), !0);
+    di,
+    Vr(function(t, e, n) {
+        return 2 === t.h && (Hr(e, n, (t = Nn(t)) === U() ? void 0 : t), !0);
     }, function(t, e, n) {
         if (null != e) {
-            if (e instanceof $n) {
-                const r = e.Qa;
-                return void (r && (e = r(e), null != e && lr(t, n, xn(e).buffer)));
+            if (e instanceof Hn) {
+                const r = e.Ra;
+                return void (r && (e = r(e), null != e && or(t, n, wn(e).buffer)));
             }
             if (Array.isArray(e)) return;
         }
-        ni(t, e, n);
-    }, wr)
+        Jr(t, e, n);
+    }, mr)
 ];
-let Ii, Mi = globalThis.trustedTypes;
-function Pi(t) {
-    void 0 === Ii && (Ii = function() {
+let Si, xi = globalThis.trustedTypes;
+function Li(t) {
+    void 0 === Si && (Si = function() {
         let t = null;
-        if (!Mi) return t;
+        if (!xi) return t;
         try {
             const e = (t)=>t;
-            t = Mi.createPolicy("goog#html", {
+            t = xi.createPolicy("goog#html", {
                 createHTML: e,
                 createScript: e,
                 createScriptURL: e
@@ -30425,7 +30523,7 @@ function Pi(t) {
         } catch (t) {}
         return t;
     }());
-    var e = Ii;
+    var e = Si;
     return new class {
         constructor(t){
             this.g = t;
@@ -30435,79 +30533,79 @@ function Pi(t) {
         }
     }(e ? e.createScriptURL(t) : t);
 }
-function Oi(t, ...e) {
-    if (0 === e.length) return Pi(t[0]);
+function Ri(t, ...e) {
+    if (0 === e.length) return Li(t[0]);
     let n = t[0];
     for(let r = 0; r < e.length; r++)n += encodeURIComponent(e[r]) + t[r + 1];
-    return Pi(n);
+    return Li(n);
 }
-var Ci = [
+var Fi = [
     0,
-    li,
-    Ai,
-    pi,
+    oi,
+    vi,
+    hi,
     -1,
-    fi,
-    Ai,
+    ai,
+    vi,
     -1
-], Ui = class extends $n {
-    constructor(){
-        super();
+], Ii = class extends Hn {
+    constructor(t){
+        super(t);
     }
-}, Ni = [
+}, Mi = [
     0,
-    pi,
-    _i,
-    pi,
-    Ai,
+    hi,
+    fi,
+    hi,
+    vi,
     -1,
-    Yr(function(t, e, n) {
-        return (0 === t.h || 2 === t.h) && (e = Qe(e, rt(e), n, !1, !1), 2 == t.h ? Wn(t, On, e) : e.push(Fn(t.g)), !0);
+    Xr(function(t, e, n) {
+        return (0 === t.h || 2 === t.h) && (e = Ye(e, 0 | e[Z], n, !1, !1), 2 == t.h ? Bn(t, Ln, e) : e.push(bn(t.g)), !0);
     }, function(t, e, n) {
-        if (null != (e = zr($t, e)) && e.length) {
-            n = hr(t, n);
-            for(let n = 0; n < e.length; n++)sr(t.g, e[n]);
-            ur(t, n);
+        if (null != (e = jr(Qt, e)) && e.length) {
+            n = ir(t, n);
+            for(let n = 0; n < e.length; n++)tr(t.g, e[n]);
+            sr(t, n);
         }
-    }, Tr),
-    _i,
+    }, yr),
+    fi,
     -1,
     [
         0,
-        pi,
+        hi,
         -1
     ],
-    Ai,
-    pi,
+    vi,
+    hi,
     -1
-], Di = [
+], Pi = [
     0,
-    _i,
+    fi,
     -2
-], Bi = class extends $n {
-    constructor(){
-        super();
+], Oi = class extends Hn {
+    constructor(t){
+        super(t);
     }
-}, Gi = [
+}, Ci = [
     0
-], ji = [
+], Ui = [
     0,
-    li,
-    pi,
+    oi,
+    hi,
     1,
-    pi,
+    hi,
     -3
-], Vi = class extends $n {
+], Di = class extends Hn {
     constructor(t){
         super(t, 2);
     }
-}, Xi = {};
-Xi[336783863] = [
+}, Ni = {};
+Ni[336783863] = [
     0,
-    _i,
-    pi,
+    fi,
+    hi,
     -1,
-    li,
+    oi,
     [
         0,
         [
@@ -30517,36 +30615,43 @@ Xi[336783863] = [
             4,
             5,
             6,
-            7
+            7,
+            8
         ],
-        Ei,
-        Gi,
-        Ei,
-        Ni,
-        Ei,
-        Di,
-        Ei,
-        ji,
-        Ei,
+        gi,
         Ci,
-        Ei,
+        gi,
+        Mi,
+        gi,
+        Pi,
+        gi,
+        Ui,
+        gi,
+        Fi,
+        gi,
         [
             0,
-            _i,
+            fi,
             -2
         ],
-        Ei,
+        gi,
         [
             0,
-            _i,
-            Ai
+            fi,
+            vi
+        ],
+        gi,
+        [
+            0,
+            vi,
+            fi
         ]
     ],
     [
         0,
-        _i
+        fi
     ],
-    pi,
+    hi,
     [
         0,
         [
@@ -30557,493 +30662,493 @@ Xi[336783863] = [
             2,
             4
         ],
-        Ei,
+        gi,
         [
             0,
-            fi
+            ai
         ],
         -1,
-        Ei,
+        gi,
         [
             0,
-            mi
+            li
         ],
         -1,
-        vi,
+        pi,
         [
             0,
-            _i,
+            fi,
             -1
         ]
     ],
-    _i
+    fi
 ];
-var Hi = [
+var Bi = [
     0,
-    hi,
+    ii,
     -1,
-    gi,
+    ui,
     -3,
-    hi,
-    fi,
-    yi,
+    ii,
+    ai,
     di,
-    hi,
+    ci,
+    ii,
     -1,
-    gi,
-    di,
-    gi,
+    ui,
+    ci,
+    ui,
     -2,
-    yi
+    di
 ];
-function Wi(t, e) {
-    Ze(t, 2, re(e), "");
+function Gi(t, e) {
+    Ke(t, 2, ae(e), "");
 }
-function zi(t, e) {
-    bn(t, 3, e);
+function ji(t, e) {
+    yn(t, 3, e);
 }
-function Ki(t, e) {
-    bn(t, 4, e);
+function Vi(t, e) {
+    yn(t, 4, e);
 }
-var Yi = class extends $n {
+var Xi = class extends Hn {
     constructor(t){
         super(t, 500);
     }
     o(t) {
-        return un(this, 0, 7, t);
+        return sn(this, 0, 7, t);
     }
-}, $i = [
+}, Hi = [
     -1,
     {}
-], qi = [
+], Wi = [
     0,
-    _i,
+    fi,
     1,
-    $i
-], Ji = [
+    Hi
+], zi = [
     0,
-    _i,
-    mi,
-    $i
+    fi,
+    li,
+    Hi
 ];
-function Zi(t, e) {
-    pn(t, 1, Yi, e);
+function Ki(t, e) {
+    hn(t, 1, Xi, e);
 }
-function Qi(t, e) {
-    bn(t, 10, e);
+function Yi(t, e) {
+    yn(t, 10, e);
 }
-function ts(t, e) {
-    bn(t, 15, e);
+function $i(t, e) {
+    yn(t, 15, e);
 }
-var es = class extends $n {
+var qi = class extends Hn {
     constructor(t){
         super(t, 500);
     }
     o(t) {
-        return un(this, 0, 1001, t);
+        return sn(this, 0, 1001, t);
     }
-}, ns = [
+}, Ji = [
     -500,
-    vi,
+    pi,
     [
         -500,
-        yi,
+        di,
         -1,
-        mi,
+        li,
         -3,
         [
             -2,
-            Xi,
-            pi
+            Ni,
+            hi
         ],
-        vi,
-        Fi,
-        di,
+        pi,
+        ki,
+        ci,
         -1,
-        qi,
-        Ji,
-        vi,
+        Wi,
+        zi,
+        pi,
         [
             0,
-            yi,
-            gi
+            di,
+            ui
         ],
-        yi,
-        Hi,
         di,
-        mi,
+        Bi,
+        ci,
+        li,
         987,
-        mi
+        li
     ],
     4,
-    vi,
+    pi,
     [
         -500,
-        _i,
+        fi,
         -1,
         [
             -1,
             {}
         ],
         998,
-        _i
+        fi
     ],
-    vi,
+    pi,
     [
         -500,
-        _i,
-        mi,
+        fi,
+        li,
         -1,
         [
             -2,
             {},
-            pi
+            hi
         ],
         997,
-        mi,
+        li,
         -1
     ],
-    di,
-    vi,
+    ci,
+    pi,
     [
         -500,
-        _i,
-        mi,
-        $i,
+        fi,
+        li,
+        Hi,
         998,
-        mi
+        li
     ],
-    mi,
-    di,
-    qi,
-    Ji,
-    vi,
+    li,
+    ci,
+    Wi,
+    zi,
+    pi,
     [
         0,
-        yi,
+        di,
         -1,
-        $i
+        Hi
     ],
-    mi,
+    li,
     -2,
-    Hi,
-    yi,
+    Bi,
+    di,
     -1,
-    gi,
+    ui,
     [
         0,
-        gi,
-        bi
+        ui,
+        _i
     ],
     978,
-    $i,
-    vi,
-    Fi
+    Hi,
+    pi,
+    ki
 ];
-es.prototype.g = Li(ns);
-var rs = xi(es, ns), is = class extends $n {
+qi.prototype.g = Ai(Ji);
+var Zi = Ti(qi, Ji), Qi = class extends Hn {
     constructor(t){
         super(t);
     }
-}, ss = class extends $n {
+}, ts = class extends Hn {
     constructor(t){
         super(t);
     }
     g() {
-        return hn(this, is, 1);
+        return rn(this, Qi, 1);
     }
-}, os = [
+}, es = [
     0,
-    vi,
+    pi,
     [
         0,
-        li,
-        si,
-        _i,
+        oi,
+        ti,
+        fi,
         -1
     ]
-], as = xi(ss, os), cs = class extends $n {
+], ns = Ti(ts, es), rs = class extends Hn {
     constructor(t){
         super(t);
     }
-}, hs = class extends $n {
+}, is = class extends Hn {
     constructor(t){
         super(t);
     }
-}, us = class extends $n {
+}, ss = class extends Hn {
     constructor(t){
         super(t);
     }
     h() {
-        return an(this, cs, 2);
+        return en(this, rs, 2);
     }
     g() {
-        return hn(this, hs, 5);
+        return rn(this, is, 5);
     }
-}, ls = xi(class extends $n {
+}, os = Ti(class extends Hn {
     constructor(t){
         super(t);
     }
 }, [
     0,
-    mi,
-    fi,
+    li,
     ai,
+    ni,
     [
         0,
-        Ai,
+        vi,
         [
             0,
-            li,
+            oi,
             -3
         ],
         [
             0,
-            si,
+            ti,
             -3
         ],
         [
             0,
-            li,
+            oi,
             -1,
             [
                 0,
-                vi,
+                pi,
                 [
                     0,
-                    li,
+                    oi,
                     -2
                 ]
             ]
         ],
-        vi,
+        pi,
         [
             0,
-            si,
+            ti,
             -1,
-            _i,
-            si
+            fi,
+            ti
         ]
     ],
-    _i,
+    fi,
     -1,
-    ci,
-    vi,
+    ri,
+    pi,
     [
         0,
-        li,
-        si
+        oi,
+        ti
     ],
-    mi,
-    ci
-]), fs = class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, ds = xi(class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, [
-    0,
-    vi,
-    [
-        0,
-        si,
-        -4
-    ]
-]), ps = class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, gs = xi(class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, [
-    0,
-    vi,
-    [
-        0,
-        si,
-        -4
-    ]
-]), ms = class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, ys = [
-    0,
     li,
+    ri
+]), as = class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, cs = Ti(class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, [
+    0,
+    pi,
+    [
+        0,
+        ti,
+        -4
+    ]
+]), hs = class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, us = Ti(class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, [
+    0,
+    pi,
+    [
+        0,
+        ti,
+        -4
+    ]
+]), ls = class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, ds = [
+    0,
+    oi,
     -1,
-    ai,
-    Ai
-], _s = class extends $n {
-    constructor(){
-        super();
+    ni,
+    vi
+], fs = class extends Hn {
+    constructor(t){
+        super(t);
     }
 };
-_s.prototype.g = Li([
+fs.prototype.g = Ai([
     0,
-    si,
+    ti,
     -4,
-    ci
+    ri
 ]);
-var vs = class extends $n {
+var ps = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Es = xi(class extends $n {
+}, gs = Ti(class extends Hn {
     constructor(t){
         super(t);
     }
 }, [
     0,
-    vi,
+    pi,
     [
         0,
         1,
-        li,
-        _i,
-        os
+        oi,
+        fi,
+        es
     ],
-    ci
-]), ws = class extends $n {
+    ri
+]), ms = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Ts = class extends $n {
+}, ys = class extends Hn {
     constructor(t){
         super(t);
     }
-    pa() {
-        const t = We(this);
-        return null == t ? N() : t;
+    oa() {
+        const t = Ge(this);
+        return null == t ? U() : t;
     }
-}, bs = class extends $n {
+}, _s = class extends Hn {
     constructor(t){
         super(t);
     }
-}, As = [
+}, vs = [
     1,
     2
-], ks = xi(class extends $n {
+], Es = Ti(class extends Hn {
     constructor(t){
         super(t);
     }
 }, [
     0,
-    vi,
+    pi,
     [
         0,
-        As,
-        Ei,
+        vs,
+        gi,
         [
             0,
-            ai
+            ni
         ],
-        Ei,
+        gi,
         [
             0,
-            wi
+            mi
         ],
-        li,
-        _i
+        oi,
+        fi
     ],
-    ci
-]), Ss = class extends $n {
+    ri
+]), ws = class extends Hn {
     constructor(t){
         super(t);
     }
-}, xs = [
+}, Ts = [
     0,
-    _i,
+    fi,
+    oi,
+    ti,
     li,
-    si,
-    mi,
     -1
-], Ls = class extends $n {
+], As = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Rs = [
+}, bs = [
     0,
-    pi,
+    hi,
     -1
-], Fs = class extends $n {
+], ks = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Is = [
+}, Ss = [
     1,
     2,
     3,
     4,
     5
-], Ms = class extends $n {
+], xs = class extends Hn {
     constructor(t){
         super(t);
     }
     g() {
-        return null != We(this);
+        return null != Ge(this);
     }
     h() {
-        return null != ie(Be(this, 2));
+        return null != ln(this, 2);
     }
-}, Ps = class extends $n {
+}, Ls = class extends Hn {
     constructor(t){
         super(t);
     }
     g() {
-        return zt(Be(this, 2)) ?? !1;
+        return qt(Ce(this, 2)) ?? !1;
     }
-}, Os = [
+}, Rs = [
     0,
-    wi,
-    _i,
+    mi,
+    fi,
     [
         0,
-        li,
-        ci,
+        oi,
+        ri,
         -1
     ],
     [
         0,
-        ui,
-        ci
+        si,
+        ri
     ]
-], Cs = [
+], Fs = [
     0,
-    Os,
-    pi,
+    Rs,
+    hi,
     [
         0,
-        Is,
-        Ei,
-        ji,
-        Ei,
-        Ni,
-        Ei,
+        Ss,
+        gi,
+        Ui,
+        gi,
+        Mi,
+        gi,
+        Fi,
+        gi,
         Ci,
-        Ei,
-        Gi,
-        Ei,
-        Di
+        gi,
+        Pi
     ],
-    Ai
-], Us = class extends $n {
+    vi
+], Is = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Ns = [
+}, Ms = [
     0,
-    Cs,
-    si,
+    Fs,
+    ti,
     -1,
-    li
-], Ds = Si(502141897, Us);
-Xi[502141897] = Ns;
-var Bs = xi(class extends $n {
+    oi
+], Ps = wi(502141897, Is);
+Ni[502141897] = Ms;
+var Os = Ti(class extends Hn {
     constructor(t){
         super(t);
     }
@@ -31051,286 +31156,288 @@ var Bs = xi(class extends $n {
     0,
     [
         0,
-        Ai,
+        vi,
         -1,
-        oi,
-        Ti
+        ei,
+        yi
     ],
-    ys
-]), Gs = class extends $n {
+    ds
+]), Cs = class extends Hn {
     constructor(t){
         super(t);
     }
-}, js = class extends $n {
+}, Us = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Vs = [
+}, Ds = [
     0,
-    Cs,
-    si,
+    Fs,
+    ti,
     [
         0,
-        Cs
+        Fs
     ],
-    pi
-], Xs = [
+    hi
+], Ns = [
     0,
-    Cs,
-    Ns,
-    Vs,
-    si,
+    Fs,
+    Ms,
+    Ds,
+    ti,
     [
         0,
         [
             0,
-            Os
+            Rs
         ]
     ]
-], Hs = Si(508968150, js);
-Xi[508968150] = Xs, Xi[508968149] = Vs;
-var Ws = class extends $n {
+], Bs = wi(508968150, Us);
+Ni[508968150] = Ns, Ni[508968149] = Ds;
+var Gs = class extends Hn {
     constructor(t){
         super(t);
     }
-}, zs = Si(513916220, Ws);
-Xi[513916220] = [
+}, js = wi(513916220, Gs);
+Ni[513916220] = [
     0,
-    Cs,
-    Xs,
-    li
+    Fs,
+    Ns,
+    oi
 ];
-var Ks = class extends $n {
+var Vs = class extends Hn {
     constructor(t){
         super(t);
     }
     h() {
-        return an(this, Ss, 2);
+        return en(this, ws, 2);
     }
     g() {
-        Ve(this, 2);
+        De(this, 2);
     }
-}, Ys = [
+}, Xs = [
     0,
-    Cs,
-    xs
+    Fs,
+    Ts
 ];
-Xi[478825465] = Ys;
-var $s = class extends $n {
+Ni[478825465] = Xs;
+var Hs = class extends Hn {
     constructor(t){
         super(t);
     }
-}, qs = class extends $n {
+}, Ws = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Js = class extends $n {
+}, zs = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Zs = class extends $n {
+}, Ks = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Qs = class extends $n {
+}, Ys = class extends Hn {
     constructor(t){
         super(t);
     }
-}, to = [
+}, $s = [
     0,
-    Cs,
+    Fs,
     [
         0,
-        Cs
+        Fs
     ],
-    Ys,
+    Xs,
     -1
-], eo = [
+], qs = [
     0,
-    Cs,
-    si,
-    li
-], no = [
+    Fs,
+    ti,
+    oi
+], Js = [
     0,
-    Cs,
-    si
-], ro = [
+    Fs,
+    ti
+], Zs = [
     0,
-    Cs,
-    eo,
-    no,
-    si
-], io = Si(479097054, Qs);
-Xi[479097054] = [
+    Fs,
+    qs,
+    Js,
+    ti
+], Qs = wi(479097054, Ys);
+Ni[479097054] = [
     0,
-    Cs,
-    ro,
-    to
-], Xi[463370452] = to, Xi[464864288] = eo;
-var so = Si(462713202, Zs);
-Xi[462713202] = ro, Xi[474472470] = no;
-var oo = class extends $n {
+    Fs,
+    Zs,
+    $s
+], Ni[463370452] = $s, Ni[464864288] = qs;
+var to = wi(462713202, Ks);
+Ni[462713202] = Zs, Ni[474472470] = Js;
+var eo = class extends Hn {
     constructor(t){
         super(t);
     }
-}, ao = class extends $n {
+}, no = class extends Hn {
     constructor(t){
         super(t);
     }
-}, co = class extends $n {
+}, ro = class extends Hn {
     constructor(t){
         super(t);
     }
-}, ho = class extends $n {
-    constructor(){
-        super();
+}, io = class extends Hn {
+    constructor(t){
+        super(t);
     }
-}, uo = [
+}, so = [
     0,
-    Cs,
-    si,
+    Fs,
+    ti,
     -1,
-    li
-], lo = [
+    oi
+], oo = [
     0,
-    Cs,
-    si,
-    pi
+    Fs,
+    ti,
+    hi
 ];
-ho.prototype.g = Li([
+io.prototype.g = Ai([
     0,
-    Cs,
-    no,
+    Fs,
+    Js,
     [
         0,
-        Cs
+        Fs
     ],
-    Ns,
-    Vs,
-    uo,
-    lo
+    Ms,
+    Ds,
+    so,
+    oo
 ]);
-var fo = class extends $n {
+var ao = class extends Hn {
     constructor(t){
         super(t);
     }
-}, po = Si(456383383, fo);
-Xi[456383383] = [
+}, co = wi(456383383, ao);
+Ni[456383383] = [
     0,
-    Cs,
-    xs
+    Fs,
+    Ts
 ];
-var go = class extends $n {
+var ho = class extends Hn {
     constructor(t){
         super(t);
     }
-}, mo = Si(476348187, go);
-Xi[476348187] = [
+}, uo = wi(476348187, ho);
+Ni[476348187] = [
     0,
-    Cs,
-    Rs
+    Fs,
+    bs
 ];
-var yo = class extends $n {
+var lo = class extends Hn {
     constructor(t){
         super(t);
     }
-}, _o = class extends $n {
+}, fo = class extends Hn {
     constructor(t){
         super(t);
     }
-}, vo = [
+}, po = [
     0,
-    Ai,
+    vi,
     -1
-], Eo = Si(458105876, class extends $n {
+], go = wi(458105876, class extends Hn {
     constructor(t){
         super(t);
     }
     g() {
         var t = this.u;
-        const e = rt(t);
+        const e = 0 | t[Z];
         const n = 2 & e;
         return t = function(t, e, n) {
-            var r = _o;
+            var r = fo;
             const i = 2 & e;
             let s = !1;
             if (null == n) {
-                if (i) return Fe();
+                if (i) return be();
                 n = [];
-            } else if (n.constructor === ke) {
-                if (0 == (2 & n.M) || i) return n;
-                n = n.Y();
-            } else Array.isArray(n) ? s = !!(2 & nt(n)) : n = [];
+            } else if (n.constructor === ye) {
+                if (0 == (2 & n.L) || i) return n;
+                n = n.X();
+            } else Array.isArray(n) ? s = !!(2 & (0 | n[Z])) : n = [];
             if (i) {
-                if (!n.length) return Fe();
-                s || (s = !0, st(n));
-            } else s && (s = !1, n = Je(n));
-            return s || (64 & nt(n) ? et(n, 32) : 32 & e && tt(n, 32)), Xe(t, e, 2, r = new ke(n, r, oe, void 0)), r;
-        }(t, e, je(t, e, 2)), !n && _o && (t.sa = !0), t;
+                if (!n.length) return be();
+                s || (s = !0, rt(n));
+            } else s && (s = !1, n = ze(n));
+            return s || (64 & (0 | n[Z]) ? n[Z] &= -33 : 32 & e && et(n, 32)), Ne(t, e, 2, r = new ye(n, r, ue, void 0)), r;
+        }(t, e, Ue(t, e, 2)), !n && fo && (t.ra = !0), t;
     }
 });
-Xi[458105876] = [
+Ni[458105876] = [
     0,
-    vo,
-    qr,
+    po,
+    Wr,
     [
         !0,
-        ci,
+        ri,
         [
             0,
-            _i,
+            fi,
             -1,
-            mi
+            li
         ]
     ]
 ];
-var wo = class extends $n {
+var mo = class extends Hn {
     constructor(t){
         super(t);
     }
-}, To = Si(458105758, wo);
-Xi[458105758] = [
+}, yo = wi(458105758, mo);
+Ni[458105758] = [
     0,
-    Cs,
-    _i,
-    vo
+    Fs,
+    fi,
+    po
 ];
-var bo = class extends $n {
+var _o = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Ao = Si(443442058, bo);
-Xi[443442058] = [
+}, vo = wi(443442058, _o);
+Ni[443442058] = [
     0,
-    Cs,
-    _i,
+    Fs,
+    fi,
+    oi,
+    ti,
     li,
-    si,
-    mi,
-    -1
-], Xi[514774813] = uo;
-var ko = class extends $n {
+    -1,
+    hi,
+    ti
+], Ni[514774813] = so;
+var Eo = class extends Hn {
     constructor(t){
         super(t);
     }
-}, So = Si(516587230, ko);
-function xo(t, e) {
-    return e = e ? e.clone() : new Ss, void 0 !== t.displayNamesLocale ? Ve(e, 1, re(t.displayNamesLocale)) : void 0 === t.displayNamesLocale && Ve(e, 1), void 0 !== t.maxResults ? En(e, 2, t.maxResults) : "maxResults" in t && Ve(e, 2), void 0 !== t.scoreThreshold ? wn(e, 3, t.scoreThreshold) : "scoreThreshold" in t && Ve(e, 3), void 0 !== t.categoryAllowlist ? Tn(e, 4, t.categoryAllowlist) : "categoryAllowlist" in t && Ve(e, 4), void 0 !== t.categoryDenylist ? Tn(e, 5, t.categoryDenylist) : "categoryDenylist" in t && Ve(e, 5), e;
+}, wo = wi(516587230, Eo);
+function To(t, e) {
+    return e = e ? e.clone() : new ws, void 0 !== t.displayNamesLocale ? De(e, 1, ae(t.displayNamesLocale)) : void 0 === t.displayNamesLocale && De(e, 1), void 0 !== t.maxResults ? pn(e, 2, t.maxResults) : "maxResults" in t && De(e, 2), void 0 !== t.scoreThreshold ? gn(e, 3, t.scoreThreshold) : "scoreThreshold" in t && De(e, 3), void 0 !== t.categoryAllowlist ? mn(e, 4, t.categoryAllowlist) : "categoryAllowlist" in t && De(e, 4), void 0 !== t.categoryDenylist ? mn(e, 5, t.categoryDenylist) : "categoryDenylist" in t && De(e, 5), e;
 }
-function Lo(t, e = -1, n = "") {
+function Ao(t, e = -1, n = "") {
     return {
         categories: t.map((t)=>({
-                index: gn(mn(t, 1), 0) ?? -1,
-                score: yn(t, 2) ?? 0,
-                categoryName: _n(t, 3) ?? "",
-                displayName: _n(t, 4) ?? ""
+                index: un(t, 1) ?? 0 ?? -1,
+                score: dn(t, 2) ?? 0,
+                categoryName: ln(t, 3) ?? "" ?? "",
+                displayName: ln(t, 4) ?? "" ?? ""
             })),
         headIndex: e,
         headName: n
     };
 }
-function Ro(t) {
-    var e = Ke(t, 3, Wt, ze()), n = Ke(t, 2, $t, ze()), r = Ke(t, 1, ie, ze()), i = Ke(t, 9, ie, ze());
+function bo(t) {
+    var e = Ve(t, 3, $t, je()), n = Ve(t, 2, Qt, je()), r = Ve(t, 1, ce, je()), i = Ve(t, 9, ce, je());
     const s = {
         categories: [],
         keypoints: []
@@ -31341,59 +31448,59 @@ function Ro(t) {
         categoryName: r[t] ?? "",
         displayName: i[t] ?? ""
     });
-    if ((e = an(t, us, 4)?.h()) && (s.boundingBox = {
-        originX: mn(e, 1) ?? 0,
-        originY: mn(e, 2) ?? 0,
-        width: mn(e, 3) ?? 0,
-        height: mn(e, 4) ?? 0,
+    if ((e = en(t, ss, 4)?.h()) && (s.boundingBox = {
+        originX: un(e, 1) ?? 0,
+        originY: un(e, 2) ?? 0,
+        width: un(e, 3) ?? 0,
+        height: un(e, 4) ?? 0,
         angle: 0
-    }), an(t, us, 4)?.g().length) for (const e of an(t, us, 4).g())s.keypoints.push({
-        x: He(e, 1) ?? 0,
-        y: He(e, 2) ?? 0,
-        score: He(e, 4) ?? 0,
-        label: ie(Be(e, 3)) ?? ""
+    }), en(t, ss, 4)?.g().length) for (const e of en(t, ss, 4).g())s.keypoints.push({
+        x: Be(e, 1) ?? 0,
+        y: Be(e, 2) ?? 0,
+        score: Be(e, 4) ?? 0,
+        label: ln(e, 3) ?? ""
     });
     return s;
 }
-function Fo(t) {
+function ko(t) {
     const e = [];
-    for (const n of hn(t, ps, 1))e.push({
-        x: yn(n, 1) ?? 0,
-        y: yn(n, 2) ?? 0,
-        z: yn(n, 3) ?? 0,
-        visibility: yn(n, 4) ?? 0
+    for (const n of rn(t, hs, 1))e.push({
+        x: dn(n, 1) ?? 0,
+        y: dn(n, 2) ?? 0,
+        z: dn(n, 3) ?? 0,
+        visibility: dn(n, 4) ?? 0
     });
     return e;
 }
-function Io(t) {
+function So(t) {
     const e = [];
-    for (const n of hn(t, fs, 1))e.push({
-        x: yn(n, 1) ?? 0,
-        y: yn(n, 2) ?? 0,
-        z: yn(n, 3) ?? 0,
-        visibility: yn(n, 4) ?? 0
+    for (const n of rn(t, as, 1))e.push({
+        x: dn(n, 1) ?? 0,
+        y: dn(n, 2) ?? 0,
+        z: dn(n, 3) ?? 0,
+        visibility: dn(n, 4) ?? 0
     });
     return e;
 }
-function Mo(t) {
+function xo(t) {
     return Array.from(t, (t)=>t > 127 ? t - 256 : t);
 }
-function Po(t, e) {
+function Lo(t, e) {
     if (t.length !== e.length) throw Error(`Cannot compute cosine similarity between embeddings of different sizes (${t.length} vs. ${e.length}).`);
     let n = 0, r = 0, i = 0;
     for(let s = 0; s < t.length; s++)n += t[s] * e[s], r += t[s] * t[s], i += e[s] * e[s];
     if (r <= 0 || i <= 0) throw Error("Cannot compute cosine similarity on embedding with 0 norm.");
     return n / Math.sqrt(r * i);
 }
-let Oo;
-Xi[516587230] = [
+let Ro;
+Ni[516587230] = [
     0,
-    Cs,
-    uo,
-    lo,
-    si
-], Xi[518928384] = lo;
-const Co = new Uint8Array([
+    Fs,
+    so,
+    oo,
+    ti
+], Ni[518928384] = oo;
+const Fo = new Uint8Array([
     0,
     97,
     115,
@@ -31426,30 +31533,30 @@ const Co = new Uint8Array([
     98,
     11
 ]);
-async function Uo() {
-    if (void 0 === Oo) try {
-        await WebAssembly.instantiate(Co), Oo = !0;
+async function Io() {
+    if (void 0 === Ro) try {
+        await WebAssembly.instantiate(Fo), Ro = !0;
     } catch  {
-        Oo = !1;
+        Ro = !1;
     }
-    return Oo;
+    return Ro;
 }
-async function No(t, e = Oi``) {
-    const n = await Uo() ? "wasm_internal" : "wasm_nosimd_internal";
+async function Mo(t, e = Ri``) {
+    const n = await Io() ? "wasm_internal" : "wasm_nosimd_internal";
     return {
         wasmLoaderPath: `${e}/${t}_${n}.js`,
         wasmBinaryPath: `${e}/${t}_${n}.wasm`
     };
 }
-var Do = class {
+var Po = class {
 };
-function Bo() {
+function Oo() {
     var t = navigator;
     return "undefined" != typeof OffscreenCanvas && (!function(t = navigator) {
         return (t = t.userAgent).includes("Safari") && !t.includes("Chrome");
     }(t) || !!((t = t.userAgent.match(/Version\/([\d]+).*Safari/)) && t.length >= 1 && Number(t[1]) >= 17));
 }
-async function Go(t) {
+async function Co(t) {
     if ("function" != typeof importScripts) {
         const e = document.createElement("script");
         return e.src = t.toString(), e.crossOrigin = "anonymous", new Promise((t, n)=>{
@@ -31462,7 +31569,7 @@ async function Go(t) {
     }
     importScripts(t.toString());
 }
-function jo(t) {
+function Uo(t) {
     return void 0 !== t.videoWidth ? [
         t.videoWidth,
         t.videoHeight
@@ -31477,20 +31584,20 @@ function jo(t) {
         t.height
     ];
 }
-function Vo(t, e, n) {
+function Do(t, e, n) {
     t.m || console.error("No wasm multistream support detected: ensure dependency inclusion of :gl_graph_runner_internal_multi_input target"), n(e = t.i.stringToNewUTF8(e)), t.i._free(e);
 }
-function Xo(t, e, n) {
+function No(t, e, n) {
     if (!t.i.canvas) throw Error("No OpenGL canvas configured.");
     if (n ? t.i._bindTextureToStream(n) : t.i._bindTextureToCanvas(), !(n = t.i.canvas.getContext("webgl2") || t.i.canvas.getContext("webgl"))) throw Error("Failed to obtain WebGL context from the provided canvas. `getContext()` should only be invoked with `webgl` or `webgl2`.");
     t.i.gpuOriginForWebTexturesIsBottomLeft && n.pixelStorei(n.UNPACK_FLIP_Y_WEBGL, !0), n.texImage2D(n.TEXTURE_2D, 0, n.RGBA, n.RGBA, n.UNSIGNED_BYTE, e), t.i.gpuOriginForWebTexturesIsBottomLeft && n.pixelStorei(n.UNPACK_FLIP_Y_WEBGL, !1);
-    const [r, i] = jo(e);
+    const [r, i] = Uo(e);
     return !t.l || r === t.i.canvas.width && i === t.i.canvas.height || (t.i.canvas.width = r, t.i.canvas.height = i), [
         r,
         i
     ];
 }
-function Ho(t, e, n) {
+function Bo(t, e, n) {
     t.m || console.error("No wasm multistream support detected: ensure dependency inclusion of :gl_graph_runner_internal_multi_input target");
     const r = new Uint32Array(e.length);
     for(let n = 0; n < e.length; n++)r[n] = t.i.stringToNewUTF8(e[n]);
@@ -31498,78 +31605,78 @@ function Ho(t, e, n) {
     for (const e of r)t.i._free(e);
     t.i._free(e);
 }
-function Wo(t, e, n) {
+function Go(t, e, n) {
     t.i.simpleListeners = t.i.simpleListeners || {}, t.i.simpleListeners[e] = n;
 }
-function zo(t, e, n) {
+function jo(t, e, n) {
     let r = [];
     t.i.simpleListeners = t.i.simpleListeners || {}, t.i.simpleListeners[e] = (t, e, i)=>{
         e ? (n(r, i), r = []) : r.push(t);
     };
 }
-Do.forVisionTasks = function(t) {
-    return No("vision", t);
-}, Do.forTextTasks = function(t) {
-    return No("text", t);
-}, Do.forGenAiExperimentalTasks = function(t) {
-    return No("genai_experimental", t);
-}, Do.forGenAiTasks = function(t) {
-    return No("genai", t);
-}, Do.forAudioTasks = function(t) {
-    return No("audio", t);
-}, Do.isSimdSupported = function() {
-    return Uo();
+Po.forVisionTasks = function(t) {
+    return Mo("vision", t);
+}, Po.forTextTasks = function(t) {
+    return Mo("text", t);
+}, Po.forGenAiExperimentalTasks = function(t) {
+    return Mo("genai_experimental", t);
+}, Po.forGenAiTasks = function(t) {
+    return Mo("genai", t);
+}, Po.forAudioTasks = function(t) {
+    return Mo("audio", t);
+}, Po.isSimdSupported = function() {
+    return Io();
 };
-async function Ko(t, e, n, r) {
+async function Vo(t, e, n, r) {
     return t = await (async (t, e, n, r, i)=>{
-        if (e && await Go(e), !self.ModuleFactory) throw Error("ModuleFactory not set.");
-        if (n && (await Go(n), !self.ModuleFactory)) throw Error("ModuleFactory not set.");
+        if (e && await Co(e), !self.ModuleFactory) throw Error("ModuleFactory not set.");
+        if (n && (await Co(n), !self.ModuleFactory)) throw Error("ModuleFactory not set.");
         return self.Module && i && ((e = self.Module).locateFile = i.locateFile, i.mainScriptUrlOrBlob && (e.mainScriptUrlOrBlob = i.mainScriptUrlOrBlob)), i = await self.ModuleFactory(self.Module || i), self.ModuleFactory = self.Module = void 0, new t(i, r);
     })(t, n.wasmLoaderPath, n.assetLoaderPath, e, {
         locateFile: (t)=>t.endsWith(".wasm") ? n.wasmBinaryPath.toString() : n.assetBinaryPath && t.endsWith(".data") ? n.assetBinaryPath.toString() : t
     }), await t.o(r), t;
 }
-function Yo(t, e) {
-    const n = an(t.baseOptions, Ms, 1) || new Ms;
-    "string" == typeof e ? (Ve(n, 2, re(e)), Ve(n, 1)) : e instanceof Uint8Array && (Ve(n, 1, dt(e, !1)), Ve(n, 2)), un(t.baseOptions, 0, 1, n);
+function Xo(t, e) {
+    const n = en(t.baseOptions, xs, 1) || new xs;
+    "string" == typeof e ? (De(n, 2, ae(e)), De(n, 1)) : e instanceof Uint8Array && (De(n, 1, ft(e, !1)), De(n, 2)), sn(t.baseOptions, 0, 1, n);
 }
-function $o(t) {
+function Ho(t) {
     try {
-        const e = t.H.length;
-        if (1 === e) throw Error(t.H[0].message);
-        if (e > 1) throw Error("Encountered multiple errors: " + t.H.map((t)=>t.message).join(", "));
+        const e = t.G.length;
+        if (1 === e) throw Error(t.G[0].message);
+        if (e > 1) throw Error("Encountered multiple errors: " + t.G.map((t)=>t.message).join(", "));
     } finally{
-        t.H = [];
+        t.G = [];
     }
 }
-function qo(t, e) {
+function Wo(t, e) {
     t.B = Math.max(t.B, e);
 }
-function Jo(t, e) {
-    t.A = new Yi, Wi(t.A, "PassThroughCalculator"), zi(t.A, "free_memory"), Ki(t.A, "free_memory_unused_out"), Qi(e, "free_memory"), Zi(e, t.A);
+function zo(t, e) {
+    t.A = new Xi, Gi(t.A, "PassThroughCalculator"), ji(t.A, "free_memory"), Vi(t.A, "free_memory_unused_out"), Yi(e, "free_memory"), Ki(e, t.A);
 }
-function Zo(t, e) {
-    zi(t.A, e), Ki(t.A, e + "_unused_out");
+function Ko(t, e) {
+    ji(t.A, e), Vi(t.A, e + "_unused_out");
 }
-function Qo(t) {
+function Yo(t) {
     t.g.addBoolToStream(!0, "free_memory", t.B);
 }
-var ta = class {
+var $o = class {
     constructor(t){
-        this.g = t, this.H = [], this.B = 0, this.g.setAutoRenderToScreen(!1);
+        this.g = t, this.G = [], this.B = 0, this.g.setAutoRenderToScreen(!1);
     }
     l(t, e = !0) {
         if (e) {
             const e = t.baseOptions || {};
             if (t.baseOptions?.modelAssetBuffer && t.baseOptions?.modelAssetPath) throw Error("Cannot set both baseOptions.modelAssetPath and baseOptions.modelAssetBuffer");
-            if (!(an(this.baseOptions, Ms, 1)?.g() || an(this.baseOptions, Ms, 1)?.h() || t.baseOptions?.modelAssetBuffer || t.baseOptions?.modelAssetPath)) throw Error("Either baseOptions.modelAssetPath or baseOptions.modelAssetBuffer must be set");
+            if (!(en(this.baseOptions, xs, 1)?.g() || en(this.baseOptions, xs, 1)?.h() || t.baseOptions?.modelAssetBuffer || t.baseOptions?.modelAssetPath)) throw Error("Either baseOptions.modelAssetPath or baseOptions.modelAssetBuffer must be set");
             if (function(t, e) {
-                let n = an(t.baseOptions, Fs, 3);
+                let n = en(t.baseOptions, ks, 3);
                 if (!n) {
-                    var r = n = new Fs, i = new Bi;
-                    ln(r, 4, Is, i);
+                    var r = n = new ks, i = new Oi;
+                    on(r, 4, Ss, i);
                 }
-                "delegate" in e && ("GPU" === e.delegate ? (e = n, r = new Ui, ln(e, 2, Is, r)) : (e = n, r = new Bi, ln(e, 4, Is, r))), un(t.baseOptions, 0, 3, n);
+                "delegate" in e && ("GPU" === e.delegate ? (e = n, r = new Ii, on(e, 2, Ss, r)) : (e = n, r = new Oi, on(e, 4, Ss, r))), sn(t.baseOptions, 0, 3, n);
             }(this, e), e.modelAssetPath) return fetch(e.modelAssetPath.toString()).then((t)=>{
                 if (t.ok) return t.arrayBuffer();
                 throw Error(`Failed to fetch model: ${e.modelAssetPath} (${t.status})`);
@@ -31577,9 +31684,9 @@ var ta = class {
                 try {
                     this.g.i.FS_unlink("/model.dat");
                 } catch  {}
-                this.g.i.FS_createDataFile("/", "model.dat", new Uint8Array(t), !0, !1, !1), Yo(this, "/model.dat"), this.m(), this.J();
+                this.g.i.FS_createDataFile("/", "model.dat", new Uint8Array(t), !0, !1, !1), Xo(this, "/model.dat"), this.m(), this.I();
             });
-            if (e.modelAssetBuffer instanceof Uint8Array) Yo(this, e.modelAssetBuffer);
+            if (e.modelAssetBuffer instanceof Uint8Array) Xo(this, e.modelAssetBuffer);
             else if (e.modelAssetBuffer) return (async function(t) {
                 const e = [];
                 for(var n = 0;;){
@@ -31593,37 +31700,42 @@ var ta = class {
                 for (const r of e)t.set(r, n), n += r.length;
                 return t;
             })(e.modelAssetBuffer).then((t)=>{
-                Yo(this, t), this.m(), this.J();
+                Xo(this, t), this.m(), this.I();
             });
         }
-        return this.m(), this.J(), Promise.resolve();
+        return this.m(), this.I(), Promise.resolve();
     }
-    J() {}
-    ea() {
+    I() {}
+    da() {
         let t;
-        if (this.g.ea((e)=>{
-            t = rs(e);
+        if (this.g.da((e)=>{
+            t = Zi(e);
         }), !t) throw Error("Failed to retrieve CalculatorGraphConfig");
         return t;
     }
     setGraph(t, e) {
         this.g.attachErrorListener((t, e)=>{
-            this.H.push(Error(e));
-        }), this.g.La(), this.g.setGraph(t, e), this.A = void 0, $o(this);
+            this.G.push(Error(e));
+        }), this.g.La(), this.g.setGraph(t, e), this.A = void 0, Ho(this);
     }
     finishProcessing() {
-        this.g.finishProcessing(), $o(this);
+        this.g.finishProcessing(), Ho(this);
     }
     close() {
         this.A = void 0, this.g.closeGraph();
     }
 };
-function ea(t, e) {
+function qo(t, e) {
     if (!t) throw Error(`Unable to obtain required WebGL resource: ${e}`);
     return t;
 }
-ta.prototype.close = ta.prototype.close, e("TaskRunner", ta);
-class na {
+$o.prototype.close = $o.prototype.close, function(e, n) {
+    e = e.split(".");
+    var r, i = t;
+    e[0] in i || void 0 === i.execScript || i.execScript("var " + e[0]);
+    for(; e.length && (r = e.shift());)e.length || void 0 === n ? i = i[r] && i[r] !== Object.prototype[r] ? i[r] : i[r] = {} : i[r] = n;
+}("TaskRunner", $o);
+class Jo {
     constructor(t, e, n, r){
         this.g = t, this.h = e, this.m = n, this.l = r;
     }
@@ -31634,16 +31746,16 @@ class na {
         this.g.deleteVertexArray(this.h), this.g.deleteBuffer(this.m), this.g.deleteBuffer(this.l);
     }
 }
-function ra(t, e, n) {
+function Zo(t, e, n) {
     const r = t.g;
-    if (n = ea(r.createShader(n), "Failed to create WebGL shader"), r.shaderSource(n, e), r.compileShader(n), !r.getShaderParameter(n, r.COMPILE_STATUS)) throw Error(`Could not compile WebGL shader: ${r.getShaderInfoLog(n)}`);
+    if (n = qo(r.createShader(n), "Failed to create WebGL shader"), r.shaderSource(n, e), r.compileShader(n), !r.getShaderParameter(n, r.COMPILE_STATUS)) throw Error(`Could not compile WebGL shader: ${r.getShaderInfoLog(n)}`);
     return r.attachShader(t.h, n), n;
 }
-function ia(t, e) {
-    const n = t.g, r = ea(n.createVertexArray(), "Failed to create vertex array");
+function Qo(t, e) {
+    const n = t.g, r = qo(n.createVertexArray(), "Failed to create vertex array");
     n.bindVertexArray(r);
-    const i = ea(n.createBuffer(), "Failed to create buffer");
-    n.bindBuffer(n.ARRAY_BUFFER, i), n.enableVertexAttribArray(t.P), n.vertexAttribPointer(t.P, 2, n.FLOAT, !1, 0, 0), n.bufferData(n.ARRAY_BUFFER, new Float32Array([
+    const i = qo(n.createBuffer(), "Failed to create buffer");
+    n.bindBuffer(n.ARRAY_BUFFER, i), n.enableVertexAttribArray(t.O), n.vertexAttribPointer(t.O, 2, n.FLOAT, !1, 0, 0), n.bufferData(n.ARRAY_BUFFER, new Float32Array([
         -1,
         -1,
         -1,
@@ -31653,8 +31765,8 @@ function ia(t, e) {
         1,
         -1
     ]), n.STATIC_DRAW);
-    const s = ea(n.createBuffer(), "Failed to create buffer");
-    return n.bindBuffer(n.ARRAY_BUFFER, s), n.enableVertexAttribArray(t.J), n.vertexAttribPointer(t.J, 2, n.FLOAT, !1, 0, 0), n.bufferData(n.ARRAY_BUFFER, new Float32Array(e ? [
+    const s = qo(n.createBuffer(), "Failed to create buffer");
+    return n.bindBuffer(n.ARRAY_BUFFER, s), n.enableVertexAttribArray(t.I), n.vertexAttribPointer(t.I, 2, n.FLOAT, !1, 0, 0), n.bufferData(n.ARRAY_BUFFER, new Float32Array(e ? [
         0,
         1,
         0,
@@ -31672,88 +31784,88 @@ function ia(t, e) {
         1,
         1,
         0
-    ]), n.STATIC_DRAW), n.bindBuffer(n.ARRAY_BUFFER, null), n.bindVertexArray(null), new na(n, r, i, s);
+    ]), n.STATIC_DRAW), n.bindBuffer(n.ARRAY_BUFFER, null), n.bindVertexArray(null), new Jo(n, r, i, s);
 }
-function sa(t, e) {
+function ta(t, e) {
     if (t.g) {
         if (e !== t.g) throw Error("Cannot change GL context once initialized");
     } else t.g = e;
 }
-function oa(t, e, n, r) {
-    return sa(t, e), t.h || (t.m(), t.C()), n ? (t.s || (t.s = ia(t, !0)), n = t.s) : (t.v || (t.v = ia(t, !1)), n = t.v), e.useProgram(t.h), n.bind(), t.l(), t = r(), n.g.bindVertexArray(null), t;
+function ea(t, e, n, r) {
+    return ta(t, e), t.h || (t.m(), t.C()), n ? (t.s || (t.s = Qo(t, !0)), n = t.s) : (t.v || (t.v = Qo(t, !1)), n = t.v), e.useProgram(t.h), n.bind(), t.l(), t = r(), n.g.bindVertexArray(null), t;
 }
-function aa(t, e, n) {
-    return sa(t, e), t = ea(e.createTexture(), "Failed to create texture"), e.bindTexture(e.TEXTURE_2D, t), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_WRAP_S, e.CLAMP_TO_EDGE), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_WRAP_T, e.CLAMP_TO_EDGE), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_MIN_FILTER, n ?? e.LINEAR), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_MAG_FILTER, n ?? e.LINEAR), e.bindTexture(e.TEXTURE_2D, null), t;
+function na(t, e, n) {
+    return ta(t, e), t = qo(e.createTexture(), "Failed to create texture"), e.bindTexture(e.TEXTURE_2D, t), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_WRAP_S, e.CLAMP_TO_EDGE), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_WRAP_T, e.CLAMP_TO_EDGE), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_MIN_FILTER, n ?? e.LINEAR), e.texParameteri(e.TEXTURE_2D, e.TEXTURE_MAG_FILTER, n ?? e.LINEAR), e.bindTexture(e.TEXTURE_2D, null), t;
 }
-function ca(t, e, n) {
-    sa(t, e), t.A || (t.A = ea(e.createFramebuffer(), "Failed to create framebuffe.")), e.bindFramebuffer(e.FRAMEBUFFER, t.A), e.framebufferTexture2D(e.FRAMEBUFFER, e.COLOR_ATTACHMENT0, e.TEXTURE_2D, n, 0);
+function ra(t, e, n) {
+    ta(t, e), t.A || (t.A = qo(e.createFramebuffer(), "Failed to create framebuffe.")), e.bindFramebuffer(e.FRAMEBUFFER, t.A), e.framebufferTexture2D(e.FRAMEBUFFER, e.COLOR_ATTACHMENT0, e.TEXTURE_2D, n, 0);
 }
-function ha(t) {
+function ia(t) {
     t.g?.bindFramebuffer(t.g.FRAMEBUFFER, null);
 }
-var ua = class {
-    H() {
+var sa = class {
+    G() {
         return "\n  precision mediump float;\n  varying vec2 vTex;\n  uniform sampler2D inputTexture;\n  void main() {\n    gl_FragColor = texture2D(inputTexture, vTex);\n  }\n ";
     }
     m() {
         const t = this.g;
-        if (this.h = ea(t.createProgram(), "Failed to create WebGL program"), this.ba = ra(this, "\n  attribute vec2 aVertex;\n  attribute vec2 aTex;\n  varying vec2 vTex;\n  void main(void) {\n    gl_Position = vec4(aVertex, 0.0, 1.0);\n    vTex = aTex;\n  }", t.VERTEX_SHADER), this.aa = ra(this, this.H(), t.FRAGMENT_SHADER), t.linkProgram(this.h), !t.getProgramParameter(this.h, t.LINK_STATUS)) throw Error(`Error during program linking: ${t.getProgramInfoLog(this.h)}`);
-        this.P = t.getAttribLocation(this.h, "aVertex"), this.J = t.getAttribLocation(this.h, "aTex");
+        if (this.h = qo(t.createProgram(), "Failed to create WebGL program"), this.aa = Zo(this, "\n  attribute vec2 aVertex;\n  attribute vec2 aTex;\n  varying vec2 vTex;\n  void main(void) {\n    gl_Position = vec4(aVertex, 0.0, 1.0);\n    vTex = aTex;\n  }", t.VERTEX_SHADER), this.Z = Zo(this, this.G(), t.FRAGMENT_SHADER), t.linkProgram(this.h), !t.getProgramParameter(this.h, t.LINK_STATUS)) throw Error(`Error during program linking: ${t.getProgramInfoLog(this.h)}`);
+        this.O = t.getAttribLocation(this.h, "aVertex"), this.I = t.getAttribLocation(this.h, "aTex");
     }
     C() {}
     l() {}
     close() {
         if (this.h) {
             const t = this.g;
-            t.deleteProgram(this.h), t.deleteShader(this.ba), t.deleteShader(this.aa);
+            t.deleteProgram(this.h), t.deleteShader(this.aa), t.deleteShader(this.Z);
         }
         this.A && this.g.deleteFramebuffer(this.A), this.v && this.v.close(), this.s && this.s.close();
     }
 };
-var la = class extends ua {
-    H() {
+var oa = class extends sa {
+    G() {
         return "\n  precision mediump float;\n  uniform sampler2D backgroundTexture;\n  uniform sampler2D maskTexture;\n  uniform sampler2D colorMappingTexture;\n  varying vec2 vTex;\n  void main() {\n    vec4 backgroundColor = texture2D(backgroundTexture, vTex);\n    float category = texture2D(maskTexture, vTex).r;\n    vec4 categoryColor = texture2D(colorMappingTexture, vec2(category, 0.0));\n    gl_FragColor = mix(backgroundColor, categoryColor, categoryColor.a);\n  }\n ";
     }
     C() {
         const t = this.g;
-        t.activeTexture(t.TEXTURE1), this.B = aa(this, t, t.LINEAR), t.activeTexture(t.TEXTURE2), this.j = aa(this, t, t.NEAREST);
+        t.activeTexture(t.TEXTURE1), this.B = na(this, t, t.LINEAR), t.activeTexture(t.TEXTURE2), this.j = na(this, t, t.NEAREST);
     }
     m() {
         super.m();
         const t = this.g;
-        this.L = ea(t.getUniformLocation(this.h, "backgroundTexture"), "Uniform location"), this.U = ea(t.getUniformLocation(this.h, "colorMappingTexture"), "Uniform location"), this.K = ea(t.getUniformLocation(this.h, "maskTexture"), "Uniform location");
+        this.K = qo(t.getUniformLocation(this.h, "backgroundTexture"), "Uniform location"), this.T = qo(t.getUniformLocation(this.h, "colorMappingTexture"), "Uniform location"), this.J = qo(t.getUniformLocation(this.h, "maskTexture"), "Uniform location");
     }
     l() {
         super.l();
         const t = this.g;
-        t.uniform1i(this.K, 0), t.uniform1i(this.L, 1), t.uniform1i(this.U, 2);
+        t.uniform1i(this.J, 0), t.uniform1i(this.K, 1), t.uniform1i(this.T, 2);
     }
     close() {
         this.B && this.g.deleteTexture(this.B), this.j && this.g.deleteTexture(this.j), super.close();
     }
-}, fa = class extends ua {
-    H() {
+}, aa = class extends sa {
+    G() {
         return "\n  precision mediump float;\n  uniform sampler2D maskTexture;\n  uniform sampler2D defaultTexture;\n  uniform sampler2D overlayTexture;\n  varying vec2 vTex;\n  void main() {\n    float confidence = texture2D(maskTexture, vTex).r;\n    vec4 defaultColor = texture2D(defaultTexture, vTex);\n    vec4 overlayColor = texture2D(overlayTexture, vTex);\n    // Apply the alpha from the overlay and merge in the default color\n    overlayColor = mix(defaultColor, overlayColor, overlayColor.a);\n    gl_FragColor = mix(defaultColor, overlayColor, confidence);\n  }\n ";
     }
     C() {
         const t = this.g;
-        t.activeTexture(t.TEXTURE1), this.j = aa(this, t), t.activeTexture(t.TEXTURE2), this.B = aa(this, t);
+        t.activeTexture(t.TEXTURE1), this.j = na(this, t), t.activeTexture(t.TEXTURE2), this.B = na(this, t);
     }
     m() {
         super.m();
         const t = this.g;
-        this.K = ea(t.getUniformLocation(this.h, "defaultTexture"), "Uniform location"), this.L = ea(t.getUniformLocation(this.h, "overlayTexture"), "Uniform location"), this.I = ea(t.getUniformLocation(this.h, "maskTexture"), "Uniform location");
+        this.J = qo(t.getUniformLocation(this.h, "defaultTexture"), "Uniform location"), this.K = qo(t.getUniformLocation(this.h, "overlayTexture"), "Uniform location"), this.H = qo(t.getUniformLocation(this.h, "maskTexture"), "Uniform location");
     }
     l() {
         super.l();
         const t = this.g;
-        t.uniform1i(this.I, 0), t.uniform1i(this.K, 1), t.uniform1i(this.L, 2);
+        t.uniform1i(this.H, 0), t.uniform1i(this.J, 1), t.uniform1i(this.K, 2);
     }
     close() {
         this.j && this.g.deleteTexture(this.j), this.B && this.g.deleteTexture(this.B), super.close();
     }
 };
-function da(t, e) {
+function ca(t, e) {
     switch(e){
         case 0:
             return t.g.find((t)=>t instanceof Uint8Array);
@@ -31765,15 +31877,15 @@ function da(t, e) {
             throw Error(`Type is not supported: ${e}`);
     }
 }
-function pa(t) {
-    var e = da(t, 1);
+function ha(t) {
+    var e = ca(t, 1);
     if (!e) {
-        if (e = da(t, 0)) e = new Float32Array(e).map((t)=>t / 255);
+        if (e = ca(t, 0)) e = new Float32Array(e).map((t)=>t / 255);
         else {
             e = new Float32Array(t.width * t.height);
-            const r = ma(t);
-            var n = _a(t);
-            if (ca(n, r, ga(t)), "iPad Simulator;iPhone Simulator;iPod Simulator;iPad;iPhone;iPod".split(";").includes(navigator.platform) || navigator.userAgent.includes("Mac") && "document" in self && "ontouchend" in self.document) {
+            const r = la(t);
+            var n = fa(t);
+            if (ra(n, r, ua(t)), "iPad Simulator;iPhone Simulator;iPod Simulator;iPad;iPhone;iPod".split(";").includes(navigator.platform) || navigator.userAgent.includes("Mac") && "document" in self && "ontouchend" in self.document) {
                 n = new Float32Array(t.width * t.height * 4), r.readPixels(0, 0, t.width, t.height, r.RGBA, r.FLOAT, n);
                 for(let t = 0, r = 0; t < e.length; ++t, r += 4)e[t] = n[r];
             } else r.readPixels(0, 0, t.width, t.height, r.RED, r.FLOAT, e);
@@ -31782,64 +31894,64 @@ function pa(t) {
     }
     return e;
 }
-function ga(t) {
-    let e = da(t, 2);
+function ua(t) {
+    let e = ca(t, 2);
     if (!e) {
-        const n = ma(t);
-        e = va(t);
-        const r = pa(t), i = ya(t);
-        n.texImage2D(n.TEXTURE_2D, 0, i, t.width, t.height, 0, n.RED, n.FLOAT, r), Ea(t);
+        const n = la(t);
+        e = pa(t);
+        const r = ha(t), i = da(t);
+        n.texImage2D(n.TEXTURE_2D, 0, i, t.width, t.height, 0, n.RED, n.FLOAT, r), ga(t);
     }
     return e;
 }
-function ma(t) {
+function la(t) {
     if (!t.canvas) throw Error("Conversion to different image formats require that a canvas is passed when initializing the image.");
-    return t.h || (t.h = ea(t.canvas.getContext("webgl2"), "You cannot use a canvas that is already bound to a different type of rendering context.")), t.h;
+    return t.h || (t.h = qo(t.canvas.getContext("webgl2"), "You cannot use a canvas that is already bound to a different type of rendering context.")), t.h;
 }
-function ya(t) {
-    if (t = ma(t), !wa) {
-        if (t.getExtension("EXT_color_buffer_float") && t.getExtension("OES_texture_float_linear") && t.getExtension("EXT_float_blend")) wa = t.R32F;
+function da(t) {
+    if (t = la(t), !ma) {
+        if (t.getExtension("EXT_color_buffer_float") && t.getExtension("OES_texture_float_linear") && t.getExtension("EXT_float_blend")) ma = t.R32F;
         else {
             if (!t.getExtension("EXT_color_buffer_half_float")) throw Error("GPU does not fully support 4-channel float32 or float16 formats");
-            wa = t.R16F;
+            ma = t.R16F;
         }
     }
-    return wa;
+    return ma;
 }
-function _a(t) {
-    return t.l || (t.l = new ua), t.l;
+function fa(t) {
+    return t.l || (t.l = new sa), t.l;
 }
-function va(t) {
-    const e = ma(t);
+function pa(t) {
+    const e = la(t);
     e.viewport(0, 0, t.width, t.height), e.activeTexture(e.TEXTURE0);
-    let n = da(t, 2);
-    return n || (n = aa(_a(t), e, t.m ? e.LINEAR : e.NEAREST), t.g.push(n), t.j = !0), e.bindTexture(e.TEXTURE_2D, n), n;
+    let n = ca(t, 2);
+    return n || (n = na(fa(t), e, t.m ? e.LINEAR : e.NEAREST), t.g.push(n), t.j = !0), e.bindTexture(e.TEXTURE_2D, n), n;
 }
-function Ea(t) {
+function ga(t) {
     t.h.bindTexture(t.h.TEXTURE_2D, null);
 }
-var wa, Ta = class {
+var ma, ya = class {
     constructor(t, e, n, r, i, s, o){
-        this.g = t, this.m = e, this.j = n, this.canvas = r, this.l = i, this.width = s, this.height = o, this.j && 0 === --ba && console.error("You seem to be creating MPMask instances without invoking .close(). This leaks resources.");
+        this.g = t, this.m = e, this.j = n, this.canvas = r, this.l = i, this.width = s, this.height = o, this.j && 0 === --_a && console.error("You seem to be creating MPMask instances without invoking .close(). This leaks resources.");
     }
-    Ga() {
-        return !!da(this, 0);
-    }
-    ka() {
-        return !!da(this, 1);
-    }
-    R() {
-        return !!da(this, 2);
+    Fa() {
+        return !!ca(this, 0);
     }
     ja() {
-        var t, e;
-        return (e = da(t = this, 0)) || (e = pa(t), e = new Uint8Array(e.map((t)=>255 * t)), t.g.push(e)), e;
+        return !!ca(this, 1);
+    }
+    P() {
+        return !!ca(this, 2);
     }
     ia() {
-        return pa(this);
+        var t, e;
+        return (e = ca(t = this, 0)) || (e = ha(t), e = new Uint8Array(e.map((t)=>255 * t)), t.g.push(e)), e;
     }
-    N() {
-        return ga(this);
+    ha() {
+        return ha(this);
+    }
+    M() {
+        return ua(this);
     }
     clone() {
         const t = [];
@@ -31850,69 +31962,69 @@ var wa, Ta = class {
             else {
                 if (!(e instanceof WebGLTexture)) throw Error(`Type is not supported: ${e}`);
                 {
-                    const t = ma(this), e = _a(this);
-                    t.activeTexture(t.TEXTURE1), n = aa(e, t, this.m ? t.LINEAR : t.NEAREST), t.bindTexture(t.TEXTURE_2D, n);
-                    const r = ya(this);
-                    t.texImage2D(t.TEXTURE_2D, 0, r, this.width, this.height, 0, t.RED, t.FLOAT, null), t.bindTexture(t.TEXTURE_2D, null), ca(e, t, n), oa(e, t, !1, ()=>{
-                        va(this), t.clearColor(0, 0, 0, 0), t.clear(t.COLOR_BUFFER_BIT), t.drawArrays(t.TRIANGLE_FAN, 0, 4), Ea(this);
-                    }), ha(e), Ea(this);
+                    const t = la(this), e = fa(this);
+                    t.activeTexture(t.TEXTURE1), n = na(e, t, this.m ? t.LINEAR : t.NEAREST), t.bindTexture(t.TEXTURE_2D, n);
+                    const r = da(this);
+                    t.texImage2D(t.TEXTURE_2D, 0, r, this.width, this.height, 0, t.RED, t.FLOAT, null), t.bindTexture(t.TEXTURE_2D, null), ra(e, t, n), ea(e, t, !1, ()=>{
+                        pa(this), t.clearColor(0, 0, 0, 0), t.clear(t.COLOR_BUFFER_BIT), t.drawArrays(t.TRIANGLE_FAN, 0, 4), ga(this);
+                    }), ia(e), ga(this);
                 }
             }
             t.push(n);
         }
-        return new Ta(t, this.m, this.R(), this.canvas, this.l, this.width, this.height);
+        return new ya(t, this.m, this.P(), this.canvas, this.l, this.width, this.height);
     }
     close() {
-        this.j && ma(this).deleteTexture(da(this, 2)), ba = -1;
+        this.j && la(this).deleteTexture(ca(this, 2)), _a = -1;
     }
 };
-Ta.prototype.close = Ta.prototype.close, Ta.prototype.clone = Ta.prototype.clone, Ta.prototype.getAsWebGLTexture = Ta.prototype.N, Ta.prototype.getAsFloat32Array = Ta.prototype.ia, Ta.prototype.getAsUint8Array = Ta.prototype.ja, Ta.prototype.hasWebGLTexture = Ta.prototype.R, Ta.prototype.hasFloat32Array = Ta.prototype.ka, Ta.prototype.hasUint8Array = Ta.prototype.Ga;
-var ba = 250;
-const Aa = {
+ya.prototype.close = ya.prototype.close, ya.prototype.clone = ya.prototype.clone, ya.prototype.getAsWebGLTexture = ya.prototype.M, ya.prototype.getAsFloat32Array = ya.prototype.ha, ya.prototype.getAsUint8Array = ya.prototype.ia, ya.prototype.hasWebGLTexture = ya.prototype.P, ya.prototype.hasFloat32Array = ya.prototype.ja, ya.prototype.hasUint8Array = ya.prototype.Fa;
+var _a = 250;
+const va = {
     color: "white",
     lineWidth: 4,
     radius: 6
 };
-function ka(t) {
+function Ea(t) {
     return {
-        ...Aa,
+        ...va,
         fillColor: (t = t || {}).color,
         ...t
     };
 }
-function Sa(t, e) {
+function wa(t, e) {
     return t instanceof Function ? t(e) : t;
 }
-function xa(t, e, n) {
+function Ta(t, e, n) {
     return Math.max(Math.min(e, n), Math.min(Math.max(e, n), t));
 }
-function La(t) {
+function Aa(t) {
     if (!t.l) throw Error("CPU rendering requested but CanvasRenderingContext2D not provided.");
     return t.l;
 }
-function Ra(t) {
+function ba(t) {
     if (!t.j) throw Error("GPU rendering requested but WebGL2RenderingContext not provided.");
     return t.j;
 }
-function Fa(t, e, n) {
-    if (e.R()) n(e.N());
+function ka(t, e, n) {
+    if (e.P()) n(e.M());
     else {
-        const r = e.ka() ? e.ia() : e.ja();
-        t.m = t.m ?? new ua;
-        const i = Ra(t);
-        n((t = new Ta([
+        const r = e.ja() ? e.ha() : e.ia();
+        t.m = t.m ?? new sa;
+        const i = ba(t);
+        n((t = new ya([
             r
-        ], e.m, !1, i.canvas, t.m, e.width, e.height)).N()), t.close();
+        ], e.m, !1, i.canvas, t.m, e.width, e.height)).M()), t.close();
     }
 }
-function Ia(t, e, n, r) {
+function Sa(t, e, n, r) {
     const i = function(t) {
-        return t.g || (t.g = new la), t.g;
-    }(t), s = Ra(t), o = Array.isArray(n) ? new ImageData(new Uint8ClampedArray(n), 1, 1) : n;
-    oa(i, s, !0, ()=>{
+        return t.g || (t.g = new oa), t.g;
+    }(t), s = ba(t), o = Array.isArray(n) ? new ImageData(new Uint8ClampedArray(n), 1, 1) : n;
+    ea(i, s, !0, ()=>{
         !function(t, e, n, r) {
             const i = t.g;
-            if (i.activeTexture(i.TEXTURE0), i.bindTexture(i.TEXTURE_2D, e), i.activeTexture(i.TEXTURE1), i.bindTexture(i.TEXTURE_2D, t.B), i.texImage2D(i.TEXTURE_2D, 0, i.RGBA, i.RGBA, i.UNSIGNED_BYTE, n), t.I && function(t, e) {
+            if (i.activeTexture(i.TEXTURE0), i.bindTexture(i.TEXTURE_2D, e), i.activeTexture(i.TEXTURE1), i.bindTexture(i.TEXTURE_2D, t.B), i.texImage2D(i.TEXTURE_2D, 0, i.RGBA, i.RGBA, i.UNSIGNED_BYTE, n), t.H && function(t, e) {
                 if (t !== e) return !1;
                 t = t.entries(), e = e.entries();
                 for (const [r, i] of t){
@@ -31924,9 +32036,9 @@ function Ia(t, e, n, r) {
                     if (n = a, t !== o || s[0] !== n[0] || s[1] !== n[1] || s[2] !== n[2] || s[3] !== n[3]) return !1;
                 }
                 return !!e.next().done;
-            }(t.I, r)) i.activeTexture(i.TEXTURE2), i.bindTexture(i.TEXTURE_2D, t.j);
+            }(t.H, r)) i.activeTexture(i.TEXTURE2), i.bindTexture(i.TEXTURE_2D, t.j);
             else {
-                t.I = r;
+                t.H = r;
                 const e = Array(1024).fill(0);
                 r.forEach((t, n)=>{
                     if (4 !== t.length) throw Error(`Color at index ${n} is not a four-channel value.`);
@@ -31938,53 +32050,53 @@ function Ia(t, e, n, r) {
         t.activeTexture(t.TEXTURE0), t.bindTexture(t.TEXTURE_2D, null), t.activeTexture(t.TEXTURE1), t.bindTexture(t.TEXTURE_2D, null), t.activeTexture(t.TEXTURE2), t.bindTexture(t.TEXTURE_2D, null);
     });
 }
-function Ma(t, e, n, r) {
-    const i = Ra(t), s = function(t) {
-        return t.h || (t.h = new fa), t.h;
+function xa(t, e, n, r) {
+    const i = ba(t), s = function(t) {
+        return t.h || (t.h = new aa), t.h;
     }(t), o = Array.isArray(n) ? new ImageData(new Uint8ClampedArray(n), 1, 1) : n, a = Array.isArray(r) ? new ImageData(new Uint8ClampedArray(r), 1, 1) : r;
-    oa(s, i, !0, ()=>{
+    ea(s, i, !0, ()=>{
         var t = s.g;
         t.activeTexture(t.TEXTURE0), t.bindTexture(t.TEXTURE_2D, e), t.activeTexture(t.TEXTURE1), t.bindTexture(t.TEXTURE_2D, s.j), t.texImage2D(t.TEXTURE_2D, 0, t.RGBA, t.RGBA, t.UNSIGNED_BYTE, o), t.activeTexture(t.TEXTURE2), t.bindTexture(t.TEXTURE_2D, s.B), t.texImage2D(t.TEXTURE_2D, 0, t.RGBA, t.RGBA, t.UNSIGNED_BYTE, a), i.clearColor(0, 0, 0, 0), i.clear(i.COLOR_BUFFER_BIT), i.drawArrays(i.TRIANGLE_FAN, 0, 4), i.bindTexture(i.TEXTURE_2D, null), (t = s.g).activeTexture(t.TEXTURE0), t.bindTexture(t.TEXTURE_2D, null), t.activeTexture(t.TEXTURE1), t.bindTexture(t.TEXTURE_2D, null), t.activeTexture(t.TEXTURE2), t.bindTexture(t.TEXTURE_2D, null);
     });
 }
-var Pa = class {
+var La = class {
     constructor(t, e){
         t instanceof CanvasRenderingContext2D || t instanceof OffscreenCanvasRenderingContext2D ? (this.l = t, this.j = e) : this.j = t;
     }
-    za(t, e) {
+    ya(t, e) {
         if (t) {
-            var n = La(this);
-            e = ka(e), n.save();
+            var n = Aa(this);
+            e = Ea(e), n.save();
             var r = n.canvas, i = 0;
-            for (const s of t)n.fillStyle = Sa(e.fillColor, {
+            for (const s of t)n.fillStyle = wa(e.fillColor, {
                 index: i,
                 from: s
-            }), n.strokeStyle = Sa(e.color, {
+            }), n.strokeStyle = wa(e.color, {
                 index: i,
                 from: s
-            }), n.lineWidth = Sa(e.lineWidth, {
+            }), n.lineWidth = wa(e.lineWidth, {
                 index: i,
                 from: s
-            }), (t = new Path2D).arc(s.x * r.width, s.y * r.height, Sa(e.radius, {
+            }), (t = new Path2D).arc(s.x * r.width, s.y * r.height, wa(e.radius, {
                 index: i,
                 from: s
             }), 0, 2 * Math.PI), n.fill(t), n.stroke(t), ++i;
             n.restore();
         }
     }
-    ya(t, e, n) {
+    xa(t, e, n) {
         if (t && e) {
-            var r = La(this);
-            n = ka(n), r.save();
+            var r = Aa(this);
+            n = Ea(n), r.save();
             var i = r.canvas, s = 0;
             for (const o of e){
                 r.beginPath(), e = t[o.start];
                 const a = t[o.end];
-                e && a && (r.strokeStyle = Sa(n.color, {
+                e && a && (r.strokeStyle = wa(n.color, {
                     index: s,
                     from: e,
                     to: a
-                }), r.lineWidth = Sa(n.lineWidth, {
+                }), r.lineWidth = wa(n.lineWidth, {
                     index: s,
                     from: e,
                     to: a
@@ -31993,36 +32105,36 @@ var Pa = class {
             r.restore();
         }
     }
-    va(t, e) {
-        const n = La(this);
-        e = ka(e), n.save(), n.beginPath(), n.lineWidth = Sa(e.lineWidth, {}), n.strokeStyle = Sa(e.color, {}), n.fillStyle = Sa(e.fillColor, {}), n.moveTo(t.originX, t.originY), n.lineTo(t.originX + t.width, t.originY), n.lineTo(t.originX + t.width, t.originY + t.height), n.lineTo(t.originX, t.originY + t.height), n.lineTo(t.originX, t.originY), n.stroke(), n.fill(), n.restore();
+    ua(t, e) {
+        const n = Aa(this);
+        e = Ea(e), n.save(), n.beginPath(), n.lineWidth = wa(e.lineWidth, {}), n.strokeStyle = wa(e.color, {}), n.fillStyle = wa(e.fillColor, {}), n.moveTo(t.originX, t.originY), n.lineTo(t.originX + t.width, t.originY), n.lineTo(t.originX + t.width, t.originY + t.height), n.lineTo(t.originX, t.originY + t.height), n.lineTo(t.originX, t.originY), n.stroke(), n.fill(), n.restore();
     }
-    wa(t, e, n = [
+    va(t, e, n = [
         0,
         0,
         0,
         255
     ]) {
         this.l ? function(t, e, n, r) {
-            const i = Ra(t);
-            Fa(t, e, (e)=>{
-                Ia(t, e, n, r), (e = La(t)).drawImage(i.canvas, 0, 0, e.canvas.width, e.canvas.height);
+            const i = ba(t);
+            ka(t, e, (e)=>{
+                Sa(t, e, n, r), (e = Aa(t)).drawImage(i.canvas, 0, 0, e.canvas.width, e.canvas.height);
             });
-        }(this, t, n, e) : Ia(this, t.N(), n, e);
+        }(this, t, n, e) : Sa(this, t.M(), n, e);
     }
-    xa(t, e, n) {
+    wa(t, e, n) {
         this.l ? function(t, e, n, r) {
-            const i = Ra(t);
-            Fa(t, e, (e)=>{
-                Ma(t, e, n, r), (e = La(t)).drawImage(i.canvas, 0, 0, e.canvas.width, e.canvas.height);
+            const i = ba(t);
+            ka(t, e, (e)=>{
+                xa(t, e, n, r), (e = Aa(t)).drawImage(i.canvas, 0, 0, e.canvas.width, e.canvas.height);
             });
-        }(this, t, e, n) : Ma(this, t.N(), e, n);
+        }(this, t, e, n) : xa(this, t.M(), e, n);
     }
     close() {
         this.g?.close(), this.g = void 0, this.h?.close(), this.h = void 0, this.m?.close(), this.m = void 0;
     }
 };
-function Oa(t, e) {
+function Ra(t, e) {
     switch(e){
         case 0:
             return t.g.find((t)=>t instanceof ImageData);
@@ -32034,44 +32146,44 @@ function Oa(t, e) {
             throw Error(`Type is not supported: ${e}`);
     }
 }
-function Ca(t) {
-    var e = Oa(t, 0);
+function Fa(t) {
+    var e = Ra(t, 0);
     if (!e) {
-        e = Na(t);
-        const n = Da(t), r = new Uint8Array(t.width * t.height * 4);
-        ca(n, e, Ua(t)), e.readPixels(0, 0, t.width, t.height, e.RGBA, e.UNSIGNED_BYTE, r), ha(n), e = new ImageData(new Uint8ClampedArray(r.buffer), t.width, t.height), t.g.push(e);
+        e = Ma(t);
+        const n = Pa(t), r = new Uint8Array(t.width * t.height * 4);
+        ra(n, e, Ia(t)), e.readPixels(0, 0, t.width, t.height, e.RGBA, e.UNSIGNED_BYTE, r), ia(n), e = new ImageData(new Uint8ClampedArray(r.buffer), t.width, t.height), t.g.push(e);
     }
     return e;
 }
-function Ua(t) {
-    let e = Oa(t, 2);
+function Ia(t) {
+    let e = Ra(t, 2);
     if (!e) {
-        const n = Na(t);
-        e = Ba(t);
-        const r = Oa(t, 1) || Ca(t);
-        n.texImage2D(n.TEXTURE_2D, 0, n.RGBA, n.RGBA, n.UNSIGNED_BYTE, r), Ga(t);
+        const n = Ma(t);
+        e = Oa(t);
+        const r = Ra(t, 1) || Fa(t);
+        n.texImage2D(n.TEXTURE_2D, 0, n.RGBA, n.RGBA, n.UNSIGNED_BYTE, r), Ca(t);
     }
     return e;
 }
-function Na(t) {
-    if (!t.canvas) throw Error("Conversion to different image formats require that a canvas is passed when iniitializing the image.");
-    return t.h || (t.h = ea(t.canvas.getContext("webgl2"), "You cannot use a canvas that is already bound to a different type of rendering context.")), t.h;
+function Ma(t) {
+    if (!t.canvas) throw Error("Conversion to different image formats require that a canvas is passed when initializing the image.");
+    return t.h || (t.h = qo(t.canvas.getContext("webgl2"), "You cannot use a canvas that is already bound to a different type of rendering context.")), t.h;
 }
-function Da(t) {
-    return t.l || (t.l = new ua), t.l;
+function Pa(t) {
+    return t.l || (t.l = new sa), t.l;
 }
-function Ba(t) {
-    const e = Na(t);
+function Oa(t) {
+    const e = Ma(t);
     e.viewport(0, 0, t.width, t.height), e.activeTexture(e.TEXTURE0);
-    let n = Oa(t, 2);
-    return n || (n = aa(Da(t), e), t.g.push(n), t.m = !0), e.bindTexture(e.TEXTURE_2D, n), n;
+    let n = Ra(t, 2);
+    return n || (n = na(Pa(t), e), t.g.push(n), t.m = !0), e.bindTexture(e.TEXTURE_2D, n), n;
 }
-function Ga(t) {
+function Ca(t) {
     t.h.bindTexture(t.h.TEXTURE_2D, null);
 }
-function ja(t) {
-    const e = Na(t);
-    return oa(Da(t), e, !0, ()=>(function(t, e) {
+function Ua(t) {
+    const e = Ma(t);
+    return ea(Pa(t), e, !0, ()=>(function(t, e) {
             const n = t.canvas;
             if (n.width === t.width && n.height === t.height) return e();
             const r = n.width, i = n.height;
@@ -32081,31 +32193,31 @@ function ja(t) {
             return t.canvas.transferToImageBitmap();
         }));
 }
-Pa.prototype.close = Pa.prototype.close, Pa.prototype.drawConfidenceMask = Pa.prototype.xa, Pa.prototype.drawCategoryMask = Pa.prototype.wa, Pa.prototype.drawBoundingBox = Pa.prototype.va, Pa.prototype.drawConnectors = Pa.prototype.ya, Pa.prototype.drawLandmarks = Pa.prototype.za, Pa.lerp = function(t, e, n, r, i) {
-    return xa(r * (1 - (t - e) / (n - e)) + i * (1 - (n - t) / (n - e)), r, i);
-}, Pa.clamp = xa, e("DrawingUtils", Pa);
-var Va = class {
+La.prototype.close = La.prototype.close, La.prototype.drawConfidenceMask = La.prototype.wa, La.prototype.drawCategoryMask = La.prototype.va, La.prototype.drawBoundingBox = La.prototype.ua, La.prototype.drawConnectors = La.prototype.xa, La.prototype.drawLandmarks = La.prototype.ya, La.lerp = function(t, e, n, r, i) {
+    return Ta(r * (1 - (t - e) / (n - e)) + i * (1 - (n - t) / (n - e)), r, i);
+}, La.clamp = Ta;
+var Da = class {
     constructor(t, e, n, r, i, s, o){
-        this.g = t, this.j = e, this.m = n, this.canvas = r, this.l = i, this.width = s, this.height = o, (this.j || this.m) && 0 === --Xa && console.error("You seem to be creating MPImage instances without invoking .close(). This leaks resources.");
+        this.g = t, this.j = e, this.m = n, this.canvas = r, this.l = i, this.width = s, this.height = o, (this.j || this.m) && 0 === --Na && console.error("You seem to be creating MPImage instances without invoking .close(). This leaks resources.");
     }
-    Fa() {
-        return !!Oa(this, 0);
+    Ea() {
+        return !!Ra(this, 0);
     }
-    la() {
-        return !!Oa(this, 1);
+    ka() {
+        return !!Ra(this, 1);
     }
-    R() {
-        return !!Oa(this, 2);
-    }
-    Da() {
-        return Ca(this);
+    P() {
+        return !!Ra(this, 2);
     }
     Ca() {
-        var t = Oa(this, 1);
-        return t || (Ua(this), Ba(this), t = ja(this), Ga(this), this.g.push(t), this.j = !0), t;
+        return Fa(this);
     }
-    N() {
-        return Ua(this);
+    Ba() {
+        var t = Ra(this, 1);
+        return t || (Ia(this), Oa(this), t = Ua(this), Ca(this), this.g.push(t), this.j = !0), t;
+    }
+    M() {
+        return Ia(this);
     }
     clone() {
         const t = [];
@@ -32113,39 +32225,39 @@ var Va = class {
             let n;
             if (e instanceof ImageData) n = new ImageData(e.data, this.width, this.height);
             else if (e instanceof WebGLTexture) {
-                const t = Na(this), e = Da(this);
-                t.activeTexture(t.TEXTURE1), n = aa(e, t), t.bindTexture(t.TEXTURE_2D, n), t.texImage2D(t.TEXTURE_2D, 0, t.RGBA, this.width, this.height, 0, t.RGBA, t.UNSIGNED_BYTE, null), t.bindTexture(t.TEXTURE_2D, null), ca(e, t, n), oa(e, t, !1, ()=>{
-                    Ba(this), t.clearColor(0, 0, 0, 0), t.clear(t.COLOR_BUFFER_BIT), t.drawArrays(t.TRIANGLE_FAN, 0, 4), Ga(this);
-                }), ha(e), Ga(this);
+                const t = Ma(this), e = Pa(this);
+                t.activeTexture(t.TEXTURE1), n = na(e, t), t.bindTexture(t.TEXTURE_2D, n), t.texImage2D(t.TEXTURE_2D, 0, t.RGBA, this.width, this.height, 0, t.RGBA, t.UNSIGNED_BYTE, null), t.bindTexture(t.TEXTURE_2D, null), ra(e, t, n), ea(e, t, !1, ()=>{
+                    Oa(this), t.clearColor(0, 0, 0, 0), t.clear(t.COLOR_BUFFER_BIT), t.drawArrays(t.TRIANGLE_FAN, 0, 4), Ca(this);
+                }), ia(e), Ca(this);
             } else {
                 if (!(e instanceof ImageBitmap)) throw Error(`Type is not supported: ${e}`);
-                Ua(this), Ba(this), n = ja(this), Ga(this);
+                Ia(this), Oa(this), n = Ua(this), Ca(this);
             }
             t.push(n);
         }
-        return new Va(t, this.la(), this.R(), this.canvas, this.l, this.width, this.height);
+        return new Da(t, this.ka(), this.P(), this.canvas, this.l, this.width, this.height);
     }
     close() {
-        this.j && Oa(this, 1).close(), this.m && Na(this).deleteTexture(Oa(this, 2)), Xa = -1;
+        this.j && Ra(this, 1).close(), this.m && Ma(this).deleteTexture(Ra(this, 2)), Na = -1;
     }
 };
-Va.prototype.close = Va.prototype.close, Va.prototype.clone = Va.prototype.clone, Va.prototype.getAsWebGLTexture = Va.prototype.N, Va.prototype.getAsImageBitmap = Va.prototype.Ca, Va.prototype.getAsImageData = Va.prototype.Da, Va.prototype.hasWebGLTexture = Va.prototype.R, Va.prototype.hasImageBitmap = Va.prototype.la, Va.prototype.hasImageData = Va.prototype.Fa;
-var Xa = 250;
-function Ha(...t) {
+Da.prototype.close = Da.prototype.close, Da.prototype.clone = Da.prototype.clone, Da.prototype.getAsWebGLTexture = Da.prototype.M, Da.prototype.getAsImageBitmap = Da.prototype.Ba, Da.prototype.getAsImageData = Da.prototype.Ca, Da.prototype.hasWebGLTexture = Da.prototype.P, Da.prototype.hasImageBitmap = Da.prototype.ka, Da.prototype.hasImageData = Da.prototype.Ea;
+var Na = 250;
+function Ba(...t) {
     return t.map(([t, e])=>({
             start: t,
             end: e
         }));
 }
-const Wa = function(t) {
+const Ga = function(t) {
     return class extends t {
         La() {
             this.i._registerModelResourcesGraphService();
         }
     };
-}((za = class {
+}((ja = class {
     constructor(t, e){
-        this.l = !0, this.i = t, this.g = null, this.h = 0, this.m = "function" == typeof this.i._addIntToInputStream, void 0 !== e ? this.i.canvas = e : Bo() ? this.i.canvas = new OffscreenCanvas(1, 1) : (console.warn("OffscreenCanvas not supported and GraphRunner constructor glCanvas parameter is undefined. Creating backup canvas."), this.i.canvas = document.createElement("canvas"));
+        this.l = !0, this.i = t, this.g = null, this.h = 0, this.m = "function" == typeof this.i._addIntToInputStream, void 0 !== e ? this.i.canvas = e : Oo() ? this.i.canvas = new OffscreenCanvas(1, 1) : (console.warn("OffscreenCanvas not supported and GraphRunner constructor glCanvas parameter is undefined. Creating backup canvas."), this.i.canvas = document.createElement("canvas"));
     }
     async initializeGraph(t) {
         const e = await (await fetch(t)).arrayBuffer();
@@ -32159,8 +32271,8 @@ const Wa = function(t) {
         this.i.HEAPU8.set(t, r), e ? this.i._changeBinaryGraph(n, r) : this.i._changeTextGraph(n, r), this.i._free(r);
     }
     configureAudio(t, e, n, r, i) {
-        this.i._configureAudio || console.warn('Attempting to use configureAudio without support for input audio. Is build dep ":gl_graph_runner_audio" missing?'), Vo(this, r || "input_audio", (r)=>{
-            Vo(this, i = i || "audio_header", (i)=>{
+        this.i._configureAudio || console.warn('Attempting to use configureAudio without support for input audio. Is build dep ":gl_graph_runner_audio" missing?'), Do(this, r || "input_audio", (r)=>{
+            Do(this, i = i || "audio_header", (i)=>{
                 this.i._configureAudio(r, i, t, e ?? 0, n);
             });
         });
@@ -32174,10 +32286,10 @@ const Wa = function(t) {
     setGpuBufferVerticalFlip(t) {
         this.i.gpuOriginForWebTexturesIsBottomLeft = t;
     }
-    ea(t) {
-        Wo(this, "__graph_config__", (e)=>{
+    da(t) {
+        Go(this, "__graph_config__", (e)=>{
             t(e);
-        }), Vo(this, "__graph_config__", (t)=>{
+        }), Do(this, "__graph_config__", (t)=>{
             this.i._getGraphConfig(t, void 0);
         }), delete this.i.simpleListeners.__graph_config__;
     }
@@ -32192,72 +32304,72 @@ const Wa = function(t) {
     }
     addAudioToStreamWithShape(t, e, n, r, i) {
         const s = 4 * t.length;
-        this.h !== s && (this.g && this.i._free(this.g), this.g = this.i._malloc(s), this.h = s), this.i.HEAPF32.set(t, this.g / 4), Vo(this, r, (t)=>{
+        this.h !== s && (this.g && this.i._free(this.g), this.g = this.i._malloc(s), this.h = s), this.i.HEAPF32.set(t, this.g / 4), Do(this, r, (t)=>{
             this.i._addAudioToInputStream(this.g, e, n, t, i);
         });
     }
     addGpuBufferToStream(t, e, n) {
-        Vo(this, e, (e)=>{
-            const [r, i] = Xo(this, t, e);
+        Do(this, e, (e)=>{
+            const [r, i] = No(this, t, e);
             this.i._addBoundTextureToStream(e, r, i, n);
         });
     }
     addBoolToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addBoolToInputStream(t, e, n);
         });
     }
     addDoubleToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addDoubleToInputStream(t, e, n);
         });
     }
     addFloatToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addFloatToInputStream(t, e, n);
         });
     }
     addIntToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addIntToInputStream(t, e, n);
         });
     }
     addUintToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addUintToInputStream(t, e, n);
         });
     }
     addStringToStream(t, e, n) {
-        Vo(this, e, (e)=>{
-            Vo(this, t, (t)=>{
+        Do(this, e, (e)=>{
+            Do(this, t, (t)=>{
                 this.i._addStringToInputStream(t, e, n);
             });
         });
     }
     addStringRecordToStream(t, e, n) {
-        Vo(this, e, (e)=>{
-            Ho(this, Object.keys(t), (r)=>{
-                Ho(this, Object.values(t), (i)=>{
+        Do(this, e, (e)=>{
+            Bo(this, Object.keys(t), (r)=>{
+                Bo(this, Object.values(t), (i)=>{
                     this.i._addFlatHashMapToInputStream(r, i, Object.keys(t).length, e, n);
                 });
             });
         });
     }
     addProtoToStream(t, e, n, r) {
-        Vo(this, n, (n)=>{
-            Vo(this, e, (e)=>{
+        Do(this, n, (n)=>{
+            Do(this, e, (e)=>{
                 const i = this.i._malloc(t.length);
                 this.i.HEAPU8.set(t, i), this.i._addProtoToInputStream(i, t.length, e, n, r), this.i._free(i);
             });
         });
     }
     addEmptyPacketToStream(t, e) {
-        Vo(this, t, (t)=>{
+        Do(this, t, (t)=>{
             this.i._addEmptyPacketToInputStream(t, e);
         });
     }
     addBoolVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateBoolVector(t.length);
             if (!r) throw Error("Unable to allocate new bool vector on heap.");
             for (const e of t)this.i._addBoolVectorEntry(r, e);
@@ -32265,7 +32377,7 @@ const Wa = function(t) {
         });
     }
     addDoubleVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateDoubleVector(t.length);
             if (!r) throw Error("Unable to allocate new double vector on heap.");
             for (const e of t)this.i._addDoubleVectorEntry(r, e);
@@ -32273,7 +32385,7 @@ const Wa = function(t) {
         });
     }
     addFloatVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateFloatVector(t.length);
             if (!r) throw Error("Unable to allocate new float vector on heap.");
             for (const e of t)this.i._addFloatVectorEntry(r, e);
@@ -32281,7 +32393,7 @@ const Wa = function(t) {
         });
     }
     addIntVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateIntVector(t.length);
             if (!r) throw Error("Unable to allocate new int vector on heap.");
             for (const e of t)this.i._addIntVectorEntry(r, e);
@@ -32289,7 +32401,7 @@ const Wa = function(t) {
         });
     }
     addUintVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateUintVector(t.length);
             if (!r) throw Error("Unable to allocate new unsigned int vector on heap.");
             for (const e of t)this.i._addUintVectorEntry(r, e);
@@ -32297,57 +32409,57 @@ const Wa = function(t) {
         });
     }
     addStringVectorToStream(t, e, n) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const r = this.i._allocateStringVector(t.length);
             if (!r) throw Error("Unable to allocate new string vector on heap.");
-            for (const e of t)Vo(this, e, (t)=>{
+            for (const e of t)Do(this, e, (t)=>{
                 this.i._addStringVectorEntry(r, t);
             });
             this.i._addStringVectorToInputStream(r, e, n);
         });
     }
     addBoolToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addBoolToInputSidePacket(t, e);
         });
     }
     addDoubleToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addDoubleToInputSidePacket(t, e);
         });
     }
     addFloatToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addFloatToInputSidePacket(t, e);
         });
     }
     addIntToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addIntToInputSidePacket(t, e);
         });
     }
     addUintToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             this.i._addUintToInputSidePacket(t, e);
         });
     }
     addStringToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
-            Vo(this, t, (t)=>{
+        Do(this, e, (e)=>{
+            Do(this, t, (t)=>{
                 this.i._addStringToInputSidePacket(t, e);
             });
         });
     }
     addProtoToInputSidePacket(t, e, n) {
-        Vo(this, n, (n)=>{
-            Vo(this, e, (e)=>{
+        Do(this, n, (n)=>{
+            Do(this, e, (e)=>{
                 const r = this.i._malloc(t.length);
                 this.i.HEAPU8.set(t, r), this.i._addProtoToInputSidePacket(r, t.length, e, n), this.i._free(r);
             });
         });
     }
     addBoolVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateBoolVector(t.length);
             if (!n) throw Error("Unable to allocate new bool vector on heap.");
             for (const e of t)this.i._addBoolVectorEntry(n, e);
@@ -32355,7 +32467,7 @@ const Wa = function(t) {
         });
     }
     addDoubleVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateDoubleVector(t.length);
             if (!n) throw Error("Unable to allocate new double vector on heap.");
             for (const e of t)this.i._addDoubleVectorEntry(n, e);
@@ -32363,7 +32475,7 @@ const Wa = function(t) {
         });
     }
     addFloatVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateFloatVector(t.length);
             if (!n) throw Error("Unable to allocate new float vector on heap.");
             for (const e of t)this.i._addFloatVectorEntry(n, e);
@@ -32371,7 +32483,7 @@ const Wa = function(t) {
         });
     }
     addIntVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateIntVector(t.length);
             if (!n) throw Error("Unable to allocate new int vector on heap.");
             for (const e of t)this.i._addIntVectorEntry(n, e);
@@ -32379,7 +32491,7 @@ const Wa = function(t) {
         });
     }
     addUintVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateUintVector(t.length);
             if (!n) throw Error("Unable to allocate new unsigned int vector on heap.");
             for (const e of t)this.i._addUintVectorEntry(n, e);
@@ -32387,89 +32499,89 @@ const Wa = function(t) {
         });
     }
     addStringVectorToInputSidePacket(t, e) {
-        Vo(this, e, (e)=>{
+        Do(this, e, (e)=>{
             const n = this.i._allocateStringVector(t.length);
             if (!n) throw Error("Unable to allocate new string vector on heap.");
-            for (const e of t)Vo(this, e, (t)=>{
+            for (const e of t)Do(this, e, (t)=>{
                 this.i._addStringVectorEntry(n, t);
             });
             this.i._addStringVectorToInputSidePacket(n, e);
         });
     }
     attachBoolListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachBoolListener(t);
         });
     }
     attachBoolVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachBoolVectorListener(t);
         });
     }
     attachIntListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachIntListener(t);
         });
     }
     attachIntVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachIntVectorListener(t);
         });
     }
     attachUintListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachUintListener(t);
         });
     }
     attachUintVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachUintVectorListener(t);
         });
     }
     attachDoubleListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachDoubleListener(t);
         });
     }
     attachDoubleVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachDoubleVectorListener(t);
         });
     }
     attachFloatListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachFloatListener(t);
         });
     }
     attachFloatVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachFloatVectorListener(t);
         });
     }
     attachStringListener(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachStringListener(t);
         });
     }
     attachStringVectorListener(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachStringVectorListener(t);
         });
     }
     attachProtoListener(t, e, n) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
+        Go(this, t, e), Do(this, t, (t)=>{
             this.i._attachProtoListener(t, n || !1);
         });
     }
     attachProtoVectorListener(t, e, n) {
-        zo(this, t, e), Vo(this, t, (t)=>{
+        jo(this, t, e), Do(this, t, (t)=>{
             this.i._attachProtoVectorListener(t, n || !1);
         });
     }
     attachAudioListener(t, e, n) {
-        this.i._attachAudioListener || console.warn('Attempting to use attachAudioListener without support for output audio. Is build dep ":gl_graph_runner_audio_out" missing?'), Wo(this, t, (t, n)=>{
+        this.i._attachAudioListener || console.warn('Attempting to use attachAudioListener without support for output audio. Is build dep ":gl_graph_runner_audio_out" missing?'), Go(this, t, (t, n)=>{
             t = new Float32Array(t.buffer, t.byteOffset, t.length / 4), e(t, n);
-        }), Vo(this, t, (t)=>{
+        }), Do(this, t, (t)=>{
             this.i._attachAudioListener(t, n || !1);
         });
     }
@@ -32479,139 +32591,139 @@ const Wa = function(t) {
     closeGraph() {
         this.i._closeGraph(), this.i.simpleListeners = void 0, this.i.emptyPacketListeners = void 0;
     }
-}, class extends za {
-    get fa() {
+}, class extends ja {
+    get ea() {
         return this.i;
     }
-    ra(t, e, n) {
-        Vo(this, e, (e)=>{
-            const [r, i] = Xo(this, t, e);
-            this.fa._addBoundTextureAsImageToStream(e, r, i, n);
+    qa(t, e, n) {
+        Do(this, e, (e)=>{
+            const [r, i] = No(this, t, e);
+            this.ea._addBoundTextureAsImageToStream(e, r, i, n);
         });
     }
-    V(t, e) {
-        Wo(this, t, e), Vo(this, t, (t)=>{
-            this.fa._attachImageListener(t);
+    U(t, e) {
+        Go(this, t, e), Do(this, t, (t)=>{
+            this.ea._attachImageListener(t);
         });
     }
-    da(t, e) {
-        zo(this, t, e), Vo(this, t, (t)=>{
-            this.fa._attachImageVectorListener(t);
+    ca(t, e) {
+        jo(this, t, e), Do(this, t, (t)=>{
+            this.ea._attachImageVectorListener(t);
         });
     }
 }));
-var za, Ka = class extends Wa {
+var ja, Va = class extends Ga {
 };
-async function Ya(t, e, n) {
+async function Xa(t, e, n) {
     return async function(t, e, n, r) {
-        return Ko(t, e, n, r);
-    }(t, n.canvas ?? (Bo() ? void 0 : document.createElement("canvas")), e, n);
+        return Vo(t, e, n, r);
+    }(t, n.canvas ?? (Oo() ? void 0 : document.createElement("canvas")), e, n);
 }
-function $a(t, e, n, r) {
-    if (t.U) {
-        const s = new _s;
+function Ha(t, e, n, r) {
+    if (t.T) {
+        const s = new fs;
         if (n?.regionOfInterest) {
-            if (!t.qa) throw Error("This task doesn't support region-of-interest.");
+            if (!t.pa) throw Error("This task doesn't support region-of-interest.");
             var i = n.regionOfInterest;
             if (i.left >= i.right || i.top >= i.bottom) throw Error("Expected RectF with left < right and top < bottom.");
             if (i.left < 0 || i.top < 0 || i.right > 1 || i.bottom > 1) throw Error("Expected RectF values to be in [0,1].");
-            wn(s, 1, (i.left + i.right) / 2), wn(s, 2, (i.top + i.bottom) / 2), wn(s, 4, i.right - i.left), wn(s, 3, i.bottom - i.top);
-        } else wn(s, 1, .5), wn(s, 2, .5), wn(s, 4, 1), wn(s, 3, 1);
+            gn(s, 1, (i.left + i.right) / 2), gn(s, 2, (i.top + i.bottom) / 2), gn(s, 4, i.right - i.left), gn(s, 3, i.bottom - i.top);
+        } else gn(s, 1, .5), gn(s, 2, .5), gn(s, 4, 1), gn(s, 3, 1);
         if (n?.rotationDegrees) {
             if (n?.rotationDegrees % 90 != 0) throw Error("Expected rotation to be a multiple of 90\xb0.");
-            if (wn(s, 5, -Math.PI * n.rotationDegrees / 180), n?.rotationDegrees % 180 != 0) {
-                const [t, r] = jo(e);
-                n = yn(s, 3) * r / t, i = yn(s, 4) * t / r, wn(s, 4, n), wn(s, 3, i);
+            if (gn(s, 5, -Math.PI * n.rotationDegrees / 180), n?.rotationDegrees % 180 != 0) {
+                const [t, r] = Uo(e);
+                n = dn(s, 3) * r / t, i = dn(s, 4) * t / r, gn(s, 4, n), gn(s, 3, i);
             }
         }
-        t.g.addProtoToStream(s.g(), "mediapipe.NormalizedRect", t.U, r);
+        t.g.addProtoToStream(s.g(), "mediapipe.NormalizedRect", t.T, r);
     }
-    t.g.ra(e, t.ba, r ?? performance.now()), t.finishProcessing();
+    t.g.qa(e, t.aa, r ?? performance.now()), t.finishProcessing();
 }
-function qa(t, e, n) {
+function Wa(t, e, n) {
     if (t.baseOptions?.g()) throw Error("Task is not initialized with image mode. 'runningMode' must be set to 'IMAGE'.");
-    $a(t, e, n, t.B + 1);
+    Ha(t, e, n, t.B + 1);
 }
-function Ja(t, e, n, r) {
+function za(t, e, n, r) {
     if (!t.baseOptions?.g()) throw Error("Task is not initialized with video mode. 'runningMode' must be set to 'VIDEO'.");
-    $a(t, e, n, r);
+    Ha(t, e, n, r);
 }
-function Za(t, e, n, r) {
+function Ka(t, e, n, r) {
     var i = e.data;
     const s = e.width, o = s * (e = e.height);
     if ((i instanceof Uint8Array || i instanceof Float32Array) && i.length !== o) throw Error("Unsupported channel count: " + i.length / o);
-    return t = new Ta([
+    return t = new ya([
         i
-    ], n, !1, t.g.i.canvas, t.P, s, e), r ? t.clone() : t;
+    ], n, !1, t.g.i.canvas, t.O, s, e), r ? t.clone() : t;
 }
-var Qa = class extends ta {
+var Ya = class extends $o {
     constructor(t, e, n, r){
-        super(t), this.g = t, this.ba = e, this.U = n, this.qa = r, this.P = new ua;
+        super(t), this.g = t, this.aa = e, this.T = n, this.pa = r, this.O = new sa;
     }
     l(t, e = !0) {
-        if ("runningMode" in t && vn(this.baseOptions, 2, !!t.runningMode && "IMAGE" !== t.runningMode), void 0 !== t.canvas && this.g.i.canvas !== t.canvas) throw Error("You must create a new task to reset the canvas.");
+        if ("runningMode" in t && fn(this.baseOptions, 2, !!t.runningMode && "IMAGE" !== t.runningMode), void 0 !== t.canvas && this.g.i.canvas !== t.canvas) throw Error("You must create a new task to reset the canvas.");
         return super.l(t, e);
     }
     close() {
-        this.P.close(), super.close();
+        this.O.close(), super.close();
     }
 };
-Qa.prototype.close = Qa.prototype.close;
-var tc = class extends Qa {
+Ya.prototype.close = Ya.prototype.close;
+var $a = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect_in", !1), this.j = {
+        super(new Va(t, e), "image_in", "norm_rect_in", !1), this.j = {
             detections: []
-        }, un(t = this.h = new Us, 0, 1, e = new Ps), wn(this.h, 2, .5), wn(this.h, 3, .3);
+        }, sn(t = this.h = new Is, 0, 1, e = new Ls), gn(this.h, 2, .5), gn(this.h, 3, .3);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return "minDetectionConfidence" in t && wn(this.h, 2, t.minDetectionConfidence ?? .5), "minSuppressionThreshold" in t && wn(this.h, 3, t.minSuppressionThreshold ?? .3), this.l(t);
+        return "minDetectionConfidence" in t && gn(this.h, 2, t.minDetectionConfidence ?? .5), "minSuppressionThreshold" in t && gn(this.h, 3, t.minSuppressionThreshold ?? .3), this.l(t);
     }
     D(t, e) {
         return this.j = {
             detections: []
-        }, qa(this, t, e), this.j;
+        }, Wa(this, t, e), this.j;
     }
     F(t, e, n) {
         return this.j = {
             detections: []
-        }, Ja(this, t, n, e), this.j;
+        }, za(this, t, n, e), this.j;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect_in"), ts(t, "detections");
-        const e = new Vi;
-        Yn(e, Ds, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.face_detector.FaceDetectorGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect_in"), Ki(n, "DETECTIONS:detections"), n.o(e), Zi(t, n), this.g.attachProtoVectorListener("detections", (t, e)=>{
-            for (const e of t)t = ls(e), this.j.detections.push(Ro(t));
-            qo(this, e);
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect_in"), $i(t, "detections");
+        const e = new Di;
+        Xn(e, Ps, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.face_detector.FaceDetectorGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect_in"), Vi(n, "DETECTIONS:detections"), n.o(e), Ki(t, n), this.g.attachProtoVectorListener("detections", (t, e)=>{
+            for (const e of t)t = os(e), this.j.detections.push(bo(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("detections", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-tc.prototype.detectForVideo = tc.prototype.F, tc.prototype.detect = tc.prototype.D, tc.prototype.setOptions = tc.prototype.o, tc.createFromModelPath = async function(t, e) {
-    return Ya(tc, t, {
+$a.prototype.detectForVideo = $a.prototype.F, $a.prototype.detect = $a.prototype.D, $a.prototype.setOptions = $a.prototype.o, $a.createFromModelPath = async function(t, e) {
+    return Xa($a, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, tc.createFromModelBuffer = function(t, e) {
-    return Ya(tc, t, {
+}, $a.createFromModelBuffer = function(t, e) {
+    return Xa($a, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, tc.createFromOptions = function(t, e) {
-    return Ya(tc, t, e);
+}, $a.createFromOptions = function(t, e) {
+    return Xa($a, t, e);
 };
-var ec = Ha([
+var qa = Ba([
     61,
     146
 ], [
@@ -32731,7 +32843,7 @@ var ec = Ha([
 ], [
     415,
     308
-]), nc = Ha([
+]), Ja = Ba([
     263,
     249
 ], [
@@ -32779,7 +32891,7 @@ var ec = Ha([
 ], [
     398,
     362
-]), rc = Ha([
+]), Za = Ba([
     276,
     283
 ], [
@@ -32803,7 +32915,7 @@ var ec = Ha([
 ], [
     296,
     336
-]), ic = Ha([
+]), Qa = Ba([
     474,
     475
 ], [
@@ -32815,7 +32927,7 @@ var ec = Ha([
 ], [
     477,
     474
-]), sc = Ha([
+]), tc = Ba([
     33,
     7
 ], [
@@ -32863,7 +32975,7 @@ var ec = Ha([
 ], [
     173,
     133
-]), oc = Ha([
+]), ec = Ba([
     46,
     53
 ], [
@@ -32887,7 +32999,7 @@ var ec = Ha([
 ], [
     66,
     107
-]), ac = Ha([
+]), nc = Ba([
     469,
     470
 ], [
@@ -32899,7 +33011,7 @@ var ec = Ha([
 ], [
     472,
     469
-]), cc = Ha([
+]), rc = Ba([
     10,
     338
 ], [
@@ -33007,14 +33119,14 @@ var ec = Ha([
 ], [
     109,
     10
-]), hc = [
+]), ic = [
+    ...qa,
+    ...Ja,
+    ...Za,
+    ...tc,
     ...ec,
-    ...nc,
-    ...rc,
-    ...sc,
-    ...oc,
-    ...cc
-], uc = Ha([
+    ...rc
+], sc = Ba([
     127,
     34
 ], [
@@ -40683,103 +40795,103 @@ var ec = Ha([
     255,
     339
 ]);
-function lc(t) {
+function oc(t) {
     t.j = {
         faceLandmarks: [],
         faceBlendshapes: [],
         facialTransformationMatrixes: []
     };
 }
-var fc = class extends Qa {
+var ac = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !1), this.j = {
+        super(new Va(t, e), "image_in", "norm_rect", !1), this.j = {
             faceLandmarks: [],
             faceBlendshapes: [],
             facialTransformationMatrixes: []
-        }, this.outputFacialTransformationMatrixes = this.outputFaceBlendshapes = !1, un(t = this.h = new js, 0, 1, e = new Ps), this.v = new Gs, un(this.h, 0, 3, this.v), this.s = new Us, un(this.h, 0, 2, this.s), En(this.s, 4, 1), wn(this.s, 2, .5), wn(this.v, 2, .5), wn(this.h, 4, .5);
+        }, this.outputFacialTransformationMatrixes = this.outputFaceBlendshapes = !1, sn(t = this.h = new Us, 0, 1, e = new Ls), this.v = new Cs, sn(this.h, 0, 3, this.v), this.s = new Is, sn(this.h, 0, 2, this.s), pn(this.s, 4, 1), gn(this.s, 2, .5), gn(this.v, 2, .5), gn(this.h, 4, .5);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return "numFaces" in t && En(this.s, 4, t.numFaces ?? 1), "minFaceDetectionConfidence" in t && wn(this.s, 2, t.minFaceDetectionConfidence ?? .5), "minTrackingConfidence" in t && wn(this.h, 4, t.minTrackingConfidence ?? .5), "minFacePresenceConfidence" in t && wn(this.v, 2, t.minFacePresenceConfidence ?? .5), "outputFaceBlendshapes" in t && (this.outputFaceBlendshapes = !!t.outputFaceBlendshapes), "outputFacialTransformationMatrixes" in t && (this.outputFacialTransformationMatrixes = !!t.outputFacialTransformationMatrixes), this.l(t);
+        return "numFaces" in t && pn(this.s, 4, t.numFaces ?? 1), "minFaceDetectionConfidence" in t && gn(this.s, 2, t.minFaceDetectionConfidence ?? .5), "minTrackingConfidence" in t && gn(this.h, 4, t.minTrackingConfidence ?? .5), "minFacePresenceConfidence" in t && gn(this.v, 2, t.minFacePresenceConfidence ?? .5), "outputFaceBlendshapes" in t && (this.outputFaceBlendshapes = !!t.outputFaceBlendshapes), "outputFacialTransformationMatrixes" in t && (this.outputFacialTransformationMatrixes = !!t.outputFacialTransformationMatrixes), this.l(t);
     }
     D(t, e) {
-        return lc(this), qa(this, t, e), this.j;
+        return oc(this), Wa(this, t, e), this.j;
     }
     F(t, e, n) {
-        return lc(this), Ja(this, t, n, e), this.j;
+        return oc(this), za(this, t, n, e), this.j;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "face_landmarks");
-        const e = new Vi;
-        Yn(e, Hs, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.face_landmarker.FaceLandmarkerGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "NORM_LANDMARKS:face_landmarks"), n.o(e), Zi(t, n), this.g.attachProtoVectorListener("face_landmarks", (t, e)=>{
-            for (const e of t)t = gs(e), this.j.faceLandmarks.push(Fo(t));
-            qo(this, e);
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "face_landmarks");
+        const e = new Di;
+        Xn(e, Bs, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.face_landmarker.FaceLandmarkerGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "NORM_LANDMARKS:face_landmarks"), n.o(e), Ki(t, n), this.g.attachProtoVectorListener("face_landmarks", (t, e)=>{
+            for (const e of t)t = us(e), this.j.faceLandmarks.push(ko(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("face_landmarks", (t)=>{
-            qo(this, t);
-        }), this.outputFaceBlendshapes && (ts(t, "blendshapes"), Ki(n, "BLENDSHAPES:blendshapes"), this.g.attachProtoVectorListener("blendshapes", (t, e)=>{
-            if (this.outputFaceBlendshapes) for (const e of t)t = as(e), this.j.faceBlendshapes.push(Lo(t.g() ?? []));
-            qo(this, e);
+            Wo(this, t);
+        }), this.outputFaceBlendshapes && ($i(t, "blendshapes"), Vi(n, "BLENDSHAPES:blendshapes"), this.g.attachProtoVectorListener("blendshapes", (t, e)=>{
+            if (this.outputFaceBlendshapes) for (const e of t)t = ns(e), this.j.faceBlendshapes.push(Ao(t.g() ?? []));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("blendshapes", (t)=>{
-            qo(this, t);
-        })), this.outputFacialTransformationMatrixes && (ts(t, "face_geometry"), Ki(n, "FACE_GEOMETRY:face_geometry"), this.g.attachProtoVectorListener("face_geometry", (t, e)=>{
-            if (this.outputFacialTransformationMatrixes) for (const e of t)(t = an(Bs(e), ms, 2)) && this.j.facialTransformationMatrixes.push({
-                rows: gn(mn(t, 1), 0) ?? 0,
-                columns: gn(mn(t, 2), 0) ?? 0,
-                data: Ke(t, 3, Wt, ze()).slice() ?? []
+            Wo(this, t);
+        })), this.outputFacialTransformationMatrixes && ($i(t, "face_geometry"), Vi(n, "FACE_GEOMETRY:face_geometry"), this.g.attachProtoVectorListener("face_geometry", (t, e)=>{
+            if (this.outputFacialTransformationMatrixes) for (const e of t)(t = en(Os(e), ls, 2)) && this.j.facialTransformationMatrixes.push({
+                rows: un(t, 1) ?? 0 ?? 0,
+                columns: un(t, 2) ?? 0 ?? 0,
+                data: Ve(t, 3, $t, je()).slice() ?? []
             });
-            qo(this, e);
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("face_geometry", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         })), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-fc.prototype.detectForVideo = fc.prototype.F, fc.prototype.detect = fc.prototype.D, fc.prototype.setOptions = fc.prototype.o, fc.createFromModelPath = function(t, e) {
-    return Ya(fc, t, {
+ac.prototype.detectForVideo = ac.prototype.F, ac.prototype.detect = ac.prototype.D, ac.prototype.setOptions = ac.prototype.o, ac.createFromModelPath = function(t, e) {
+    return Xa(ac, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, fc.createFromModelBuffer = function(t, e) {
-    return Ya(fc, t, {
+}, ac.createFromModelBuffer = function(t, e) {
+    return Xa(ac, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, fc.createFromOptions = function(t, e) {
-    return Ya(fc, t, e);
-}, fc.FACE_LANDMARKS_LIPS = ec, fc.FACE_LANDMARKS_LEFT_EYE = nc, fc.FACE_LANDMARKS_LEFT_EYEBROW = rc, fc.FACE_LANDMARKS_LEFT_IRIS = ic, fc.FACE_LANDMARKS_RIGHT_EYE = sc, fc.FACE_LANDMARKS_RIGHT_EYEBROW = oc, fc.FACE_LANDMARKS_RIGHT_IRIS = ac, fc.FACE_LANDMARKS_FACE_OVAL = cc, fc.FACE_LANDMARKS_CONTOURS = hc, fc.FACE_LANDMARKS_TESSELATION = uc;
-var dc = class extends Qa {
+}, ac.createFromOptions = function(t, e) {
+    return Xa(ac, t, e);
+}, ac.FACE_LANDMARKS_LIPS = qa, ac.FACE_LANDMARKS_LEFT_EYE = Ja, ac.FACE_LANDMARKS_LEFT_EYEBROW = Za, ac.FACE_LANDMARKS_LEFT_IRIS = Qa, ac.FACE_LANDMARKS_RIGHT_EYE = tc, ac.FACE_LANDMARKS_RIGHT_EYEBROW = ec, ac.FACE_LANDMARKS_RIGHT_IRIS = nc, ac.FACE_LANDMARKS_FACE_OVAL = rc, ac.FACE_LANDMARKS_CONTOURS = ic, ac.FACE_LANDMARKS_TESSELATION = sc;
+var cc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !0), un(t = this.j = new Ws, 0, 1, e = new Ps);
+        super(new Va(t, e), "image_in", "norm_rect", !0), sn(t = this.j = new Gs, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.j, Ps, 1);
+        return en(this.j, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.j, 0, 1, t);
+        sn(this.j, 0, 1, t);
     }
     o(t) {
         return super.l(t);
     }
     Oa(t, e, n) {
         const r = "function" != typeof e ? e : {};
-        if (this.h = "function" == typeof e ? e : n, qa(this, t, r ?? {}), !this.h) return this.s;
+        if (this.h = "function" == typeof e ? e : n, Wa(this, t, r ?? {}), !this.h) return this.s;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "stylized_image");
-        const e = new Vi;
-        Yn(e, zs, this.j);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.face_stylizer.FaceStylizerGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "STYLIZED_IMAGE:stylized_image"), n.o(e), Zi(t, n), this.g.V("stylized_image", (t, e)=>{
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "stylized_image");
+        const e = new Di;
+        Xn(e, js, this.j);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.face_stylizer.FaceStylizerGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "STYLIZED_IMAGE:stylized_image"), n.o(e), Ki(t, n), this.g.U("stylized_image", (t, e)=>{
             var n = !this.h, r = t.data, i = t.width;
             const s = i * (t = t.height);
             if (r instanceof Uint8Array) {
@@ -40792,30 +40904,30 @@ var dc = class extends Qa {
                     r = new ImageData(new Uint8ClampedArray(r.buffer, r.byteOffset, r.length), i, t);
                 }
             } else if (!(r instanceof WebGLTexture)) throw Error(`Unsupported format: ${r.constructor.name}`);
-            i = new Va([
+            i = new Da([
                 r
-            ], !1, !1, this.g.i.canvas, this.P, i, t), this.s = n = n ? i.clone() : i, this.h && this.h(n), qo(this, e);
+            ], !1, !1, this.g.i.canvas, this.O, i, t), this.s = n = n ? i.clone() : i, this.h && this.h(n), Wo(this, e);
         }), this.g.attachEmptyPacketListener("stylized_image", (t)=>{
-            this.s = null, this.h && this.h(null), qo(this, t);
+            this.s = null, this.h && this.h(null), Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-dc.prototype.stylize = dc.prototype.Oa, dc.prototype.setOptions = dc.prototype.o, dc.createFromModelPath = function(t, e) {
-    return Ya(dc, t, {
+cc.prototype.stylize = cc.prototype.Oa, cc.prototype.setOptions = cc.prototype.o, cc.createFromModelPath = function(t, e) {
+    return Xa(cc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, dc.createFromModelBuffer = function(t, e) {
-    return Ya(dc, t, {
+}, cc.createFromModelBuffer = function(t, e) {
+    return Xa(cc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, dc.createFromOptions = function(t, e) {
-    return Ya(dc, t, e);
+}, cc.createFromOptions = function(t, e) {
+    return Xa(cc, t, e);
 };
-var pc = Ha([
+var hc = Ba([
     0,
     1
 ], [
@@ -40879,10 +40991,10 @@ var pc = Ha([
     19,
     20
 ]);
-function gc(t) {
+function uc(t) {
     t.gestures = [], t.landmarks = [], t.worldLandmarks = [], t.handedness = [];
 }
-function mc(t) {
+function lc(t) {
     return 0 === t.gestures.length ? {
         gestures: [],
         landmarks: [],
@@ -40897,92 +41009,92 @@ function mc(t) {
         handednesses: t.handedness
     };
 }
-function yc(t, e = !0) {
+function dc(t, e = !0) {
     const n = [];
     for (const i of t){
-        var r = as(i);
+        var r = ns(i);
         t = [];
-        for (const n of r.g())r = e && null != mn(n, 1) ? gn(mn(n, 1), 0) : -1, t.push({
-            score: yn(n, 2) ?? 0,
+        for (const n of r.g())r = e && null != un(n, 1) ? un(n, 1) ?? 0 : -1, t.push({
+            score: dn(n, 2) ?? 0,
             index: r,
-            categoryName: _n(n, 3) ?? "",
-            displayName: _n(n, 4) ?? ""
+            categoryName: ln(n, 3) ?? "" ?? "",
+            displayName: ln(n, 4) ?? "" ?? ""
         });
         n.push(t);
     }
     return n;
 }
-var _c = class extends Qa {
+var fc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !1), this.gestures = [], this.landmarks = [], this.worldLandmarks = [], this.handedness = [], un(t = this.j = new Qs, 0, 1, e = new Ps), this.s = new Zs, un(this.j, 0, 2, this.s), this.C = new Js, un(this.s, 0, 3, this.C), this.v = new qs, un(this.s, 0, 2, this.v), this.h = new $s, un(this.j, 0, 3, this.h), wn(this.v, 2, .5), wn(this.s, 4, .5), wn(this.C, 2, .5);
+        super(new Va(t, e), "image_in", "norm_rect", !1), this.gestures = [], this.landmarks = [], this.worldLandmarks = [], this.handedness = [], sn(t = this.j = new Ys, 0, 1, e = new Ls), this.s = new Ks, sn(this.j, 0, 2, this.s), this.C = new zs, sn(this.s, 0, 3, this.C), this.v = new Ws, sn(this.s, 0, 2, this.v), this.h = new Hs, sn(this.j, 0, 3, this.h), gn(this.v, 2, .5), gn(this.s, 4, .5), gn(this.C, 2, .5);
     }
     get baseOptions() {
-        return an(this.j, Ps, 1);
+        return en(this.j, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.j, 0, 1, t);
+        sn(this.j, 0, 1, t);
     }
     o(t) {
-        if (En(this.v, 3, t.numHands ?? 1), "minHandDetectionConfidence" in t && wn(this.v, 2, t.minHandDetectionConfidence ?? .5), "minTrackingConfidence" in t && wn(this.s, 4, t.minTrackingConfidence ?? .5), "minHandPresenceConfidence" in t && wn(this.C, 2, t.minHandPresenceConfidence ?? .5), t.cannedGesturesClassifierOptions) {
-            var e = new Ks, n = e, r = xo(t.cannedGesturesClassifierOptions, an(this.h, Ks, 3)?.h());
-            un(n, 0, 2, r), un(this.h, 0, 3, e);
-        } else void 0 === t.cannedGesturesClassifierOptions && an(this.h, Ks, 3)?.g();
-        return t.customGesturesClassifierOptions ? (un(n = e = new Ks, 0, 2, r = xo(t.customGesturesClassifierOptions, an(this.h, Ks, 4)?.h())), un(this.h, 0, 4, e)) : void 0 === t.customGesturesClassifierOptions && an(this.h, Ks, 4)?.g(), this.l(t);
+        if (pn(this.v, 3, t.numHands ?? 1), "minHandDetectionConfidence" in t && gn(this.v, 2, t.minHandDetectionConfidence ?? .5), "minTrackingConfidence" in t && gn(this.s, 4, t.minTrackingConfidence ?? .5), "minHandPresenceConfidence" in t && gn(this.C, 2, t.minHandPresenceConfidence ?? .5), t.cannedGesturesClassifierOptions) {
+            var e = new Vs, n = e, r = To(t.cannedGesturesClassifierOptions, en(this.h, Vs, 3)?.h());
+            sn(n, 0, 2, r), sn(this.h, 0, 3, e);
+        } else void 0 === t.cannedGesturesClassifierOptions && en(this.h, Vs, 3)?.g();
+        return t.customGesturesClassifierOptions ? (sn(n = e = new Vs, 0, 2, r = To(t.customGesturesClassifierOptions, en(this.h, Vs, 4)?.h())), sn(this.h, 0, 4, e)) : void 0 === t.customGesturesClassifierOptions && en(this.h, Vs, 4)?.g(), this.l(t);
     }
     Ja(t, e) {
-        return gc(this), qa(this, t, e), mc(this);
+        return uc(this), Wa(this, t, e), lc(this);
     }
     Ka(t, e, n) {
-        return gc(this), Ja(this, t, n, e), mc(this);
+        return uc(this), za(this, t, n, e), lc(this);
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "hand_gestures"), ts(t, "hand_landmarks"), ts(t, "world_hand_landmarks"), ts(t, "handedness");
-        const e = new Vi;
-        Yn(e, io, this.j);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.gesture_recognizer.GestureRecognizerGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "HAND_GESTURES:hand_gestures"), Ki(n, "LANDMARKS:hand_landmarks"), Ki(n, "WORLD_LANDMARKS:world_hand_landmarks"), Ki(n, "HANDEDNESS:handedness"), n.o(e), Zi(t, n), this.g.attachProtoVectorListener("hand_landmarks", (t, e)=>{
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "hand_gestures"), $i(t, "hand_landmarks"), $i(t, "world_hand_landmarks"), $i(t, "handedness");
+        const e = new Di;
+        Xn(e, Qs, this.j);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.gesture_recognizer.GestureRecognizerGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "HAND_GESTURES:hand_gestures"), Vi(n, "LANDMARKS:hand_landmarks"), Vi(n, "WORLD_LANDMARKS:world_hand_landmarks"), Vi(n, "HANDEDNESS:handedness"), n.o(e), Ki(t, n), this.g.attachProtoVectorListener("hand_landmarks", (t, e)=>{
             for (const e of t){
-                t = gs(e);
+                t = us(e);
                 const n = [];
-                for (const e of hn(t, ps, 1))n.push({
-                    x: yn(e, 1) ?? 0,
-                    y: yn(e, 2) ?? 0,
-                    z: yn(e, 3) ?? 0,
-                    visibility: yn(e, 4) ?? 0
+                for (const e of rn(t, hs, 1))n.push({
+                    x: dn(e, 1) ?? 0,
+                    y: dn(e, 2) ?? 0,
+                    z: dn(e, 3) ?? 0,
+                    visibility: dn(e, 4) ?? 0
                 });
                 this.landmarks.push(n);
             }
-            qo(this, e);
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoVectorListener("world_hand_landmarks", (t, e)=>{
             for (const e of t){
-                t = ds(e);
+                t = cs(e);
                 const n = [];
-                for (const e of hn(t, fs, 1))n.push({
-                    x: yn(e, 1) ?? 0,
-                    y: yn(e, 2) ?? 0,
-                    z: yn(e, 3) ?? 0,
-                    visibility: yn(e, 4) ?? 0
+                for (const e of rn(t, as, 1))n.push({
+                    x: dn(e, 1) ?? 0,
+                    y: dn(e, 2) ?? 0,
+                    z: dn(e, 3) ?? 0,
+                    visibility: dn(e, 4) ?? 0
                 });
                 this.worldLandmarks.push(n);
             }
-            qo(this, e);
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("world_hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoVectorListener("hand_gestures", (t, e)=>{
-            this.gestures.push(...yc(t, !1)), qo(this, e);
+            this.gestures.push(...dc(t, !1)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("hand_gestures", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoVectorListener("handedness", (t, e)=>{
-            this.handedness.push(...yc(t)), qo(this, e);
+            this.handedness.push(...dc(t)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("handedness", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-function vc(t) {
+function pc(t) {
     return {
         landmarks: t.landmarks,
         worldLandmarks: t.worldLandmarks,
@@ -40990,92 +41102,92 @@ function vc(t) {
         handedness: t.handedness
     };
 }
-_c.prototype.recognizeForVideo = _c.prototype.Ka, _c.prototype.recognize = _c.prototype.Ja, _c.prototype.setOptions = _c.prototype.o, _c.createFromModelPath = function(t, e) {
-    return Ya(_c, t, {
+fc.prototype.recognizeForVideo = fc.prototype.Ka, fc.prototype.recognize = fc.prototype.Ja, fc.prototype.setOptions = fc.prototype.o, fc.createFromModelPath = function(t, e) {
+    return Xa(fc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, _c.createFromModelBuffer = function(t, e) {
-    return Ya(_c, t, {
+}, fc.createFromModelBuffer = function(t, e) {
+    return Xa(fc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, _c.createFromOptions = function(t, e) {
-    return Ya(_c, t, e);
-}, _c.HAND_CONNECTIONS = pc;
-var Ec = class extends Qa {
+}, fc.createFromOptions = function(t, e) {
+    return Xa(fc, t, e);
+}, fc.HAND_CONNECTIONS = hc;
+var gc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !1), this.landmarks = [], this.worldLandmarks = [], this.handedness = [], un(t = this.h = new Zs, 0, 1, e = new Ps), this.s = new Js, un(this.h, 0, 3, this.s), this.j = new qs, un(this.h, 0, 2, this.j), En(this.j, 3, 1), wn(this.j, 2, .5), wn(this.s, 2, .5), wn(this.h, 4, .5);
+        super(new Va(t, e), "image_in", "norm_rect", !1), this.landmarks = [], this.worldLandmarks = [], this.handedness = [], sn(t = this.h = new Ks, 0, 1, e = new Ls), this.s = new zs, sn(this.h, 0, 3, this.s), this.j = new Ws, sn(this.h, 0, 2, this.j), pn(this.j, 3, 1), gn(this.j, 2, .5), gn(this.s, 2, .5), gn(this.h, 4, .5);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return "numHands" in t && En(this.j, 3, t.numHands ?? 1), "minHandDetectionConfidence" in t && wn(this.j, 2, t.minHandDetectionConfidence ?? .5), "minTrackingConfidence" in t && wn(this.h, 4, t.minTrackingConfidence ?? .5), "minHandPresenceConfidence" in t && wn(this.s, 2, t.minHandPresenceConfidence ?? .5), this.l(t);
+        return "numHands" in t && pn(this.j, 3, t.numHands ?? 1), "minHandDetectionConfidence" in t && gn(this.j, 2, t.minHandDetectionConfidence ?? .5), "minTrackingConfidence" in t && gn(this.h, 4, t.minTrackingConfidence ?? .5), "minHandPresenceConfidence" in t && gn(this.s, 2, t.minHandPresenceConfidence ?? .5), this.l(t);
     }
     D(t, e) {
-        return this.landmarks = [], this.worldLandmarks = [], this.handedness = [], qa(this, t, e), vc(this);
+        return this.landmarks = [], this.worldLandmarks = [], this.handedness = [], Wa(this, t, e), pc(this);
     }
     F(t, e, n) {
-        return this.landmarks = [], this.worldLandmarks = [], this.handedness = [], Ja(this, t, n, e), vc(this);
+        return this.landmarks = [], this.worldLandmarks = [], this.handedness = [], za(this, t, n, e), pc(this);
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "hand_landmarks"), ts(t, "world_hand_landmarks"), ts(t, "handedness");
-        const e = new Vi;
-        Yn(e, so, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.hand_landmarker.HandLandmarkerGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "LANDMARKS:hand_landmarks"), Ki(n, "WORLD_LANDMARKS:world_hand_landmarks"), Ki(n, "HANDEDNESS:handedness"), n.o(e), Zi(t, n), this.g.attachProtoVectorListener("hand_landmarks", (t, e)=>{
-            for (const e of t)t = gs(e), this.landmarks.push(Fo(t));
-            qo(this, e);
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "hand_landmarks"), $i(t, "world_hand_landmarks"), $i(t, "handedness");
+        const e = new Di;
+        Xn(e, to, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.hand_landmarker.HandLandmarkerGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "LANDMARKS:hand_landmarks"), Vi(n, "WORLD_LANDMARKS:world_hand_landmarks"), Vi(n, "HANDEDNESS:handedness"), n.o(e), Ki(t, n), this.g.attachProtoVectorListener("hand_landmarks", (t, e)=>{
+            for (const e of t)t = us(e), this.landmarks.push(ko(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoVectorListener("world_hand_landmarks", (t, e)=>{
-            for (const e of t)t = ds(e), this.worldLandmarks.push(Io(t));
-            qo(this, e);
+            for (const e of t)t = cs(e), this.worldLandmarks.push(So(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("world_hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoVectorListener("handedness", (t, e)=>{
             var n = this.handedness, r = n.push;
             const i = [];
             for (const e of t){
-                t = as(e);
+                t = ns(e);
                 const n = [];
                 for (const e of t.g())n.push({
-                    score: yn(e, 2) ?? 0,
-                    index: gn(mn(e, 1), 0) ?? -1,
-                    categoryName: _n(e, 3) ?? "",
-                    displayName: _n(e, 4) ?? ""
+                    score: dn(e, 2) ?? 0,
+                    index: un(e, 1) ?? 0 ?? -1,
+                    categoryName: ln(e, 3) ?? "" ?? "",
+                    displayName: ln(e, 4) ?? "" ?? ""
                 });
                 i.push(n);
             }
-            r.call(n, ...i), qo(this, e);
+            r.call(n, ...i), Wo(this, e);
         }), this.g.attachEmptyPacketListener("handedness", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-Ec.prototype.detectForVideo = Ec.prototype.F, Ec.prototype.detect = Ec.prototype.D, Ec.prototype.setOptions = Ec.prototype.o, Ec.createFromModelPath = function(t, e) {
-    return Ya(Ec, t, {
+gc.prototype.detectForVideo = gc.prototype.F, gc.prototype.detect = gc.prototype.D, gc.prototype.setOptions = gc.prototype.o, gc.createFromModelPath = function(t, e) {
+    return Xa(gc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, Ec.createFromModelBuffer = function(t, e) {
-    return Ya(Ec, t, {
+}, gc.createFromModelBuffer = function(t, e) {
+    return Xa(gc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, Ec.createFromOptions = function(t, e) {
-    return Ya(Ec, t, e);
-}, Ec.HAND_CONNECTIONS = pc;
-var wc = Ha([
+}, gc.createFromOptions = function(t, e) {
+    return Xa(gc, t, e);
+}, gc.HAND_CONNECTIONS = hc;
+var mc = Ba([
     0,
     1
 ], [
@@ -41181,7 +41293,7 @@ var wc = Ha([
     28,
     32
 ]);
-function Tc(t) {
+function yc(t) {
     t.h = {
         faceLandmarks: [],
         faceBlendshapes: [],
@@ -41194,20 +41306,20 @@ function Tc(t) {
         rightHandWorldLandmarks: []
     };
 }
-function bc(t) {
+function _c(t) {
     try {
         if (!t.C) return t.h;
         t.C(t.h);
     } finally{
-        Qo(t);
+        Yo(t);
     }
 }
-function Ac(t, e) {
-    t = gs(t), e.push(Fo(t));
+function vc(t, e) {
+    t = us(t), e.push(ko(t));
 }
-var kc = class extends Qa {
+var Ec = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "input_frames_image", null, !1), this.h = {
+        super(new Va(t, e), "input_frames_image", null, !1), this.h = {
             faceLandmarks: [],
             faceBlendshapes: [],
             poseLandmarks: [],
@@ -41217,231 +41329,231 @@ var kc = class extends Qa {
             leftHandWorldLandmarks: [],
             rightHandLandmarks: [],
             rightHandWorldLandmarks: []
-        }, this.outputPoseSegmentationMasks = this.outputFaceBlendshapes = !1, un(t = this.j = new ho, 0, 1, e = new Ps), this.K = new Js, un(this.j, 0, 2, this.K), this.aa = new oo, un(this.j, 0, 3, this.aa), this.s = new Us, un(this.j, 0, 4, this.s), this.I = new Gs, un(this.j, 0, 5, this.I), this.v = new ao, un(this.j, 0, 6, this.v), this.L = new co, un(this.j, 0, 7, this.L), wn(this.s, 2, .5), wn(this.s, 3, .3), wn(this.I, 2, .5), wn(this.v, 2, .5), wn(this.v, 3, .3), wn(this.L, 2, .5), wn(this.K, 2, .5);
+        }, this.outputPoseSegmentationMasks = this.outputFaceBlendshapes = !1, sn(t = this.j = new io, 0, 1, e = new Ls), this.J = new zs, sn(this.j, 0, 2, this.J), this.Z = new eo, sn(this.j, 0, 3, this.Z), this.s = new Is, sn(this.j, 0, 4, this.s), this.H = new Cs, sn(this.j, 0, 5, this.H), this.v = new no, sn(this.j, 0, 6, this.v), this.K = new ro, sn(this.j, 0, 7, this.K), gn(this.s, 2, .5), gn(this.s, 3, .3), gn(this.H, 2, .5), gn(this.v, 2, .5), gn(this.v, 3, .3), gn(this.K, 2, .5), gn(this.J, 2, .5);
     }
     get baseOptions() {
-        return an(this.j, Ps, 1);
+        return en(this.j, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.j, 0, 1, t);
+        sn(this.j, 0, 1, t);
     }
     o(t) {
-        return "minFaceDetectionConfidence" in t && wn(this.s, 2, t.minFaceDetectionConfidence ?? .5), "minFaceSuppressionThreshold" in t && wn(this.s, 3, t.minFaceSuppressionThreshold ?? .3), "minFacePresenceConfidence" in t && wn(this.I, 2, t.minFacePresenceConfidence ?? .5), "outputFaceBlendshapes" in t && (this.outputFaceBlendshapes = !!t.outputFaceBlendshapes), "minPoseDetectionConfidence" in t && wn(this.v, 2, t.minPoseDetectionConfidence ?? .5), "minPoseSuppressionThreshold" in t && wn(this.v, 3, t.minPoseSuppressionThreshold ?? .3), "minPosePresenceConfidence" in t && wn(this.L, 2, t.minPosePresenceConfidence ?? .5), "outputPoseSegmentationMasks" in t && (this.outputPoseSegmentationMasks = !!t.outputPoseSegmentationMasks), "minHandLandmarksConfidence" in t && wn(this.K, 2, t.minHandLandmarksConfidence ?? .5), this.l(t);
+        return "minFaceDetectionConfidence" in t && gn(this.s, 2, t.minFaceDetectionConfidence ?? .5), "minFaceSuppressionThreshold" in t && gn(this.s, 3, t.minFaceSuppressionThreshold ?? .3), "minFacePresenceConfidence" in t && gn(this.H, 2, t.minFacePresenceConfidence ?? .5), "outputFaceBlendshapes" in t && (this.outputFaceBlendshapes = !!t.outputFaceBlendshapes), "minPoseDetectionConfidence" in t && gn(this.v, 2, t.minPoseDetectionConfidence ?? .5), "minPoseSuppressionThreshold" in t && gn(this.v, 3, t.minPoseSuppressionThreshold ?? .3), "minPosePresenceConfidence" in t && gn(this.K, 2, t.minPosePresenceConfidence ?? .5), "outputPoseSegmentationMasks" in t && (this.outputPoseSegmentationMasks = !!t.outputPoseSegmentationMasks), "minHandLandmarksConfidence" in t && gn(this.J, 2, t.minHandLandmarksConfidence ?? .5), this.l(t);
     }
     D(t, e, n) {
         const r = "function" != typeof e ? e : {};
-        return this.C = "function" == typeof e ? e : n, Tc(this), qa(this, t, r), bc(this);
+        return this.C = "function" == typeof e ? e : n, yc(this), Wa(this, t, r), _c(this);
     }
     F(t, e, n, r) {
         const i = "function" != typeof n ? n : {};
-        return this.C = "function" == typeof n ? n : r, Tc(this), Ja(this, t, i, e), bc(this);
+        return this.C = "function" == typeof n ? n : r, yc(this), za(this, t, i, e), _c(this);
     }
     m() {
-        var t = new es;
-        Qi(t, "input_frames_image"), ts(t, "pose_landmarks"), ts(t, "pose_world_landmarks"), ts(t, "face_landmarks"), ts(t, "left_hand_landmarks"), ts(t, "left_hand_world_landmarks"), ts(t, "right_hand_landmarks"), ts(t, "right_hand_world_landmarks");
-        const e = new Vi, n = new Ri;
-        Ze(n, 1, re("type.googleapis.com/mediapipe.tasks.vision.holistic_landmarker.proto.HolisticLandmarkerGraphOptions"), ""), function(t, e) {
+        var t = new qi;
+        Yi(t, "input_frames_image"), $i(t, "pose_landmarks"), $i(t, "pose_world_landmarks"), $i(t, "face_landmarks"), $i(t, "left_hand_landmarks"), $i(t, "left_hand_world_landmarks"), $i(t, "right_hand_landmarks"), $i(t, "right_hand_world_landmarks");
+        const e = new Di, n = new bi;
+        Ke(n, 1, ae("type.googleapis.com/mediapipe.tasks.vision.holistic_landmarker.proto.HolisticLandmarkerGraphOptions"), ""), function(t, e) {
             if (null != e) {
-                if (Array.isArray(e)) Ve(t, 2, Me(e, Oe, void 0, void 0, !1));
+                if (Array.isArray(e)) De(t, 2, Re(e));
                 else {
-                    if (!("string" == typeof e || e instanceof B || C(e))) throw Error("invalid value in Any.value field: " + e + " expected a ByteString, a base64 encoded string, a Uint8Array or a jspb array");
-                    Ze(t, 2, dt(e, !1), N());
+                    if (!("string" == typeof e || e instanceof N || O(e))) throw Error("invalid value in Any.value field: " + e + " expected a ByteString, a base64 encoded string, a Uint8Array or a jspb array");
+                    Ke(t, 2, ft(e, !1), U());
                 }
             }
         }(n, this.j.g());
-        const r = new Yi;
-        Wi(r, "mediapipe.tasks.vision.holistic_landmarker.HolisticLandmarkerGraph"), pn(r, 8, Ri, n), zi(r, "IMAGE:input_frames_image"), Ki(r, "POSE_LANDMARKS:pose_landmarks"), Ki(r, "POSE_WORLD_LANDMARKS:pose_world_landmarks"), Ki(r, "FACE_LANDMARKS:face_landmarks"), Ki(r, "LEFT_HAND_LANDMARKS:left_hand_landmarks"), Ki(r, "LEFT_HAND_WORLD_LANDMARKS:left_hand_world_landmarks"), Ki(r, "RIGHT_HAND_LANDMARKS:right_hand_landmarks"), Ki(r, "RIGHT_HAND_WORLD_LANDMARKS:right_hand_world_landmarks"), r.o(e), Zi(t, r), Jo(this, t), this.g.attachProtoListener("pose_landmarks", (t, e)=>{
-            Ac(t, this.h.poseLandmarks), qo(this, e);
+        const r = new Xi;
+        Gi(r, "mediapipe.tasks.vision.holistic_landmarker.HolisticLandmarkerGraph"), hn(r, 8, bi, n), ji(r, "IMAGE:input_frames_image"), Vi(r, "POSE_LANDMARKS:pose_landmarks"), Vi(r, "POSE_WORLD_LANDMARKS:pose_world_landmarks"), Vi(r, "FACE_LANDMARKS:face_landmarks"), Vi(r, "LEFT_HAND_LANDMARKS:left_hand_landmarks"), Vi(r, "LEFT_HAND_WORLD_LANDMARKS:left_hand_world_landmarks"), Vi(r, "RIGHT_HAND_LANDMARKS:right_hand_landmarks"), Vi(r, "RIGHT_HAND_WORLD_LANDMARKS:right_hand_world_landmarks"), r.o(e), Ki(t, r), zo(this, t), this.g.attachProtoListener("pose_landmarks", (t, e)=>{
+            vc(t, this.h.poseLandmarks), Wo(this, e);
         }), this.g.attachEmptyPacketListener("pose_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoListener("pose_world_landmarks", (t, e)=>{
             var n = this.h.poseWorldLandmarks;
-            t = ds(t), n.push(Io(t)), qo(this, e);
+            t = cs(t), n.push(So(t)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("pose_world_landmarks", (t)=>{
-            qo(this, t);
-        }), this.outputPoseSegmentationMasks && (Ki(r, "POSE_SEGMENTATION_MASK:pose_segmentation_mask"), Zo(this, "pose_segmentation_mask"), this.g.V("pose_segmentation_mask", (t, e)=>{
+            Wo(this, t);
+        }), this.outputPoseSegmentationMasks && (Vi(r, "POSE_SEGMENTATION_MASK:pose_segmentation_mask"), Ko(this, "pose_segmentation_mask"), this.g.U("pose_segmentation_mask", (t, e)=>{
             this.h.poseSegmentationMasks = [
-                Za(this, t, !0, !this.C)
-            ], qo(this, e);
+                Ka(this, t, !0, !this.C)
+            ], Wo(this, e);
         }), this.g.attachEmptyPacketListener("pose_segmentation_mask", (t)=>{
-            this.h.poseSegmentationMasks = [], qo(this, t);
+            this.h.poseSegmentationMasks = [], Wo(this, t);
         })), this.g.attachProtoListener("face_landmarks", (t, e)=>{
-            Ac(t, this.h.faceLandmarks), qo(this, e);
+            vc(t, this.h.faceLandmarks), Wo(this, e);
         }), this.g.attachEmptyPacketListener("face_landmarks", (t)=>{
-            qo(this, t);
-        }), this.outputFaceBlendshapes && (ts(t, "extra_blendshapes"), Ki(r, "FACE_BLENDSHAPES:extra_blendshapes"), this.g.attachProtoListener("extra_blendshapes", (t, e)=>{
+            Wo(this, t);
+        }), this.outputFaceBlendshapes && ($i(t, "extra_blendshapes"), Vi(r, "FACE_BLENDSHAPES:extra_blendshapes"), this.g.attachProtoListener("extra_blendshapes", (t, e)=>{
             var n = this.h.faceBlendshapes;
-            this.outputFaceBlendshapes && (t = as(t), n.push(Lo(t.g() ?? []))), qo(this, e);
+            this.outputFaceBlendshapes && (t = ns(t), n.push(Ao(t.g() ?? []))), Wo(this, e);
         }), this.g.attachEmptyPacketListener("extra_blendshapes", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         })), this.g.attachProtoListener("left_hand_landmarks", (t, e)=>{
-            Ac(t, this.h.leftHandLandmarks), qo(this, e);
+            vc(t, this.h.leftHandLandmarks), Wo(this, e);
         }), this.g.attachEmptyPacketListener("left_hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoListener("left_hand_world_landmarks", (t, e)=>{
             var n = this.h.leftHandWorldLandmarks;
-            t = ds(t), n.push(Io(t)), qo(this, e);
+            t = cs(t), n.push(So(t)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("left_hand_world_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoListener("right_hand_landmarks", (t, e)=>{
-            Ac(t, this.h.rightHandLandmarks), qo(this, e);
+            vc(t, this.h.rightHandLandmarks), Wo(this, e);
         }), this.g.attachEmptyPacketListener("right_hand_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), this.g.attachProtoListener("right_hand_world_landmarks", (t, e)=>{
             var n = this.h.rightHandWorldLandmarks;
-            t = ds(t), n.push(Io(t)), qo(this, e);
+            t = cs(t), n.push(So(t)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("right_hand_world_landmarks", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-kc.prototype.detectForVideo = kc.prototype.F, kc.prototype.detect = kc.prototype.D, kc.prototype.setOptions = kc.prototype.o, kc.createFromModelPath = function(t, e) {
-    return Ya(kc, t, {
+Ec.prototype.detectForVideo = Ec.prototype.F, Ec.prototype.detect = Ec.prototype.D, Ec.prototype.setOptions = Ec.prototype.o, Ec.createFromModelPath = function(t, e) {
+    return Xa(Ec, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, kc.createFromModelBuffer = function(t, e) {
-    return Ya(kc, t, {
+}, Ec.createFromModelBuffer = function(t, e) {
+    return Xa(Ec, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, kc.createFromOptions = function(t, e) {
-    return Ya(kc, t, e);
-}, kc.HAND_CONNECTIONS = pc, kc.POSE_CONNECTIONS = wc, kc.FACE_LANDMARKS_LIPS = ec, kc.FACE_LANDMARKS_LEFT_EYE = nc, kc.FACE_LANDMARKS_LEFT_EYEBROW = rc, kc.FACE_LANDMARKS_LEFT_IRIS = ic, kc.FACE_LANDMARKS_RIGHT_EYE = sc, kc.FACE_LANDMARKS_RIGHT_EYEBROW = oc, kc.FACE_LANDMARKS_RIGHT_IRIS = ac, kc.FACE_LANDMARKS_FACE_OVAL = cc, kc.FACE_LANDMARKS_CONTOURS = hc, kc.FACE_LANDMARKS_TESSELATION = uc;
-var Sc = class extends Qa {
+}, Ec.createFromOptions = function(t, e) {
+    return Xa(Ec, t, e);
+}, Ec.HAND_CONNECTIONS = hc, Ec.POSE_CONNECTIONS = mc, Ec.FACE_LANDMARKS_LIPS = qa, Ec.FACE_LANDMARKS_LEFT_EYE = Ja, Ec.FACE_LANDMARKS_LEFT_EYEBROW = Za, Ec.FACE_LANDMARKS_LEFT_IRIS = Qa, Ec.FACE_LANDMARKS_RIGHT_EYE = tc, Ec.FACE_LANDMARKS_RIGHT_EYEBROW = ec, Ec.FACE_LANDMARKS_RIGHT_IRIS = nc, Ec.FACE_LANDMARKS_FACE_OVAL = rc, Ec.FACE_LANDMARKS_CONTOURS = ic, Ec.FACE_LANDMARKS_TESSELATION = sc;
+var wc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "input_image", "norm_rect", !0), this.j = {
+        super(new Va(t, e), "input_image", "norm_rect", !0), this.j = {
             classifications: []
-        }, un(t = this.h = new fo, 0, 1, e = new Ps);
+        }, sn(t = this.h = new ao, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return un(this.h, 0, 2, xo(t, an(this.h, Ss, 2))), this.l(t);
+        return sn(this.h, 0, 2, To(t, en(this.h, ws, 2))), this.l(t);
     }
-    ta(t, e) {
+    sa(t, e) {
         return this.j = {
             classifications: []
-        }, qa(this, t, e), this.j;
+        }, Wa(this, t, e), this.j;
     }
-    ua(t, e, n) {
+    ta(t, e, n) {
         return this.j = {
             classifications: []
-        }, Ja(this, t, n, e), this.j;
+        }, za(this, t, n, e), this.j;
     }
     m() {
-        var t = new es;
-        Qi(t, "input_image"), Qi(t, "norm_rect"), ts(t, "classifications");
-        const e = new Vi;
-        Yn(e, po, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.image_classifier.ImageClassifierGraph"), zi(n, "IMAGE:input_image"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "CLASSIFICATIONS:classifications"), n.o(e), Zi(t, n), this.g.attachProtoListener("classifications", (t, e)=>{
+        var t = new qi;
+        Yi(t, "input_image"), Yi(t, "norm_rect"), $i(t, "classifications");
+        const e = new Di;
+        Xn(e, co, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.image_classifier.ImageClassifierGraph"), ji(n, "IMAGE:input_image"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "CLASSIFICATIONS:classifications"), n.o(e), Ki(t, n), this.g.attachProtoListener("classifications", (t, e)=>{
             this.j = function(t) {
                 const e = {
-                    classifications: hn(t, vs, 1).map((t)=>Lo(an(t, ss, 4)?.g() ?? [], gn(mn(t, 2), 0), _n(t, 3)))
+                    classifications: rn(t, ps, 1).map((t)=>Ao(en(t, ts, 4)?.g() ?? [], un(t, 2) ?? 0, ln(t, 3) ?? ""))
                 };
-                return null != te(Be(t, 2)) && (e.timestampMs = gn(te(Be(t, 2)), 0)), e;
-            }(Es(t)), qo(this, e);
+                return null != ie(Ce(t, 2)) && (e.timestampMs = ie(Ce(t, 2)) ?? 0), e;
+            }(gs(t)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("classifications", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-Sc.prototype.classifyForVideo = Sc.prototype.ua, Sc.prototype.classify = Sc.prototype.ta, Sc.prototype.setOptions = Sc.prototype.o, Sc.createFromModelPath = function(t, e) {
-    return Ya(Sc, t, {
+wc.prototype.classifyForVideo = wc.prototype.ta, wc.prototype.classify = wc.prototype.sa, wc.prototype.setOptions = wc.prototype.o, wc.createFromModelPath = function(t, e) {
+    return Xa(wc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, Sc.createFromModelBuffer = function(t, e) {
-    return Ya(Sc, t, {
+}, wc.createFromModelBuffer = function(t, e) {
+    return Xa(wc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, Sc.createFromOptions = function(t, e) {
-    return Ya(Sc, t, e);
+}, wc.createFromOptions = function(t, e) {
+    return Xa(wc, t, e);
 };
-var xc = class extends Qa {
+var Tc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !0), this.h = new go, this.embeddings = {
+        super(new Va(t, e), "image_in", "norm_rect", !0), this.h = new ho, this.embeddings = {
             embeddings: []
-        }, un(t = this.h, 0, 1, e = new Ps);
+        }, sn(t = this.h, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        var e = this.h, n = an(this.h, Ls, 2);
-        return n = n ? n.clone() : new Ls, void 0 !== t.l2Normalize ? vn(n, 1, t.l2Normalize) : "l2Normalize" in t && Ve(n, 1), void 0 !== t.quantize ? vn(n, 2, t.quantize) : "quantize" in t && Ve(n, 2), un(e, 0, 2, n), this.l(t);
+        var e = this.h, n = en(this.h, As, 2);
+        return n = n ? n.clone() : new As, void 0 !== t.l2Normalize ? fn(n, 1, t.l2Normalize) : "l2Normalize" in t && De(n, 1), void 0 !== t.quantize ? fn(n, 2, t.quantize) : "quantize" in t && De(n, 2), sn(e, 0, 2, n), this.l(t);
     }
-    Aa(t, e) {
-        return qa(this, t, e), this.embeddings;
+    za(t, e) {
+        return Wa(this, t, e), this.embeddings;
     }
-    Ba(t, e, n) {
-        return Ja(this, t, n, e), this.embeddings;
+    Aa(t, e, n) {
+        return za(this, t, n, e), this.embeddings;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "embeddings_out");
-        const e = new Vi;
-        Yn(e, mo, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.image_embedder.ImageEmbedderGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "EMBEDDINGS:embeddings_out"), n.o(e), Zi(t, n), this.g.attachProtoListener("embeddings_out", (t, e)=>{
-            t = ks(t), this.embeddings = function(t) {
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "embeddings_out");
+        const e = new Di;
+        Xn(e, uo, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.image_embedder.ImageEmbedderGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "EMBEDDINGS:embeddings_out"), n.o(e), Ki(t, n), this.g.attachProtoListener("embeddings_out", (t, e)=>{
+            t = Es(t), this.embeddings = function(t) {
                 return {
-                    embeddings: hn(t, bs, 1).map((t)=>{
+                    embeddings: rn(t, _s, 1).map((t)=>{
                         const e = {
-                            headIndex: gn(mn(t, 3), 0) ?? -1,
-                            headName: _n(t, 4) ?? ""
+                            headIndex: un(t, 3) ?? 0 ?? -1,
+                            headName: ln(t, 4) ?? "" ?? ""
                         };
-                        if (void 0 !== on(t, ws, tn(t, 1))) t = Ke(t = an(t, ws, tn(t, 1)), 1, Wt, ze()), e.floatEmbedding = t.slice();
+                        if (void 0 !== tn(t, ms, $e(t, 1))) t = Ve(t = en(t, ms, $e(t, 1)), 1, $t, je()), e.floatEmbedding = t.slice();
                         else {
                             const n = new Uint8Array(0);
-                            e.quantizedEmbedding = an(t, Ts, tn(t, 2))?.pa()?.h() ?? n;
+                            e.quantizedEmbedding = en(t, ys, $e(t, 2))?.oa()?.h() ?? n;
                         }
                         return e;
                     }),
-                    timestampMs: gn(te(Be(t, 2)), 0)
+                    timestampMs: ie(Ce(t, 2)) ?? 0
                 };
-            }(t), qo(this, e);
+            }(t), Wo(this, e);
         }), this.g.attachEmptyPacketListener("embeddings_out", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-xc.cosineSimilarity = function(t, e) {
-    if (t.floatEmbedding && e.floatEmbedding) t = Po(t.floatEmbedding, e.floatEmbedding);
+Tc.cosineSimilarity = function(t, e) {
+    if (t.floatEmbedding && e.floatEmbedding) t = Lo(t.floatEmbedding, e.floatEmbedding);
     else {
         if (!t.quantizedEmbedding || !e.quantizedEmbedding) throw Error("Cannot compute cosine similarity between quantized and float embeddings.");
-        t = Po(Mo(t.quantizedEmbedding), Mo(e.quantizedEmbedding));
+        t = Lo(xo(t.quantizedEmbedding), xo(e.quantizedEmbedding));
     }
     return t;
-}, xc.prototype.embedForVideo = xc.prototype.Ba, xc.prototype.embed = xc.prototype.Aa, xc.prototype.setOptions = xc.prototype.o, xc.createFromModelPath = function(t, e) {
-    return Ya(xc, t, {
+}, Tc.prototype.embedForVideo = Tc.prototype.Aa, Tc.prototype.embed = Tc.prototype.za, Tc.prototype.setOptions = Tc.prototype.o, Tc.createFromModelPath = function(t, e) {
+    return Xa(Tc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, xc.createFromModelBuffer = function(t, e) {
-    return Ya(xc, t, {
+}, Tc.createFromModelBuffer = function(t, e) {
+    return Xa(Tc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, xc.createFromOptions = function(t, e) {
-    return Ya(xc, t, e);
+}, Tc.createFromOptions = function(t, e) {
+    return Xa(Tc, t, e);
 };
-var Lc = class {
+var Ac = class {
     constructor(t, e, n){
         this.confidenceMasks = t, this.categoryMask = e, this.qualityScores = n;
     }
@@ -41451,89 +41563,89 @@ var Lc = class {
         }), this.categoryMask?.close();
     }
 };
-function Rc(t) {
+function bc(t) {
     t.categoryMask = void 0, t.confidenceMasks = void 0, t.qualityScores = void 0;
 }
-function Fc(t) {
+function kc(t) {
     try {
-        const e = new Lc(t.confidenceMasks, t.categoryMask, t.qualityScores);
+        const e = new Ac(t.confidenceMasks, t.categoryMask, t.qualityScores);
         if (!t.j) return e;
         t.j(e);
     } finally{
-        Qo(t);
+        Yo(t);
     }
 }
-Lc.prototype.close = Lc.prototype.close;
-var Ic = class extends Qa {
+Ac.prototype.close = Ac.prototype.close;
+var Sc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !1), this.s = [], this.outputCategoryMask = !1, this.outputConfidenceMasks = !0, this.h = new wo, this.v = new yo, un(this.h, 0, 3, this.v), un(t = this.h, 0, 1, e = new Ps);
+        super(new Va(t, e), "image_in", "norm_rect", !1), this.s = [], this.outputCategoryMask = !1, this.outputConfidenceMasks = !0, this.h = new mo, this.v = new lo, sn(this.h, 0, 3, this.v), sn(t = this.h, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return void 0 !== t.displayNamesLocale ? Ve(this.h, 2, re(t.displayNamesLocale)) : "displayNamesLocale" in t && Ve(this.h, 2), "outputCategoryMask" in t && (this.outputCategoryMask = t.outputCategoryMask ?? !1), "outputConfidenceMasks" in t && (this.outputConfidenceMasks = t.outputConfidenceMasks ?? !0), super.l(t);
+        return void 0 !== t.displayNamesLocale ? De(this.h, 2, ae(t.displayNamesLocale)) : "displayNamesLocale" in t && De(this.h, 2), "outputCategoryMask" in t && (this.outputCategoryMask = t.outputCategoryMask ?? !1), "outputConfidenceMasks" in t && (this.outputConfidenceMasks = t.outputConfidenceMasks ?? !0), super.l(t);
     }
-    J() {
+    I() {
         !function(t) {
-            const e = hn(t.ea(), Yi, 1).filter((t)=>_n(t, 1).includes("mediapipe.tasks.TensorsToSegmentationCalculator"));
+            const e = rn(t.da(), Xi, 1).filter((t)=>(ln(t, 1) ?? "").includes("mediapipe.tasks.TensorsToSegmentationCalculator"));
             if (t.s = [], e.length > 1) throw Error("The graph has more than one mediapipe.tasks.TensorsToSegmentationCalculator.");
-            1 === e.length && (an(e[0], Vi, 7)?.l()?.g() ?? new Map).forEach((e, n)=>{
-                t.s[Number(n)] = _n(e, 1);
+            1 === e.length && (en(e[0], Di, 7)?.l()?.g() ?? new Map).forEach((e, n)=>{
+                t.s[Number(n)] = ln(e, 1) ?? "";
             });
         }(this);
     }
     segment(t, e, n) {
         const r = "function" != typeof e ? e : {};
-        return this.j = "function" == typeof e ? e : n, Rc(this), qa(this, t, r), Fc(this);
+        return this.j = "function" == typeof e ? e : n, bc(this), Wa(this, t, r), kc(this);
     }
     Ma(t, e, n, r) {
         const i = "function" != typeof n ? n : {};
-        return this.j = "function" == typeof n ? n : r, Rc(this), Ja(this, t, i, e), Fc(this);
+        return this.j = "function" == typeof n ? n : r, bc(this), za(this, t, i, e), kc(this);
     }
-    Ea() {
+    Da() {
         return this.s;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect");
-        const e = new Vi;
-        Yn(e, To, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.image_segmenter.ImageSegmenterGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), n.o(e), Zi(t, n), Jo(this, t), this.outputConfidenceMasks && (ts(t, "confidence_masks"), Ki(n, "CONFIDENCE_MASKS:confidence_masks"), Zo(this, "confidence_masks"), this.g.da("confidence_masks", (t, e)=>{
-            this.confidenceMasks = t.map((t)=>Za(this, t, !0, !this.j)), qo(this, e);
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect");
+        const e = new Di;
+        Xn(e, yo, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.image_segmenter.ImageSegmenterGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), n.o(e), Ki(t, n), zo(this, t), this.outputConfidenceMasks && ($i(t, "confidence_masks"), Vi(n, "CONFIDENCE_MASKS:confidence_masks"), Ko(this, "confidence_masks"), this.g.ca("confidence_masks", (t, e)=>{
+            this.confidenceMasks = t.map((t)=>Ka(this, t, !0, !this.j)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("confidence_masks", (t)=>{
-            this.confidenceMasks = [], qo(this, t);
-        })), this.outputCategoryMask && (ts(t, "category_mask"), Ki(n, "CATEGORY_MASK:category_mask"), Zo(this, "category_mask"), this.g.V("category_mask", (t, e)=>{
-            this.categoryMask = Za(this, t, !1, !this.j), qo(this, e);
+            this.confidenceMasks = [], Wo(this, t);
+        })), this.outputCategoryMask && ($i(t, "category_mask"), Vi(n, "CATEGORY_MASK:category_mask"), Ko(this, "category_mask"), this.g.U("category_mask", (t, e)=>{
+            this.categoryMask = Ka(this, t, !1, !this.j), Wo(this, e);
         }), this.g.attachEmptyPacketListener("category_mask", (t)=>{
-            this.categoryMask = void 0, qo(this, t);
-        })), ts(t, "quality_scores"), Ki(n, "QUALITY_SCORES:quality_scores"), this.g.attachFloatVectorListener("quality_scores", (t, e)=>{
-            this.qualityScores = t, qo(this, e);
+            this.categoryMask = void 0, Wo(this, t);
+        })), $i(t, "quality_scores"), Vi(n, "QUALITY_SCORES:quality_scores"), this.g.attachFloatVectorListener("quality_scores", (t, e)=>{
+            this.qualityScores = t, Wo(this, e);
         }), this.g.attachEmptyPacketListener("quality_scores", (t)=>{
-            this.categoryMask = void 0, qo(this, t);
+            this.categoryMask = void 0, Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-Ic.prototype.getLabels = Ic.prototype.Ea, Ic.prototype.segmentForVideo = Ic.prototype.Ma, Ic.prototype.segment = Ic.prototype.segment, Ic.prototype.setOptions = Ic.prototype.o, Ic.createFromModelPath = function(t, e) {
-    return Ya(Ic, t, {
+Sc.prototype.getLabels = Sc.prototype.Da, Sc.prototype.segmentForVideo = Sc.prototype.Ma, Sc.prototype.segment = Sc.prototype.segment, Sc.prototype.setOptions = Sc.prototype.o, Sc.createFromModelPath = function(t, e) {
+    return Xa(Sc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, Ic.createFromModelBuffer = function(t, e) {
-    return Ya(Ic, t, {
+}, Sc.createFromModelBuffer = function(t, e) {
+    return Xa(Sc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, Ic.createFromOptions = function(t, e) {
-    return Ya(Ic, t, e);
+}, Sc.createFromOptions = function(t, e) {
+    return Xa(Sc, t, e);
 };
-var Mc = class {
+var xc = class {
     constructor(t, e, n){
         this.confidenceMasks = t, this.categoryMask = e, this.qualityScores = n;
     }
@@ -41543,48 +41655,48 @@ var Mc = class {
         }), this.categoryMask?.close();
     }
 };
-Mc.prototype.close = Mc.prototype.close;
-var Pc = class extends $n {
+xc.prototype.close = xc.prototype.close;
+var Lc = class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, Rc = [
+    0,
+    oi,
+    -2
+], Fc = [
+    0,
+    Qr,
+    -3,
+    hi,
+    Qr,
+    -1
+], Ic = [
+    0,
+    Fc
+], Mc = [
+    0,
+    Fc,
+    oi,
+    -1
+], Pc = class extends Hn {
     constructor(t){
         super(t);
     }
 }, Oc = [
     0,
-    li,
-    -2
-], Cc = [
-    0,
-    ii,
-    -3,
-    pi,
-    ii,
-    -1
-], Uc = [
-    0,
-    Cc
-], Nc = [
-    0,
-    Cc,
-    li,
-    -1
-], Dc = class extends $n {
-    constructor(t){
-        super(t);
-    }
-}, Bc = [
-    0,
-    ii,
+    Qr,
     -1,
-    pi
-], Gc = class extends $n {
-    constructor(){
-        super();
-    }
-}, jc = class extends $n {
+    hi
+], Cc = class extends Hn {
     constructor(t){
         super(t);
     }
-}, Vc = [
+}, Uc = class extends Hn {
+    constructor(t){
+        super(t);
+    }
+}, Dc = [
     1,
     2,
     3,
@@ -41597,234 +41709,234 @@ var Pc = class extends $n {
     10,
     14,
     15
-], Xc = class extends $n {
-    constructor(){
-        super();
+], Nc = class extends Hn {
+    constructor(t){
+        super(t);
     }
 };
-Xc.prototype.g = Li([
+Nc.prototype.g = Ai([
     0,
-    vi,
+    pi,
     [
         0,
-        Vc,
-        Ei,
-        Cc,
-        Ei,
+        Dc,
+        gi,
+        Fc,
+        gi,
         [
             0,
-            Cc,
-            Oc
+            Fc,
+            Rc
         ],
-        Ei,
-        Uc,
-        Ei,
+        gi,
+        Ic,
+        gi,
         [
             0,
-            Uc,
-            Oc
+            Ic,
+            Rc
         ],
-        Ei,
-        Bc,
-        Ei,
+        gi,
+        Oc,
+        gi,
         [
             0,
-            ii,
+            Qr,
             -3,
-            pi,
-            Ai
+            hi,
+            vi
         ],
-        Ei,
+        gi,
         [
             0,
-            ii,
+            Qr,
             -3,
-            pi
+            hi
         ],
-        Ei,
+        gi,
         [
             0,
-            _i,
-            ii,
+            fi,
+            Qr,
             -2,
-            pi,
-            li,
-            pi,
+            hi,
+            oi,
+            hi,
             -1,
             2,
-            ii,
-            Oc
+            Qr,
+            Rc
         ],
-        Ei,
-        Nc,
-        Ei,
+        gi,
+        Mc,
+        gi,
         [
             0,
-            Nc,
-            Oc
+            Mc,
+            Rc
         ],
-        ii,
-        Oc,
-        _i,
-        Ei,
+        Qr,
+        Rc,
+        fi,
+        gi,
         [
             0,
-            ii,
+            Qr,
             -3,
-            pi,
-            Oc,
+            hi,
+            Rc,
             -1
         ],
-        Ei,
+        gi,
         [
             0,
-            vi,
-            Bc
+            pi,
+            Oc
         ]
     ],
-    _i,
+    fi,
     [
         0,
-        _i,
-        li,
+        fi,
+        oi,
         -1,
-        pi
+        hi
     ]
 ]);
-var Hc = class extends Qa {
+var Bc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect_in", !1), this.outputCategoryMask = !1, this.outputConfidenceMasks = !0, this.h = new wo, this.s = new yo, un(this.h, 0, 3, this.s), un(t = this.h, 0, 1, e = new Ps);
+        super(new Va(t, e), "image_in", "norm_rect_in", !1), this.outputCategoryMask = !1, this.outputConfidenceMasks = !0, this.h = new mo, this.s = new lo, sn(this.h, 0, 3, this.s), sn(t = this.h, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
         return "outputCategoryMask" in t && (this.outputCategoryMask = t.outputCategoryMask ?? !1), "outputConfidenceMasks" in t && (this.outputConfidenceMasks = t.outputConfidenceMasks ?? !0), super.l(t);
     }
     segment(t, e, n, r) {
         const i = "function" != typeof n ? n : {};
-        this.j = "function" == typeof n ? n : r, this.qualityScores = this.categoryMask = this.confidenceMasks = void 0, n = this.B + 1, r = new Xc;
-        const s = new jc;
-        var o = new Pc;
-        if (En(o, 1, 255), un(s, 0, 12, o), e.keypoint && e.scribble) throw Error("Cannot provide both keypoint and scribble.");
+        this.j = "function" == typeof n ? n : r, this.qualityScores = this.categoryMask = this.confidenceMasks = void 0, n = this.B + 1, r = new Nc;
+        const s = new Uc;
+        var o = new Lc;
+        if (pn(o, 1, 255), sn(s, 0, 12, o), e.keypoint && e.scribble) throw Error("Cannot provide both keypoint and scribble.");
         if (e.keypoint) {
-            var a = new Dc;
-            vn(a, 3, !0), wn(a, 1, e.keypoint.x), wn(a, 2, e.keypoint.y), ln(s, 5, Vc, a);
+            var a = new Pc;
+            fn(a, 3, !0), gn(a, 1, e.keypoint.x), gn(a, 2, e.keypoint.y), on(s, 5, Dc, a);
         } else {
             if (!e.scribble) throw Error("Must provide either a keypoint or a scribble.");
-            for (a of (o = new Gc, e.scribble))vn(e = new Dc, 3, !0), wn(e, 1, a.x), wn(e, 2, a.y), pn(o, 1, Dc, e);
-            ln(s, 15, Vc, o);
+            for (a of (o = new Cc, e.scribble))fn(e = new Pc, 3, !0), gn(e, 1, a.x), gn(e, 2, a.y), hn(o, 1, Pc, e);
+            on(s, 15, Dc, o);
         }
-        pn(r, 1, jc, s), this.g.addProtoToStream(r.g(), "drishti.RenderData", "roi_in", n), qa(this, t, i);
+        hn(r, 1, Uc, s), this.g.addProtoToStream(r.g(), "drishti.RenderData", "roi_in", n), Wa(this, t, i);
         t: {
             try {
-                const t = new Mc(this.confidenceMasks, this.categoryMask, this.qualityScores);
+                const t = new xc(this.confidenceMasks, this.categoryMask, this.qualityScores);
                 if (!this.j) {
                     var c = t;
                     break t;
                 }
                 this.j(t);
             } finally{
-                Qo(this);
+                Yo(this);
             }
             c = void 0;
         }
         return c;
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "roi_in"), Qi(t, "norm_rect_in");
-        const e = new Vi;
-        Yn(e, To, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.interactive_segmenter.InteractiveSegmenterGraph"), zi(n, "IMAGE:image_in"), zi(n, "ROI:roi_in"), zi(n, "NORM_RECT:norm_rect_in"), n.o(e), Zi(t, n), Jo(this, t), this.outputConfidenceMasks && (ts(t, "confidence_masks"), Ki(n, "CONFIDENCE_MASKS:confidence_masks"), Zo(this, "confidence_masks"), this.g.da("confidence_masks", (t, e)=>{
-            this.confidenceMasks = t.map((t)=>Za(this, t, !0, !this.j)), qo(this, e);
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "roi_in"), Yi(t, "norm_rect_in");
+        const e = new Di;
+        Xn(e, yo, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.interactive_segmenter.InteractiveSegmenterGraph"), ji(n, "IMAGE:image_in"), ji(n, "ROI:roi_in"), ji(n, "NORM_RECT:norm_rect_in"), n.o(e), Ki(t, n), zo(this, t), this.outputConfidenceMasks && ($i(t, "confidence_masks"), Vi(n, "CONFIDENCE_MASKS:confidence_masks"), Ko(this, "confidence_masks"), this.g.ca("confidence_masks", (t, e)=>{
+            this.confidenceMasks = t.map((t)=>Ka(this, t, !0, !this.j)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("confidence_masks", (t)=>{
-            this.confidenceMasks = [], qo(this, t);
-        })), this.outputCategoryMask && (ts(t, "category_mask"), Ki(n, "CATEGORY_MASK:category_mask"), Zo(this, "category_mask"), this.g.V("category_mask", (t, e)=>{
-            this.categoryMask = Za(this, t, !1, !this.j), qo(this, e);
+            this.confidenceMasks = [], Wo(this, t);
+        })), this.outputCategoryMask && ($i(t, "category_mask"), Vi(n, "CATEGORY_MASK:category_mask"), Ko(this, "category_mask"), this.g.U("category_mask", (t, e)=>{
+            this.categoryMask = Ka(this, t, !1, !this.j), Wo(this, e);
         }), this.g.attachEmptyPacketListener("category_mask", (t)=>{
-            this.categoryMask = void 0, qo(this, t);
-        })), ts(t, "quality_scores"), Ki(n, "QUALITY_SCORES:quality_scores"), this.g.attachFloatVectorListener("quality_scores", (t, e)=>{
-            this.qualityScores = t, qo(this, e);
+            this.categoryMask = void 0, Wo(this, t);
+        })), $i(t, "quality_scores"), Vi(n, "QUALITY_SCORES:quality_scores"), this.g.attachFloatVectorListener("quality_scores", (t, e)=>{
+            this.qualityScores = t, Wo(this, e);
         }), this.g.attachEmptyPacketListener("quality_scores", (t)=>{
-            this.categoryMask = void 0, qo(this, t);
+            this.categoryMask = void 0, Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-Hc.prototype.segment = Hc.prototype.segment, Hc.prototype.setOptions = Hc.prototype.o, Hc.createFromModelPath = function(t, e) {
-    return Ya(Hc, t, {
+Bc.prototype.segment = Bc.prototype.segment, Bc.prototype.setOptions = Bc.prototype.o, Bc.createFromModelPath = function(t, e) {
+    return Xa(Bc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, Hc.createFromModelBuffer = function(t, e) {
-    return Ya(Hc, t, {
+}, Bc.createFromModelBuffer = function(t, e) {
+    return Xa(Bc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, Hc.createFromOptions = function(t, e) {
-    return Ya(Hc, t, e);
+}, Bc.createFromOptions = function(t, e) {
+    return Xa(Bc, t, e);
 };
-var Wc = class extends Qa {
+var Gc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "input_frame_gpu", "norm_rect", !1), this.j = {
+        super(new Va(t, e), "input_frame_gpu", "norm_rect", !1), this.j = {
             detections: []
-        }, un(t = this.h = new bo, 0, 1, e = new Ps);
+        }, sn(t = this.h = new _o, 0, 1, e = new Ls);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return void 0 !== t.displayNamesLocale ? Ve(this.h, 2, re(t.displayNamesLocale)) : "displayNamesLocale" in t && Ve(this.h, 2), void 0 !== t.maxResults ? En(this.h, 3, t.maxResults) : "maxResults" in t && Ve(this.h, 3), void 0 !== t.scoreThreshold ? wn(this.h, 4, t.scoreThreshold) : "scoreThreshold" in t && Ve(this.h, 4), void 0 !== t.categoryAllowlist ? Tn(this.h, 5, t.categoryAllowlist) : "categoryAllowlist" in t && Ve(this.h, 5), void 0 !== t.categoryDenylist ? Tn(this.h, 6, t.categoryDenylist) : "categoryDenylist" in t && Ve(this.h, 6), this.l(t);
+        return void 0 !== t.displayNamesLocale ? De(this.h, 2, ae(t.displayNamesLocale)) : "displayNamesLocale" in t && De(this.h, 2), void 0 !== t.maxResults ? pn(this.h, 3, t.maxResults) : "maxResults" in t && De(this.h, 3), void 0 !== t.scoreThreshold ? gn(this.h, 4, t.scoreThreshold) : "scoreThreshold" in t && De(this.h, 4), void 0 !== t.categoryAllowlist ? mn(this.h, 5, t.categoryAllowlist) : "categoryAllowlist" in t && De(this.h, 5), void 0 !== t.categoryDenylist ? mn(this.h, 6, t.categoryDenylist) : "categoryDenylist" in t && De(this.h, 6), this.l(t);
     }
     D(t, e) {
         return this.j = {
             detections: []
-        }, qa(this, t, e), this.j;
+        }, Wa(this, t, e), this.j;
     }
     F(t, e, n) {
         return this.j = {
             detections: []
-        }, Ja(this, t, n, e), this.j;
+        }, za(this, t, n, e), this.j;
     }
     m() {
-        var t = new es;
-        Qi(t, "input_frame_gpu"), Qi(t, "norm_rect"), ts(t, "detections");
-        const e = new Vi;
-        Yn(e, Ao, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.ObjectDetectorGraph"), zi(n, "IMAGE:input_frame_gpu"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "DETECTIONS:detections"), n.o(e), Zi(t, n), this.g.attachProtoVectorListener("detections", (t, e)=>{
-            for (const e of t)t = ls(e), this.j.detections.push(Ro(t));
-            qo(this, e);
+        var t = new qi;
+        Yi(t, "input_frame_gpu"), Yi(t, "norm_rect"), $i(t, "detections");
+        const e = new Di;
+        Xn(e, vo, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.ObjectDetectorGraph"), ji(n, "IMAGE:input_frame_gpu"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "DETECTIONS:detections"), n.o(e), Ki(t, n), this.g.attachProtoVectorListener("detections", (t, e)=>{
+            for (const e of t)t = os(e), this.j.detections.push(bo(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("detections", (t)=>{
-            qo(this, t);
+            Wo(this, t);
         }), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-Wc.prototype.detectForVideo = Wc.prototype.F, Wc.prototype.detect = Wc.prototype.D, Wc.prototype.setOptions = Wc.prototype.o, Wc.createFromModelPath = async function(t, e) {
-    return Ya(Wc, t, {
+Gc.prototype.detectForVideo = Gc.prototype.F, Gc.prototype.detect = Gc.prototype.D, Gc.prototype.setOptions = Gc.prototype.o, Gc.createFromModelPath = async function(t, e) {
+    return Xa(Gc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, Wc.createFromModelBuffer = function(t, e) {
-    return Ya(Wc, t, {
+}, Gc.createFromModelBuffer = function(t, e) {
+    return Xa(Gc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, Wc.createFromOptions = function(t, e) {
-    return Ya(Wc, t, e);
+}, Gc.createFromOptions = function(t, e) {
+    return Xa(Gc, t, e);
 };
-var zc = class {
+var jc = class {
     constructor(t, e, n){
         this.landmarks = t, this.worldLandmarks = e, this.segmentationMasks = n;
     }
@@ -41834,82 +41946,82 @@ var zc = class {
         });
     }
 };
-function Kc(t) {
+function Vc(t) {
     t.landmarks = [], t.worldLandmarks = [], t.segmentationMasks = void 0;
 }
-function Yc(t) {
+function Xc(t) {
     try {
-        const e = new zc(t.landmarks, t.worldLandmarks, t.segmentationMasks);
+        const e = new jc(t.landmarks, t.worldLandmarks, t.segmentationMasks);
         if (!t.s) return e;
         t.s(e);
     } finally{
-        Qo(t);
+        Yo(t);
     }
 }
-zc.prototype.close = zc.prototype.close;
-var $c = class extends Qa {
+jc.prototype.close = jc.prototype.close;
+var Hc = class extends Ya {
     constructor(t, e){
-        super(new Ka(t, e), "image_in", "norm_rect", !1), this.landmarks = [], this.worldLandmarks = [], this.outputSegmentationMasks = !1, un(t = this.h = new ko, 0, 1, e = new Ps), this.v = new co, un(this.h, 0, 3, this.v), this.j = new ao, un(this.h, 0, 2, this.j), En(this.j, 4, 1), wn(this.j, 2, .5), wn(this.v, 2, .5), wn(this.h, 4, .5);
+        super(new Va(t, e), "image_in", "norm_rect", !1), this.landmarks = [], this.worldLandmarks = [], this.outputSegmentationMasks = !1, sn(t = this.h = new Eo, 0, 1, e = new Ls), this.v = new ro, sn(this.h, 0, 3, this.v), this.j = new no, sn(this.h, 0, 2, this.j), pn(this.j, 4, 1), gn(this.j, 2, .5), gn(this.v, 2, .5), gn(this.h, 4, .5);
     }
     get baseOptions() {
-        return an(this.h, Ps, 1);
+        return en(this.h, Ls, 1);
     }
     set baseOptions(t) {
-        un(this.h, 0, 1, t);
+        sn(this.h, 0, 1, t);
     }
     o(t) {
-        return "numPoses" in t && En(this.j, 4, t.numPoses ?? 1), "minPoseDetectionConfidence" in t && wn(this.j, 2, t.minPoseDetectionConfidence ?? .5), "minTrackingConfidence" in t && wn(this.h, 4, t.minTrackingConfidence ?? .5), "minPosePresenceConfidence" in t && wn(this.v, 2, t.minPosePresenceConfidence ?? .5), "outputSegmentationMasks" in t && (this.outputSegmentationMasks = t.outputSegmentationMasks ?? !1), this.l(t);
+        return "numPoses" in t && pn(this.j, 4, t.numPoses ?? 1), "minPoseDetectionConfidence" in t && gn(this.j, 2, t.minPoseDetectionConfidence ?? .5), "minTrackingConfidence" in t && gn(this.h, 4, t.minTrackingConfidence ?? .5), "minPosePresenceConfidence" in t && gn(this.v, 2, t.minPosePresenceConfidence ?? .5), "outputSegmentationMasks" in t && (this.outputSegmentationMasks = t.outputSegmentationMasks ?? !1), this.l(t);
     }
     D(t, e, n) {
         const r = "function" != typeof e ? e : {};
-        return this.s = "function" == typeof e ? e : n, Kc(this), qa(this, t, r), Yc(this);
+        return this.s = "function" == typeof e ? e : n, Vc(this), Wa(this, t, r), Xc(this);
     }
     F(t, e, n, r) {
         const i = "function" != typeof n ? n : {};
-        return this.s = "function" == typeof n ? n : r, Kc(this), Ja(this, t, i, e), Yc(this);
+        return this.s = "function" == typeof n ? n : r, Vc(this), za(this, t, i, e), Xc(this);
     }
     m() {
-        var t = new es;
-        Qi(t, "image_in"), Qi(t, "norm_rect"), ts(t, "normalized_landmarks"), ts(t, "world_landmarks"), ts(t, "segmentation_masks");
-        const e = new Vi;
-        Yn(e, So, this.h);
-        const n = new Yi;
-        Wi(n, "mediapipe.tasks.vision.pose_landmarker.PoseLandmarkerGraph"), zi(n, "IMAGE:image_in"), zi(n, "NORM_RECT:norm_rect"), Ki(n, "NORM_LANDMARKS:normalized_landmarks"), Ki(n, "WORLD_LANDMARKS:world_landmarks"), n.o(e), Zi(t, n), Jo(this, t), this.g.attachProtoVectorListener("normalized_landmarks", (t, e)=>{
+        var t = new qi;
+        Yi(t, "image_in"), Yi(t, "norm_rect"), $i(t, "normalized_landmarks"), $i(t, "world_landmarks"), $i(t, "segmentation_masks");
+        const e = new Di;
+        Xn(e, wo, this.h);
+        const n = new Xi;
+        Gi(n, "mediapipe.tasks.vision.pose_landmarker.PoseLandmarkerGraph"), ji(n, "IMAGE:image_in"), ji(n, "NORM_RECT:norm_rect"), Vi(n, "NORM_LANDMARKS:normalized_landmarks"), Vi(n, "WORLD_LANDMARKS:world_landmarks"), n.o(e), Ki(t, n), zo(this, t), this.g.attachProtoVectorListener("normalized_landmarks", (t, e)=>{
             this.landmarks = [];
-            for (const e of t)t = gs(e), this.landmarks.push(Fo(t));
-            qo(this, e);
+            for (const e of t)t = us(e), this.landmarks.push(ko(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("normalized_landmarks", (t)=>{
-            this.landmarks = [], qo(this, t);
+            this.landmarks = [], Wo(this, t);
         }), this.g.attachProtoVectorListener("world_landmarks", (t, e)=>{
             this.worldLandmarks = [];
-            for (const e of t)t = ds(e), this.worldLandmarks.push(Io(t));
-            qo(this, e);
+            for (const e of t)t = cs(e), this.worldLandmarks.push(So(t));
+            Wo(this, e);
         }), this.g.attachEmptyPacketListener("world_landmarks", (t)=>{
-            this.worldLandmarks = [], qo(this, t);
-        }), this.outputSegmentationMasks && (Ki(n, "SEGMENTATION_MASK:segmentation_masks"), Zo(this, "segmentation_masks"), this.g.da("segmentation_masks", (t, e)=>{
-            this.segmentationMasks = t.map((t)=>Za(this, t, !0, !this.s)), qo(this, e);
+            this.worldLandmarks = [], Wo(this, t);
+        }), this.outputSegmentationMasks && (Vi(n, "SEGMENTATION_MASK:segmentation_masks"), Ko(this, "segmentation_masks"), this.g.ca("segmentation_masks", (t, e)=>{
+            this.segmentationMasks = t.map((t)=>Ka(this, t, !0, !this.s)), Wo(this, e);
         }), this.g.attachEmptyPacketListener("segmentation_masks", (t)=>{
-            this.segmentationMasks = [], qo(this, t);
+            this.segmentationMasks = [], Wo(this, t);
         })), t = t.g(), this.setGraph(new Uint8Array(t), !0);
     }
 };
-$c.prototype.detectForVideo = $c.prototype.F, $c.prototype.detect = $c.prototype.D, $c.prototype.setOptions = $c.prototype.o, $c.createFromModelPath = function(t, e) {
-    return Ya($c, t, {
+Hc.prototype.detectForVideo = Hc.prototype.F, Hc.prototype.detect = Hc.prototype.D, Hc.prototype.setOptions = Hc.prototype.o, Hc.createFromModelPath = function(t, e) {
+    return Xa(Hc, t, {
         baseOptions: {
             modelAssetPath: e
         }
     });
-}, $c.createFromModelBuffer = function(t, e) {
-    return Ya($c, t, {
+}, Hc.createFromModelBuffer = function(t, e) {
+    return Xa(Hc, t, {
         baseOptions: {
             modelAssetBuffer: e
         }
     });
-}, $c.createFromOptions = function(t, e) {
-    return Ya($c, t, e);
-}, $c.POSE_CONNECTIONS = wc;
+}, Hc.createFromOptions = function(t, e) {
+    return Xa(Hc, t, e);
+}, Hc.POSE_CONNECTIONS = mc;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5JfgJ":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ckcWV":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class API {
@@ -41926,7 +42038,7 @@ class API {
 }
 exports.default = API;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"liagS":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"cHYW7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _pixiJs = require("pixi.js");
@@ -41951,6 +42063,6 @@ class Luts {
 }
 exports.default = Luts;
 
-},{"pixi.js":"1arn0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["bTHtU","h7u1C"], "h7u1C", "parcelRequire94c2")
+},{"pixi.js":"8JifE","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["3dtlh","gH3Lb"], "gH3Lb", "parcelRequirec46d", {})
 
-//# sourceMappingURL=index.b71e74eb.js.map
+//# sourceMappingURL=BeardColorMask.34df32e0.js.map
