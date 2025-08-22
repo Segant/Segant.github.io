@@ -48,7 +48,29 @@
 				<div class="range-input">
 					<span>B:</span><input type="range" min="0" max="1000" step="1" value="1000" id="rangeB">&nbsp;
 					<div id="range1Value">_</div>
-				</div>		
+				</div>
+
+				<div id="controls">
+					<label>
+					  Intensity
+					  <input type="range" id="intensitySlider" min="0" max="3" step="0.1" value="1.8">
+					  <span id="intensityValue">1.8</span>
+					</label>
+
+					<label>
+					  History length
+					  <input type="range" id="historySlider" min="1" max="20" step="1" value="8">
+					  <span id="historyValue">8</span>
+					</label>
+
+					<label>
+					  IoU threshold
+					  <input type="range" id="iouSlider" min="0" max="1" step="0.05" value="0.4">
+					  <span id="iouValue">0.40</span>
+					</label>
+				</div>
+
+
 				
 				<canvas id="canvas" width="512" height="512"></canvas>
 				<canvas id="canvas2" width="512" height="512"></canvas>
@@ -58,5 +80,6 @@
 	</div>
 
 	<script type="module" src="BeardColorMask.34df32e0.js"></script>
+
 
 </body></html>

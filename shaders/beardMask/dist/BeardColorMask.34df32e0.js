@@ -869,6 +869,33 @@ const makeLuts = async ()=>{
     };
     update();
 };
+// grab elements
+const intensitySlider = document.getElementById('intensitySlider');
+const historySlider = document.getElementById('historySlider');
+const iouSlider = document.getElementById('iouSlider');
+const intensityValue = document.getElementById('intensityValue');
+const historyValue = document.getElementById('historyValue');
+const iouValue = document.getElementById('iouValue');
+// set initial text values
+if (intensityValue) intensityValue.textContent = parseFloat(intensitySlider.value).toFixed(2);
+if (historyValue) historyValue.textContent = parseInt(historySlider.value, 10).toString();
+if (iouValue) iouValue.textContent = parseFloat(iouSlider.value).toFixed(2);
+// listeners
+intensitySlider.addEventListener('input', ()=>{
+    const v = parseFloat(intensitySlider.value);
+    hairColorMask.setIntensityFactor(v);
+    if (intensityValue) intensityValue.textContent = v.toFixed(2);
+});
+historySlider.addEventListener('input', ()=>{
+    const v = parseInt(historySlider.value, 10);
+    hairColorMask.setHistoryLength(v);
+    if (historyValue) historyValue.textContent = v.toString();
+});
+iouSlider.addEventListener('input', ()=>{
+    const v = parseFloat(iouSlider.value);
+    hairColorMask.setIouThreshold(v);
+    if (iouValue) iouValue.textContent = v.toFixed(2);
+});
 makeLuts();
 
 },{"./core/beardColorMask":"fIs6F","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fIs6F":[function(require,module,exports,__globalThis) {
@@ -895,8 +922,10 @@ class BeardColorMask {
         1
     ];
     transitionThreshold = 0.5;
-    // <<< added: history buffer for temporal smoothing
-    static HISTORY_LENGTH = 5;
+    // ---- temporal smoothing params (can be updated from UI) ----
+    intensityFactor = 1.8;
+    historyLength = 8;
+    iouThreshold = 0.4;
     maskHistory = [];
     constructor(container, options){
         this.options = options;
@@ -920,8 +949,9 @@ class BeardColorMask {
     }
     isWebKit() {
         const UA = navigator.userAgent;
-        return /\b(iPad|iPhone|iPod)\b/.test(UA) && /WebKit/.test(UA) && !/Edge/.test(UA) && // @ts-ignore
-        !window.MSStream;
+        // @ts-ignore
+        const isMS = !!window.MSStream;
+        return /\b(iPad|iPhone|iPod)\b/.test(UA) && /WebKit/.test(UA) && !/Edge/.test(UA) && !isMS;
     }
     start() {
         const video = document.querySelector(this.options.nodes.video);
@@ -1045,64 +1075,80 @@ class BeardColorMask {
         this.uniforms = filter.uniforms;
         this.setOpacity(0);
         const fps = 20;
+        // Map your mask values if needed (kept from your version)
         const stretchMaskValue = (x)=>{
-            // you can adjust this remap if needed
             return 1 - (x / 250 + 0.55);
         };
-        // <<< added: helper to push mask into history and return averaged mask
-        const pushAndAverageMask = (arr)=>{
-            if (this.maskHistory.length >= BeardColorMask.HISTORY_LENGTH) this.maskHistory.shift();
-            // store a copy to avoid mutating the same buffer later
-            this.maskHistory.push(new Float32Array(arr));
-            const out = new Float32Array(arr.length);
-            const H = this.maskHistory.length;
-            for(let i = 0; i < arr.length; i++){
-                let sum = 0;
-                for(let h = 0; h < H; h++)sum += this.maskHistory[h][i];
-                out[i] = sum / H; // averaged value in [0..1]
+        // Compute IoU between two binary masks
+        const iouBinary = (a, b, thr = 0.5)=>{
+            let inter = 0;
+            let uni = 0;
+            for(let i = 0; i < a.length; i++){
+                const A = a[i] >= thr ? 1 : 0;
+                const B = b[i] >= thr ? 1 : 0;
+                if (A === 1 || B === 1) uni++;
+                if (A === 1 && B === 1) inter++;
             }
-            return out;
+            return uni > 0 ? inter / uni : 0;
+        };
+        // Push new mask and decide whether to average with history or fallback to last, based on IoU
+        const pushAndSelectMask = (arr)=>{
+            if (this.maskHistory.length >= this.historyLength) this.maskHistory.shift();
+            // keep a copy
+            const current = new Float32Array(arr);
+            this.maskHistory.push(current);
+            // compute mean of history (excluding current or including? include all history for stability)
+            const H = this.maskHistory.length;
+            const mean = new Float32Array(arr.length);
+            for(let i = 0; i < arr.length; i++){
+                let s = 0;
+                for(let h = 0; h < H; h++)s += this.maskHistory[h][i];
+                mean[i] = s / H;
+            }
+            // compare mean vs current in binary space
+            const iou = iouBinary(mean, current, 0.5);
+            // if similarity is low -> return current only; else return mean
+            if (iou < this.iouThreshold) return current;
+            return mean;
         };
         const callbackForVideo = (result)=>{
             const imageDataResult = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
             const imageDataMask = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
             // raw mask from model
             const raw = result.confidenceMasks[0].getAsFloat32Array();
-            // pre-process per your current map
-            // NOTE: this logic makes mask very binary; tune if you want smoother values
+            // pre-process mask to your liking
             for(let i = 0; i < raw.length; i++){
                 let v = raw[i];
                 v = stretchMaskValue(v);
                 v = 1 - v;
-                if (v < 0.5) v = 0;
+                if (v < 0.49) v = 0;
                 raw[i] = v;
             }
-            // <<< added: temporal smoothing (simple mean of last N masks)
-            const mask = pushAndAverageMask(raw);
+            // temporal smoothing with IoU gate
+            const mask = pushAndSelectMask(raw);
             textureMask.update();
             this.luma = 0;
             let totalMask = 0;
-            // paint mask to canvas and compute luma stats if needed
+            // write mask visualization
             for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
-                imageDataMask[j] = mask[i] * 255 / 5;
-                imageDataMask[j + 1] = mask[i] * 255 / 5;
-                imageDataMask[j + 2] = mask[i] * 255 / 5;
+                const m = mask[i];
+                // use intensityFactor instead of hard-coded 1.8
+                const val = m * 255 / 5 * this.intensityFactor;
+                imageDataMask[j] = val;
+                imageDataMask[j + 1] = val;
+                imageDataMask[j + 2] = val;
                 const r = imageDataResult[j] / 255;
                 const g = imageDataResult[j + 1] / 255;
                 const b = imageDataResult[j + 2] / 255;
                 const brightness = (r + g + b) / 3;
-                if (mask[i] >= 0.8) {
+                if (m >= 0.5) {
                     this.luma += brightness;
                     totalMask += 1;
                 }
             }
-            // optional debug: min/max of averaged mask
-            let min = Infinity;
-            let max = -Infinity;
-            for(let i = 0; i < mask.length; i++){
-                if (mask[i] < min) min = mask[i];
-                if (mask[i] > max) max = mask[i];
-            }
+            // optional debug: min/max
+            // let min = Infinity, max = -Infinity;
+            // for (let i = 0; i < mask.length; i++) { if (mask[i] < min) min = mask[i]; if (mask[i] > max) max = mask[i]; }
             // console.log("mask min/max:", min, max);
             this.luma = totalMask > 0 ? this.luma / totalMask : 0;
             const uint8ArrayResult = new Uint8ClampedArray(imageDataMask.buffer);
@@ -1167,15 +1213,24 @@ class BeardColorMask {
     setOpacity(num) {
         this.uniforms.uRange0 = num;
     }
-    // public
+    // optional helpers to wire sliders from outside
+    setIntensityFactor(v) {
+        this.intensityFactor = Math.max(0, v);
+    }
+    setHistoryLength(n) {
+        this.historyLength = Math.max(1, Math.min(50, Math.floor(n)));
+        // optionally trim existing history if new length is smaller
+        if (this.maskHistory.length > this.historyLength) this.maskHistory = this.maskHistory.slice(-this.historyLength);
+    }
+    setIouThreshold(t) {
+        this.iouThreshold = Math.max(0, Math.min(1, t));
+    }
     getScreenshot() {
         const app = this.app;
-        const canvas = app.view;
+        const canvas = this.app.view;
         app.render();
         return new Promise((resolve)=>{
-            canvas.toBlob((blob)=>{
-                resolve(blob);
-            });
+            canvas.toBlob((blob)=>resolve(blob));
         });
     }
 }
