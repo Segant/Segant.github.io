@@ -894,7 +894,10 @@ class BeardColorMask {
         1,
         1
     ];
-    transitionThreshold = .5;
+    transitionThreshold = 0.5;
+    // <<< added: history buffer for temporal smoothing
+    static HISTORY_LENGTH = 5;
+    maskHistory = [];
     constructor(container, options){
         this.options = options;
         this.container = container;
@@ -917,7 +920,8 @@ class BeardColorMask {
     }
     isWebKit() {
         const UA = navigator.userAgent;
-        return /\b(iPad|iPhone|iPod)\b/.test(UA) && /WebKit/.test(UA) && !/Edge/.test(UA) && !window.MSStream;
+        return /\b(iPad|iPhone|iPod)\b/.test(UA) && /WebKit/.test(UA) && !/Edge/.test(UA) && // @ts-ignore
+        !window.MSStream;
     }
     start() {
         const video = document.querySelector(this.options.nodes.video);
@@ -940,7 +944,6 @@ class BeardColorMask {
             };
             if (this.isWebKit()) imageSegmenterOptions.canvas = new OffscreenCanvas(512, 512);
             imageSegmenter = await (0, _tasksVision.ImageSegmenter).createFromOptions(vision, imageSegmenterOptions);
-            // eslint-disable-next-line no-use-before-define
             enableCam();
         };
         createImageSegmenter();
@@ -957,73 +960,70 @@ class BeardColorMask {
         const sprite = _pixiJs.Sprite.from(textureRef);
         this.app.stage.addChild(sprite);
         const vertShader = `
-			attribute vec2 aVertexPosition;
-			attribute vec2 aTextureCoord;
-			precision mediump float;
+      attribute vec2 aVertexPosition;
+      attribute vec2 aTextureCoord;
+      precision mediump float;
 
-			uniform mat3 projectionMatrix;
+      uniform mat3 projectionMatrix;
 
-			varying vec2 vUV;
+      varying vec2 vUV;
 
-			void main(void) {
-			gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
-			vUV = aTextureCoord;
-			}
-		`;
+      void main(void) {
+        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+        vUV = aTextureCoord;
+      }
+    `;
         const fragShader = `
-			precision highp float;
+      precision highp float;
 
-			varying vec2 vUV;
+      varying vec2 vUV;
 
-			uniform sampler2D uTextureMask;
-			uniform sampler2D uTextureCam;
-			uniform sampler2D uTextureLut;
+      uniform sampler2D uTextureMask;
+      uniform sampler2D uTextureCam;
+      uniform sampler2D uTextureLut;
 
-			uniform float uRange0;
-			uniform vec3 uColorAdjust;
+      uniform float uRange0;
+      uniform vec3 uColorAdjust;
 
-			vec4 lookup(in vec4 textureColor, in sampler2D lookupTable) {
-				mediump float blueColor = textureColor.b * 63.0;
+      vec4 lookup(in vec4 textureColor, in sampler2D lookupTable) {
+        mediump float blueColor = textureColor.b * 63.0;
 
-				mediump vec2 quad1;
-				quad1.y = floor(floor(blueColor) / 8.0);
-				quad1.x = floor(blueColor) - (quad1.y * 8.0);
+        mediump vec2 quad1;
+        quad1.y = floor(floor(blueColor) / 8.0);
+        quad1.x = floor(blueColor) - (quad1.y * 8.0);
 
-				mediump vec2 quad2;
-				quad2.y = floor(ceil(blueColor) / 8.0);
-				quad2.x = ceil(blueColor) - (quad2.y * 8.0);
+        mediump vec2 quad2;
+        quad2.y = floor(ceil(blueColor) / 8.0);
+        quad2.x = ceil(blueColor) - (quad2.y * 8.0);
 
-				mediump vec2 texPos1;
-				texPos1.x = (quad1.x * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.r);
-				texPos1.y = (quad1.y * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.g);
+        mediump vec2 texPos1;
+        texPos1.x = (quad1.x * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.r);
+        texPos1.y = (quad1.y * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.g);
 
-				mediump vec2 texPos2;
-				texPos2.x = (quad2.x * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.r);
-				texPos2.y = (quad2.y * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.g);
+        mediump vec2 texPos2;
+        texPos2.x = (quad2.x * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.r);
+        texPos2.y = (quad2.y * 0.125) + 0.5 / 512.0 + ((0.125 - 1.0 / 512.0) * textureColor.g);
 
-				vec4 newColor1 = texture2D(lookupTable, texPos1);
-				vec4 newColor2 = texture2D(lookupTable, texPos2);
+        vec4 newColor1 = texture2D(lookupTable, texPos1);
+        vec4 newColor2 = texture2D(lookupTable, texPos2);
 
-				vec4 newColor = mix(newColor1, newColor2, fract(blueColor));
-				return newColor;
-			}
+        vec4 newColor = mix(newColor1, newColor2, fract(blueColor));
+        return newColor;
+      }
 
-			void main(void) {
-				vec2 uv = vUV;
-				vec4 textureMask = texture2D(uTextureMask, uv);
-				vec4 textureCam = texture2D(uTextureCam, uv);
-				vec3 colorAdjust = uColorAdjust;
-				vec4 debugColor = vec4(1.0, 0.0, 0.0, 1.0);
+      void main(void) {
+        vec2 uv = vUV;
+        vec4 textureMask = texture2D(uTextureMask, uv);
+        vec4 textureCam = texture2D(uTextureCam, uv);
+        vec3 colorAdjust = uColorAdjust;
 
-				vec4 maskReversed = 1.0 - textureMask;
-				vec4 lut = lookup(textureCam, uTextureLut) * (textureMask * vec4(colorAdjust, 1.0)) + (maskReversed * textureCam);
-				vec4 result = mix(textureCam, lut, uRange0);
+        vec4 maskReversed = 1.0 - textureMask;
+        vec4 lut = lookup(textureCam, uTextureLut) * (textureMask * vec4(colorAdjust, 1.0)) + (maskReversed * textureCam);
+        vec4 result = mix(textureCam, lut, uRange0);
 
-				gl_FragColor = result;
-				
-				// gl_FragColor = (textureMask * debugColor) + (maskReversed * textureCam) ;
-    		}
-		`;
+        gl_FragColor = result;
+      }
+    `;
         let [colorAdjustR, colorAdjustG, colorAdjustB] = this.colorAdjust;
         const myUniforms = {
             uTextureMask: textureMask,
@@ -1046,56 +1046,65 @@ class BeardColorMask {
         this.setOpacity(0);
         const fps = 20;
         const stretchMaskValue = (x)=>{
+            // you can adjust this remap if needed
             return 1 - (x / 250 + 0.55);
+        };
+        // <<< added: helper to push mask into history and return averaged mask
+        const pushAndAverageMask = (arr)=>{
+            if (this.maskHistory.length >= BeardColorMask.HISTORY_LENGTH) this.maskHistory.shift();
+            // store a copy to avoid mutating the same buffer later
+            this.maskHistory.push(new Float32Array(arr));
+            const out = new Float32Array(arr.length);
+            const H = this.maskHistory.length;
+            for(let i = 0; i < arr.length; i++){
+                let sum = 0;
+                for(let h = 0; h < H; h++)sum += this.maskHistory[h][i];
+                out[i] = sum / H; // averaged value in [0..1]
+            }
+            return out;
         };
         const callbackForVideo = (result)=>{
             const imageDataResult = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
             const imageDataMask = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
-            const mask = result.confidenceMasks[0].getAsFloat32Array();
+            // raw mask from model
+            const raw = result.confidenceMasks[0].getAsFloat32Array();
+            // pre-process per your current map
+            // NOTE: this logic makes mask very binary; tune if you want smoother values
+            for(let i = 0; i < raw.length; i++){
+                let v = raw[i];
+                v = stretchMaskValue(v);
+                v = 1 - v;
+                if (v < 0.5) v = 0;
+                raw[i] = v;
+            }
+            // <<< added: temporal smoothing (simple mean of last N masks)
+            const mask = pushAndAverageMask(raw);
             textureMask.update();
             this.luma = 0;
             let totalMask = 0;
+            // paint mask to canvas and compute luma stats if needed
             for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
-                mask[i] = stretchMaskValue(mask[i]);
-                mask[i] = 1 - mask[i];
-                if (mask[i] < 0.5) mask[i] = 0;
-            }
-            for(let i = 0, j = 0; i < mask.length; ++i, j += 4){
-                //mask[i] = stretchMaskValue(mask[i]);
-                //mask[i] = 1 - mask[i];
-                //console.log("Mask value:", mask[i]);
                 imageDataMask[j] = mask[i] * 255 / 5;
-                imageDataMask[j + 1] = mask[i + 1] * 255 / 5;
-                imageDataMask[j + 2] = mask[i + 2] * 255 / 5;
-                // if (mask[i] >= this.transitionThreshold) {
-                // }
-                let r = imageDataResult[j] / 255;
-                let g = imageDataResult[j + 1] / 255;
-                let b = imageDataResult[j + 2] / 255;
-                let brightness = (r + g + b) / 3;
-                if (mask[i] >= this.transitionThreshold) {
-                    imageDataMask[j] = mask[i] * 255 * (mask[i] * 1);
-                    imageDataMask[j + 1] = mask[i + 1] * 255 * (mask[i + 1] * 1);
-                    imageDataMask[j + 2] = mask[i + 2] * 255 * (mask[i + 2] * 1);
-                } else {
-                    imageDataMask[j] = mask[i] * 255 * (mask[i] * 1);
-                    imageDataMask[j + 1] = mask[i + 1] * 255 * (mask[i + 1] * 1);
-                    imageDataMask[j + 2] = mask[i + 2] * 255 * (mask[i + 2] * 1);
-                }
+                imageDataMask[j + 1] = mask[i] * 255 / 5;
+                imageDataMask[j + 2] = mask[i] * 255 / 5;
+                const r = imageDataResult[j] / 255;
+                const g = imageDataResult[j + 1] / 255;
+                const b = imageDataResult[j + 2] / 255;
+                const brightness = (r + g + b) / 3;
                 if (mask[i] >= 0.8) {
-                    //console.log(mask[i]);
                     this.luma += brightness;
                     totalMask += 1;
                 }
             }
+            // optional debug: min/max of averaged mask
             let min = Infinity;
             let max = -Infinity;
             for(let i = 0; i < mask.length; i++){
                 if (mask[i] < min) min = mask[i];
                 if (mask[i] > max) max = mask[i];
             }
-            console.log("Mask values min/max:", min, max);
-            this.luma = this.luma / totalMask;
+            // console.log("mask min/max:", min, max);
+            this.luma = totalMask > 0 ? this.luma / totalMask : 0;
             const uint8ArrayResult = new Uint8ClampedArray(imageDataMask.buffer);
             const uint8ArrayMask = new Uint8ClampedArray(imageDataResult.buffer);
             const dataResult = new ImageData(uint8ArrayResult, video.videoWidth, video.videoHeight);
@@ -1105,10 +1114,7 @@ class BeardColorMask {
             textureCam.update();
             filter.uniforms.uTextureMask = textureMask;
             filter.uniforms.uTextureCam = textureCam;
-            // filter.uniforms.uColorAdjust = [this.colorAdjust[0], this.colorAdjust[1], this.colorAdjust[2]];
-            // console.log(filter.uniforms.uColorAdjust);
             if (webcamRunning === true) setTimeout(()=>{
-                // eslint-disable-next-line no-use-before-define
                 requestAnimationFrame(predictWebcam);
             }, 1000 / fps);
         };
@@ -1116,7 +1122,7 @@ class BeardColorMask {
             return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
         }
         let lastWebcamTime = -1;
-        async function predictWebcam() {
+        const predictWebcam = async ()=>{
             if (video.currentTime === lastWebcamTime) {
                 if (webcamRunning === true) window.requestAnimationFrame(predictWebcam);
                 return;
@@ -1124,13 +1130,11 @@ class BeardColorMask {
             lastWebcamTime = video.currentTime;
             canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
             canvasCtx2.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-            // Do not segmented if imageSegmenter hasn't loaded
             if (imageSegmenter === undefined) return;
             const startTimeMs = performance.now();
-            // Start segmenting the stream
             imageSegmenter.segmentForVideo(video, startTimeMs, callbackForVideo);
-        }
-        async function enableCam() {
+        };
+        const enableCam = async ()=>{
             if (imageSegmenter === undefined) return;
             if (webcamRunning === true) {
                 webcamRunning = false;
@@ -1149,21 +1153,21 @@ class BeardColorMask {
                     }
                 }
             };
-            // Activate the webcam stream
             try {
+                // @ts-ignore
                 video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
             } catch  {
                 console.warn("Webcam is not found");
             }
             video.addEventListener("loadeddata", predictWebcam);
-        }
+        };
         if (hasGetUserMedia()) enableWebcamButton.addEventListener("click", enableCam);
         else console.warn("getUserMedia() is not supported by your browser");
     }
     setOpacity(num) {
         this.uniforms.uRange0 = num;
     }
-    // private
+    // public
     getScreenshot() {
         const app = this.app;
         const canvas = app.view;
