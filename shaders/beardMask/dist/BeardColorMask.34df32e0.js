@@ -1074,7 +1074,7 @@ class BeardColorMask {
         ];
         this.uniforms = filter.uniforms;
         this.setOpacity(0);
-        const fps = 20;
+        const fps = 35;
         // Map your mask values if needed (kept from your version)
         const stretchMaskValue = (x)=>{
             return 1 - (x / 250 + 0.55);
