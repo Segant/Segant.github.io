@@ -1,0 +1,32 @@
+@font-face {
+  font-family: Cervo;
+  src: url("Cervo-Regular.f5bef4e9.woff2") format("woff2"), url("Cervo-Regular.fe0c139d.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Cervo;
+  src: url("Cervo-Thin.b14e7d04.woff2") format("woff2"), url("Cervo-Thin.913981f5.woff") format("woff");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Cervo;
+  src: url("Cervo-Medium.0af73429.woff2") format("woff2"), url("Cervo-Medium.00dcae57.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Cervo;
+  src: url("Cervo-Light.f5355a84.woff2") format("woff2"), url("Cervo-Light.011a209e.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+/*# sourceMappingURL=BeardColorMask.f31bda76.css.map */
